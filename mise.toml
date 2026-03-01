@@ -1,0 +1,6 @@
+[tools]
+go = "1.26"
+node = "25"
+pnpm = "10"
+golangci-lint = "2"
+"npm:@biomejs/biome" = "2"
