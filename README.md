@@ -10,4 +10,4 @@ Licensed under the [Apache License, Version 2.0](LICENSE).
 
 ## Trademark Notice
 
-"Panen" and the Panen logo are trademarks of lugassawan. Use of these trademarks in modified versions of this software requires prior written permission.
+"Panen" and the Panen logo are trademarks of Lugas Septiawan. Use of these trademarks in modified versions of this software requires prior written permission.
