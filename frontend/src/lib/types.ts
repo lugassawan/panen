@@ -33,3 +33,5 @@ export interface StockValuationResponse {
 export type RiskProfile = "CONSERVATIVE" | "MODERATE" | "AGGRESSIVE";
 
 export type Verdict = "UNDERVALUED" | "FAIR" | "OVERVALUED";
+
+export type Page = "lookup" | "portfolio" | "settings";
