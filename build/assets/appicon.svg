@@ -1,0 +1,26 @@
+<svg width="160" height="160" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+  <!-- Rounded square background -->
+  <rect x="8" y="8" width="144" height="144" rx="32" fill="#0F4A32"/>
+  <!-- Inner subtle gradient overlay -->
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#1B6B4A" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#0A3524" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect x="8" y="8" width="144" height="144" rx="32" fill="url(#glow)"/>
+  <!-- Rice stalk icon centered -->
+  <g transform="translate(56, 22) scale(1.5)">
+    <path d="M16 72 L16 28" stroke="#5DB88C" stroke-width="3" stroke-linecap="round"/>
+    <path d="M16 50 C10 46, 4 36, 5 26 C7 26, 12 30, 16 40" fill="#5DB88C" opacity="0.65"/>
+    <path d="M16 44 C22 39, 28 28, 26 18 C24 18, 20 24, 16 34" fill="#5DB88C" opacity="0.8"/>
+    <path d="M16 28 C13 21, 12 13, 13 6 C15 4, 17 4, 19 6 C20 13, 19 21, 16 28Z" fill="#E8C456"/>
+    <path d="M16 58 C11 55, 6 48, 7 42 C9 42, 13 45, 16 52" fill="#5DB88C" opacity="0.45"/>
+    <path d="M16 55 C21 51, 26 43, 25 36 C23 36, 20 40, 16 48" fill="#5DB88C" opacity="0.55"/>
+    <!-- Growth dots -->
+    <circle cx="4" cy="66" r="2" fill="#E8C456" opacity="0.45"/>
+    <circle cx="10" cy="62" r="2" fill="#E8C456" opacity="0.65"/>
+    <circle cx="22" cy="63" r="2" fill="#E8C456" opacity="0.55"/>
+    <circle cx="28" cy="67" r="2" fill="#E8C456" opacity="0.4"/>
+  </g>
+</svg>

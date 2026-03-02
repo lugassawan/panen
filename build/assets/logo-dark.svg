@@ -1,0 +1,16 @@
+<svg width="360" height="100" viewBox="0 0 360 100" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(20, 10)">
+    <path d="M32 78 L32 30" stroke="#5DB88C" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M32 55 C22 50, 12 38, 14 24 C16 24, 28 30, 32 42" fill="#5DB88C" opacity="0.7"/>
+    <path d="M32 48 C42 42, 52 28, 48 16 C46 16, 38 24, 32 36" fill="#5DB88C" opacity="0.85"/>
+    <path d="M32 30 C28 22, 26 12, 28 4 C30 2, 34 2, 36 4 C38 12, 36 22, 32 30Z" fill="#E8C456"/>
+    <path d="M32 62 C26 58, 20 50, 22 42 C24 42, 28 46, 32 54" fill="#5DB88C" opacity="0.5"/>
+    <path d="M32 58 C38 54, 44 44, 42 36 C40 36, 36 40, 32 50" fill="#5DB88C" opacity="0.6"/>
+    <circle cx="16" cy="70" r="2.5" fill="#E8C456" opacity="0.4"/>
+    <circle cx="24" cy="64" r="2.5" fill="#E8C456" opacity="0.6"/>
+    <circle cx="40" cy="66" r="2.5" fill="#E8C456" opacity="0.5"/>
+    <circle cx="48" cy="72" r="2.5" fill="#E8C456" opacity="0.35"/>
+  </g>
+  <text x="100" y="64" font-family="'Plus Jakarta Sans', sans-serif" font-size="48" font-weight="800" fill="#F0EDE8" letter-spacing="-1">panen</text>
+  <text x="102" y="84" font-family="'DM Sans', sans-serif" font-size="12.5" fill="#9CA3AF" letter-spacing="0.5">Harvest your IDX investments</text>
+</svg>

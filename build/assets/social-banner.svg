@@ -1,0 +1,39 @@
+<svg width="1280" height="640" viewBox="0 0 1280 640" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0A3524"/>
+      <stop offset="40%" stop-color="#0F4A32"/>
+      <stop offset="100%" stop-color="#1B6B4A"/>
+    </linearGradient>
+    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="12" cy="12" r="1" fill="white"/>
+    </pattern>
+  </defs>
+  <rect width="1280" height="640" fill="url(#bg)"/>
+  <rect width="1280" height="640" fill="url(#dots)" opacity="0.04"/>
+  <!-- Content centered -->
+  <g transform="translate(380, 250)">
+    <!-- Icon -->
+    <g transform="translate(0, -40) scale(1.8)">
+      <path d="M16 74 L16 28" stroke="#5DB88C" stroke-width="3" stroke-linecap="round"/>
+      <path d="M16 52 C10 48, 4 38, 5 26 C7 26, 12 30, 16 42" fill="#5DB88C" opacity="0.65"/>
+      <path d="M16 46 C22 41, 28 28, 26 18 C24 18, 20 24, 16 36" fill="#5DB88C" opacity="0.8"/>
+      <path d="M16 28 C13 21, 12 12, 13 5 C15 3, 17 3, 19 5 C20 12, 19 21, 16 28Z" fill="#E8C456"/>
+      <path d="M16 60 C11 57, 6 50, 7 42 C9 42, 13 46, 16 54" fill="#5DB88C" opacity="0.45"/>
+      <path d="M16 56 C21 52, 26 44, 25 36 C23 36, 20 40, 16 50" fill="#5DB88C" opacity="0.55"/>
+      <circle cx="4" cy="68" r="2" fill="#E8C456" opacity="0.45"/>
+      <circle cx="10" cy="63" r="2" fill="#E8C456" opacity="0.65"/>
+      <circle cx="22" cy="64" r="2" fill="#E8C456" opacity="0.55"/>
+      <circle cx="28" cy="67" r="2" fill="#E8C456" opacity="0.4"/>
+    </g>
+    <!-- Text -->
+    <text x="80" y="18" font-family="'Plus Jakarta Sans', sans-serif" font-size="52" font-weight="800" fill="#F0EDE8" letter-spacing="-1.5">panen</text>
+    <text x="82" y="50" font-family="'DM Sans', sans-serif" font-size="15" fill="#9CA3AF" letter-spacing="0.3">Maximize your IDX investment with clarity and conviction</text>
+    <!-- Badges -->
+    <rect x="82" y="64" width="90" height="22" rx="4" fill="#D4A12A" opacity="0.15"/>
+    <text x="92" y="79" font-family="'DM Sans', sans-serif" font-size="11" font-weight="600" fill="#E8C456">Open Source</text>
+    <rect x="182" y="64" width="82" height="22" rx="4" fill="#5DB88C" opacity="0.15"/>
+    <text x="192" y="79" font-family="'DM Sans', sans-serif" font-size="11" font-weight="600" fill="#5DB88C">Apache 2.0</text>
+  </g>
+</svg>
