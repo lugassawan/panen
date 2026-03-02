@@ -59,8 +59,8 @@ test.describe("App navigation", () => {
     await page.goto("/");
 
     const nav = page.getByRole("navigation", { name: /main/i });
-    const lookupBtn = nav.getByText("Stock Lookup").locator("..");
-    const portfolioBtn = nav.getByText("Portfolio").locator("..");
+    const lookupBtn = nav.getByRole("button", { name: "Stock Lookup" });
+    const portfolioBtn = nav.getByRole("button", { name: "Portfolio" });
 
     await expect(lookupBtn).toHaveAttribute("aria-current", "page");
     await expect(portfolioBtn).not.toHaveAttribute("aria-current");
