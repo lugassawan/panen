@@ -144,6 +144,8 @@ func exitTarget(
 		if grahamErr == nil {
 			return graham * 1.2
 		}
+		// Unreachable: intrinsicValue returns ErrInsufficientData before
+		// Evaluate reaches here when no bands and no Graham are available.
 		return 0
 	}
 

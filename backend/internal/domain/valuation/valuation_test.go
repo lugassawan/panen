@@ -193,6 +193,54 @@ var evaluateTests = []evaluateTestCase{
 		wantPERBandNil: true,
 	},
 	{
+		// Moderate with Graham only (no PBV band)
+		// Graham = √(22.5 × 150 × 800) ≈ 1643.17
+		// Intrinsic = Graham = 1643.17
+		// Margin = 25%, Entry = 1643.17 × 0.75 = 1232.37
+		// Exit = Graham × 1.2 = 1971.80 (no bands)
+		// Price 1500 between entry and exit → FAIR
+		name: "moderate Graham only no PBV band",
+		input: ValuationInput{
+			Ticker:      "GRAHAMMOD",
+			Price:       1500,
+			EPS:         150,
+			BVPS:        800,
+			RiskProfile: RiskModerate,
+		},
+		wantGraham:     math.Sqrt(22.5 * 150 * 800),
+		wantMargin:     25.0,
+		wantEntry:      math.Sqrt(22.5*150*800) * 0.75,
+		wantExit:       math.Sqrt(22.5*150*800) * 1.2,
+		wantVerdict:    VerdictFair,
+		wantPBVBandNil: true,
+		wantPERBandNil: true,
+	},
+	{
+		// Aggressive with only PER band (no PBV)
+		// PER band avg = (12+14+16)/3 = 14.0
+		// Intrinsic = PER avg × EPS = 14.0 × 100 = 1400
+		// Margin = 10%, Entry = 1400 × 0.90 = 1260
+		// PER max = 16, upper PER = 16 × 100 = 1600
+		// Exit = 1600
+		// Price 1300 between entry and exit → FAIR
+		name: "aggressive PER only no PBV band",
+		input: ValuationInput{
+			Ticker:      "PERONLY",
+			Price:       1300,
+			EPS:         100,
+			BVPS:        500,
+			RiskProfile: RiskAggressive,
+			HistPER:     []float64{12, 14, 16},
+		},
+		wantGraham:     math.Sqrt(22.5 * 100 * 500),
+		wantMargin:     10.0,
+		wantEntry:      14.0 * 100 * 0.90,
+		wantExit:       16.0 * 100,
+		wantVerdict:    VerdictFair,
+		wantPBVBandNil: true,
+		wantPERBandNil: false,
+	},
+	{
 		// Aggressive with only PBV band (no PER)
 		name: "aggressive PBV only",
 		input: ValuationInput{
