@@ -50,6 +50,7 @@ make frontend-install  # Install frontend dependencies
 - **Go**: Standard library style, `gofmt` formatting, tab indentation
 - **Frontend**: 2-space indentation, double quotes, semicolons (Biome enforced)
 - **Branches**: `feat/`, `fix/`, `chore/` prefixes
+- **Worktrees**: Only use git worktrees when running parallel agents on independent tasks — never for single sequential work or when targeting main/master (pre-commit hook blocks direct commits)
 
 ## Custom Linter (panenlint)
 
