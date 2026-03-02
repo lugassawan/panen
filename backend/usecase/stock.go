@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lugassawan/panen/backend/internal/domain/shared"
-	"github.com/lugassawan/panen/backend/internal/domain/stock"
-	"github.com/lugassawan/panen/backend/internal/domain/valuation"
+	"github.com/lugassawan/panen/backend/domain/shared"
+	"github.com/lugassawan/panen/backend/domain/stock"
+	"github.com/lugassawan/panen/backend/domain/valuation"
 )
 
 const cacheTTL = 24 * time.Hour

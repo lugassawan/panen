@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/lugassawan/panen/backend/internal/domain/shared"
-	"github.com/lugassawan/panen/backend/internal/domain/stock"
+	"github.com/lugassawan/panen/backend/domain/shared"
+	"github.com/lugassawan/panen/backend/domain/stock"
 )
 
 func newTestStockData(now time.Time) *stock.Data {

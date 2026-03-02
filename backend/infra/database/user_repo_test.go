@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/lugassawan/panen/backend/internal/domain/shared"
-	"github.com/lugassawan/panen/backend/internal/domain/user"
+	"github.com/lugassawan/panen/backend/domain/shared"
+	"github.com/lugassawan/panen/backend/domain/user"
 )
 
 func newUserTestProfile(t *testing.T, repo *UserRepo, ctx context.Context) *user.Profile {

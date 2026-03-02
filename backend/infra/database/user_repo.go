@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/lugassawan/panen/backend/internal/domain/shared"
-	"github.com/lugassawan/panen/backend/internal/domain/user"
+	"github.com/lugassawan/panen/backend/domain/shared"
+	"github.com/lugassawan/panen/backend/domain/user"
 )
 
 const (

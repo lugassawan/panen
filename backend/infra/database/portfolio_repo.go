@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/lugassawan/panen/backend/internal/domain/portfolio"
-	"github.com/lugassawan/panen/backend/internal/domain/shared"
+	"github.com/lugassawan/panen/backend/domain/portfolio"
+	"github.com/lugassawan/panen/backend/domain/shared"
 )
 
 const (

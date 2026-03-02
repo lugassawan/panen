@@ -11,7 +11,7 @@ import (
 
 	"golang.org/x/time/rate"
 
-	"github.com/lugassawan/panen/backend/internal/domain/stock"
+	"github.com/lugassawan/panen/backend/domain/stock"
 )
 
 const (

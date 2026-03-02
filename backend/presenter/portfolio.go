@@ -1,14 +1,27 @@
 package presenter
 
 import (
+	"context"
 	"time"
 
-	"github.com/lugassawan/panen/backend/internal/domain/portfolio"
-	"github.com/lugassawan/panen/backend/internal/domain/shared"
+	"github.com/lugassawan/panen/backend/domain/portfolio"
+	"github.com/lugassawan/panen/backend/domain/shared"
+	"github.com/lugassawan/panen/backend/usecase"
 )
 
+// PortfolioHandler handles portfolio management requests.
+type PortfolioHandler struct {
+	ctx        context.Context
+	portfolios *usecase.PortfolioService
+}
+
+// NewPortfolioHandler creates a new PortfolioHandler.
+func NewPortfolioHandler(ctx context.Context, portfolios *usecase.PortfolioService) *PortfolioHandler {
+	return &PortfolioHandler{ctx: ctx, portfolios: portfolios}
+}
+
 // CreatePortfolio creates a new portfolio under the given brokerage account.
-func (a *App) CreatePortfolio(
+func (h *PortfolioHandler) CreatePortfolio(
 	brokerageAcctID, name, mode, riskProfile string,
 	capital, monthlyAddition float64,
 	maxStocks int,
@@ -36,14 +49,14 @@ func (a *App) CreatePortfolio(
 		CreatedAt:          now,
 		UpdatedAt:          now,
 	}
-	if err := a.portfolios.Create(a.ctx, p); err != nil {
+	if err := h.portfolios.Create(h.ctx, p); err != nil {
 		return nil, err
 	}
 	return buildPortfolioResponse(p), nil
 }
 
 // AddHolding adds a stock holding to a portfolio.
-func (a *App) AddHolding(
+func (h *PortfolioHandler) AddHolding(
 	portfolioID, ticker string,
 	price float64,
 	lots int,
@@ -54,7 +67,7 @@ func (a *App) AddHolding(
 		return nil, err
 	}
 
-	holding, err := a.portfolios.AddHolding(a.ctx, portfolioID, ticker, price, lots, date)
+	holding, err := h.portfolios.AddHolding(h.ctx, portfolioID, ticker, price, lots, date)
 	if err != nil {
 		return nil, err
 	}
@@ -69,8 +82,8 @@ func (a *App) AddHolding(
 }
 
 // GetPortfolio returns a portfolio with all holdings and optional valuations.
-func (a *App) GetPortfolio(id string) (*PortfolioDetailResponse, error) {
-	p, holdings, err := a.portfolios.GetDetail(a.ctx, id)
+func (h *PortfolioHandler) GetPortfolio(id string) (*PortfolioDetailResponse, error) {
+	p, holdings, err := h.portfolios.GetDetail(h.ctx, id)
 	if err != nil {
 		return nil, err
 	}

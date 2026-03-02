@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Greet } from "../wailsjs/go/app/App";
+import { Greet } from "../wailsjs/go/backend/App";
 
 let name = $state("");
 let greeting = $state("");

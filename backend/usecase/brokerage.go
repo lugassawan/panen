@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/lugassawan/panen/backend/internal/domain/brokerage"
+	"github.com/lugassawan/panen/backend/domain/brokerage"
 )
 
 // BrokerageService handles brokerage account operations.

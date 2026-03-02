@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import App from "./App.svelte";
 
-vi.mock("../wailsjs/go/app/App", () => ({
+vi.mock("../wailsjs/go/backend/App", () => ({
   Greet: vi.fn((name: string) => Promise.resolve(`Hello ${name}, welcome to Panen!`)),
 }));
 

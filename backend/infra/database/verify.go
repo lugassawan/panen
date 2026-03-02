@@ -1,10 +1,10 @@
 package database
 
 import (
-	"github.com/lugassawan/panen/backend/internal/domain/brokerage"
-	"github.com/lugassawan/panen/backend/internal/domain/portfolio"
-	"github.com/lugassawan/panen/backend/internal/domain/stock"
-	"github.com/lugassawan/panen/backend/internal/domain/user"
+	"github.com/lugassawan/panen/backend/domain/brokerage"
+	"github.com/lugassawan/panen/backend/domain/portfolio"
+	"github.com/lugassawan/panen/backend/domain/stock"
+	"github.com/lugassawan/panen/backend/domain/user"
 )
 
 // Compile-time interface compliance checks.

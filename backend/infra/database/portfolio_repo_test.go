@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/lugassawan/panen/backend/internal/domain/brokerage"
-	"github.com/lugassawan/panen/backend/internal/domain/portfolio"
-	"github.com/lugassawan/panen/backend/internal/domain/shared"
-	"github.com/lugassawan/panen/backend/internal/domain/user"
+	"github.com/lugassawan/panen/backend/domain/brokerage"
+	"github.com/lugassawan/panen/backend/domain/portfolio"
+	"github.com/lugassawan/panen/backend/domain/shared"
+	"github.com/lugassawan/panen/backend/domain/user"
 )
 
 type portfolioTestFixture struct {

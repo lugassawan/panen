@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/lugassawan/panen/backend/internal/domain/shared"
+	"github.com/lugassawan/panen/backend/domain/shared"
 )
 
 const timeLayout = "2006-01-02 15:04:05"

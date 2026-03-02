@@ -15,8 +15,9 @@ Desktop decision engine for Indonesian Stock Exchange (IDX) investors.
 
 ```
 panen/
-├── backend/presenter/   # Wails-bound App struct, DTOs, controllers
-├── backend/internal/    # Domain, use case, and infrastructure layers
+├── backend/
+│   ├── app.go           # Composition root (App struct, Startup, Shutdown)
+│   ├── presenter/       # Per-domain handlers, DTOs, converters
 │   ├── domain/          # Entities, value objects, repository interfaces
 │   ├── usecase/         # Application services (orchestration + validation)
 │   └── infra/           # Database, scraper, platform implementations
@@ -94,7 +95,7 @@ make frontend-install  # Install frontend dependencies
 Auto-generated `wailsjs/` bindings are gitignored and unavailable in tests. Mock them inline:
 
 ```ts
-vi.mock("../wailsjs/go/app/App", () => ({
+vi.mock("../wailsjs/go/backend/App", () => ({
   Greet: vi.fn((name: string) => Promise.resolve(`Hello ${name}!`)),
 }));
 ```
@@ -107,7 +108,8 @@ vi.mock("../wailsjs/go/app/App", () => ({
 
 ## Architecture
 
-- `main.go` is a thin Wails bootstrap — all app logic lives in `backend/presenter/` and `backend/internal/`
+- `main.go` is a thin Wails bootstrap — `backend/app.go` is the composition root
+- `App` embeds per-domain handler structs from `backend/presenter/`; Go promotes their methods for Wails binding
 - Go methods on bound structs are auto-exposed to the frontend via `frontend/wailsjs/`
 - Frontend is a standard Vite project; Wails proxies it during dev
 - Git hooks live in `.githooks/` — other tools can inject blocks using `# BEGIN/END` markers

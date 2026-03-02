@@ -1,4 +1,4 @@
-package presenter
+package backend
 
 import (
 	"context"
@@ -6,25 +6,23 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/lugassawan/panen/backend/internal/domain/shared"
-	"github.com/lugassawan/panen/backend/internal/domain/user"
-	"github.com/lugassawan/panen/backend/internal/infra/database"
-	"github.com/lugassawan/panen/backend/internal/infra/platform"
-	"github.com/lugassawan/panen/backend/internal/infra/scraper"
-	"github.com/lugassawan/panen/backend/internal/usecase"
+	"github.com/lugassawan/panen/backend/domain/shared"
+	"github.com/lugassawan/panen/backend/domain/user"
+	"github.com/lugassawan/panen/backend/infra/database"
+	"github.com/lugassawan/panen/backend/infra/platform"
+	"github.com/lugassawan/panen/backend/infra/scraper"
+	"github.com/lugassawan/panen/backend/presenter"
+	"github.com/lugassawan/panen/backend/usecase"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App is the Wails-bound application controller.
+// Handler methods are promoted via embedding so Wails can bind them.
 type App struct {
-	ctx       context.Context
-	db        *database.DB
-	profileID string
-
-	stocks     *usecase.StockService
-	portfolios *usecase.PortfolioService
-	brokerages *usecase.BrokerageService
-	users      user.Repository
+	*presenter.StockHandler
+	*presenter.PortfolioHandler
+	*presenter.BrokerageHandler
+	db *database.DB
 }
 
 // NewApp creates a new App instance.
@@ -34,8 +32,6 @@ func NewApp() *App {
 
 // Startup initialises infrastructure, constructs services, and ensures a default user profile.
 func (a *App) Startup(ctx context.Context) {
-	a.ctx = ctx
-
 	dataDir, err := platform.DataDir()
 	if err != nil {
 		runtime.LogFatalf(ctx, "resolve data dir: %v", err)
@@ -63,16 +59,18 @@ func (a *App) Startup(ctx context.Context) {
 	stockRepo := database.NewStockDataRepo(conn)
 	yahoo := scraper.NewYahoo()
 
-	a.stocks = usecase.NewStockService(stockRepo, yahoo)
-	a.portfolios = usecase.NewPortfolioService(portfolioRepo, holdingRepo, buyTxnRepo, brokerageRepo, stockRepo)
-	a.brokerages = usecase.NewBrokerageService(brokerageRepo)
-	a.users = userRepo
+	stocks := usecase.NewStockService(stockRepo, yahoo)
+	portfolios := usecase.NewPortfolioService(portfolioRepo, holdingRepo, buyTxnRepo, brokerageRepo, stockRepo)
+	brokerages := usecase.NewBrokerageService(brokerageRepo)
 
 	profileID, err := ensureDefaultUser(ctx, userRepo)
 	if err != nil {
 		runtime.LogFatalf(ctx, "ensure default user: %v", err)
 	}
-	a.profileID = profileID
+
+	a.StockHandler = presenter.NewStockHandler(ctx, stocks)
+	a.PortfolioHandler = presenter.NewPortfolioHandler(ctx, portfolios)
+	a.BrokerageHandler = presenter.NewBrokerageHandler(ctx, profileID, brokerages)
 }
 
 // Shutdown closes the database connection.

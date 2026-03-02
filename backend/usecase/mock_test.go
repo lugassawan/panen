@@ -5,10 +5,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/lugassawan/panen/backend/internal/domain/brokerage"
-	"github.com/lugassawan/panen/backend/internal/domain/portfolio"
-	"github.com/lugassawan/panen/backend/internal/domain/shared"
-	"github.com/lugassawan/panen/backend/internal/domain/stock"
+	"github.com/lugassawan/panen/backend/domain/brokerage"
+	"github.com/lugassawan/panen/backend/domain/portfolio"
+	"github.com/lugassawan/panen/backend/domain/shared"
+	"github.com/lugassawan/panen/backend/domain/stock"
 )
 
 // mockStockRepo is an in-memory stock.Repository for testing.

@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/lugassawan/panen/backend/internal/domain/brokerage"
-	"github.com/lugassawan/panen/backend/internal/domain/portfolio"
-	"github.com/lugassawan/panen/backend/internal/domain/stock"
-	"github.com/lugassawan/panen/backend/internal/domain/valuation"
-	"github.com/lugassawan/panen/backend/internal/usecase"
+	"github.com/lugassawan/panen/backend/domain/brokerage"
+	"github.com/lugassawan/panen/backend/domain/portfolio"
+	"github.com/lugassawan/panen/backend/domain/stock"
+	"github.com/lugassawan/panen/backend/domain/valuation"
+	"github.com/lugassawan/panen/backend/usecase"
 )
 
 const timeLayout = "2006-01-02T15:04:05Z"
