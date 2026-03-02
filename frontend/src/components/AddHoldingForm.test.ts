@@ -74,6 +74,17 @@ describe("AddHoldingForm", () => {
     expect(mockAddHolding).not.toHaveBeenCalled();
   });
 
+  it("shows error when buy price is zero", async () => {
+    render(AddHoldingForm, { props: defaultProps });
+    const user = userEvent.setup();
+
+    await user.type(screen.getByLabelText(/ticker/i), "BBCA");
+    await user.click(screen.getByRole("button", { name: /add holding/i }));
+
+    expect(screen.getByRole("alert")).toHaveTextContent(/buy price must be greater than 0/i);
+    expect(mockAddHolding).not.toHaveBeenCalled();
+  });
+
   it("shows error on API failure", async () => {
     mockAddHolding.mockRejectedValueOnce(new Error("duplicate ticker"));
 

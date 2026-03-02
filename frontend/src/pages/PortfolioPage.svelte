@@ -49,8 +49,8 @@ async function load() {
 function getSignal(h: HoldingDetailResponse): string {
   if (
     h.verdict === "OVERVALUED" &&
-    h.currentPrice &&
-    h.exitTarget &&
+    h.currentPrice != null &&
+    h.exitTarget != null &&
     h.currentPrice > h.exitTarget
   ) {
     return "Consider Selling";
@@ -72,10 +72,7 @@ let totalInvested = $derived(
 
 let currentValue = $derived(
   detail
-    ? detail.holdings.reduce(
-        (sum, h) => sum + (h.currentPrice != null ? h.currentPrice * h.lots * 100 : 0),
-        0,
-      )
+    ? detail.holdings.reduce((sum, h) => sum + (h.currentPrice ?? h.avgBuyPrice) * h.lots * 100, 0)
     : 0,
 );
 
@@ -154,7 +151,7 @@ load();
 
     <!-- Holdings Table -->
     <div class="mb-6 overflow-x-auto rounded border border-neutral-800">
-      <table class="w-full text-sm">
+      <table class="w-full text-sm" aria-label="Holdings">
         <thead class="border-b border-neutral-800 bg-neutral-900">
           <tr>
             <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-neutral-500">Ticker</th>

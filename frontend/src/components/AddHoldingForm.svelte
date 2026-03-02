@@ -17,6 +17,10 @@ async function submit() {
     error = "Ticker is required";
     return;
   }
+  if (buyPrice <= 0) {
+    error = "Buy price must be greater than 0";
+    return;
+  }
 
   loading = true;
   try {
