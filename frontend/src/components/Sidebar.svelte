@@ -1,5 +1,6 @@
 <script lang="ts">
 import type { Page } from "../lib/types";
+import Icon from "./Icon.svelte";
 
 let { currentPage, onNavigate }: { currentPage: Page; onNavigate: (page: Page) => void } = $props();
 
@@ -23,7 +24,8 @@ const navItems: { page: Page; label: string; icon: string }[] = [
 </script>
 
 <nav class="flex h-full w-50 flex-col border-r border-neutral-800 bg-neutral-900" aria-label="Main navigation">
-  <div class="p-4">
+  <div class="flex items-center gap-2.5 p-4">
+    <img src="/favicon.svg" alt="" class="h-7 w-7" aria-hidden="true" />
     <h1 class="text-lg font-bold tracking-tight text-amber-400">Panen</h1>
   </div>
 
@@ -38,9 +40,7 @@ const navItems: { page: Page; label: string; icon: string }[] = [
             : 'border-transparent text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200'}"
           aria-current={currentPage === item.page ? "page" : undefined}
         >
-          <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d={item.icon} />
-          </svg>
+          <Icon path={item.icon} />
           {item.label}
         </button>
       </li>
