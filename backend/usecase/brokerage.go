@@ -30,3 +30,8 @@ func (s *BrokerageService) Create(ctx context.Context, a *brokerage.Account) err
 	}
 	return s.brokerages.Create(ctx, a)
 }
+
+// ListByProfileID returns all brokerage accounts for a profile.
+func (s *BrokerageService) ListByProfileID(ctx context.Context, profileID string) ([]*brokerage.Account, error) {
+	return s.brokerages.ListByProfileID(ctx, profileID)
+}

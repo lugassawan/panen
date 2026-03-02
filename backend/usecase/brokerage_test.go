@@ -42,6 +42,48 @@ func TestBrokerageServiceCreateEmptyName(t *testing.T) {
 	}
 }
 
+func TestBrokerageServiceListByProfileIDHappy(t *testing.T) {
+	repo := newMockBrokerageRepo()
+	svc := NewBrokerageService(repo)
+	ctx := context.Background()
+
+	acct := &brokerage.Account{
+		ID: shared.NewID(), ProfileID: "p1", BrokerName: "Ajaib",
+		BuyFeePct: 0.15, SellFeePct: 0.25,
+		CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(),
+	}
+	if err := repo.Create(ctx, acct); err != nil {
+		t.Fatalf("Create() error = %v", err)
+	}
+
+	got, err := svc.ListByProfileID(ctx, "p1")
+	if err != nil {
+		t.Fatalf("ListByProfileID() error = %v", err)
+	}
+	if len(got) != 1 {
+		t.Fatalf("len = %d, want 1", len(got))
+	}
+	if got[0].ID != acct.ID {
+		t.Errorf("ID = %q, want %q", got[0].ID, acct.ID)
+	}
+}
+
+func TestBrokerageServiceListByProfileIDEmpty(t *testing.T) {
+	svc := NewBrokerageService(newMockBrokerageRepo())
+
+	got, err := svc.ListByProfileID(context.Background(), "nonexistent")
+	if err != nil {
+		t.Fatalf("ListByProfileID() error = %v", err)
+	}
+	if got == nil {
+		// nil slice is acceptable for empty results
+		return
+	}
+	if len(got) != 0 {
+		t.Errorf("len = %d, want 0", len(got))
+	}
+}
+
 func TestBrokerageServiceCreateNegativeFee(t *testing.T) {
 	svc := NewBrokerageService(newMockBrokerageRepo())
 

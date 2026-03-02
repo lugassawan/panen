@@ -129,6 +129,36 @@ func TestPortfolioServiceCreateInvalidRisk(t *testing.T) {
 	}
 }
 
+func TestPortfolioServiceListByBrokerageAccountIDHappy(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	got, err := f.svc.ListByBrokerageAccountID(f.ctx, f.acct.ID)
+	if err != nil {
+		t.Fatalf("ListByBrokerageAccountID() error = %v", err)
+	}
+	if len(got) != 1 {
+		t.Fatalf("len = %d, want 1", len(got))
+	}
+	if got[0].ID != f.port.ID {
+		t.Errorf("ID = %q, want %q", got[0].ID, f.port.ID)
+	}
+}
+
+func TestPortfolioServiceListByBrokerageAccountIDEmpty(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	got, err := f.svc.ListByBrokerageAccountID(f.ctx, "nonexistent")
+	if err != nil {
+		t.Fatalf("ListByBrokerageAccountID() error = %v", err)
+	}
+	if got == nil {
+		return
+	}
+	if len(got) != 0 {
+		t.Errorf("len = %d, want 0", len(got))
+	}
+}
+
 func TestPortfolioServiceAddHoldingNew(t *testing.T) {
 	f := setupPortfolioTest(t)
 
