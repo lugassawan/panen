@@ -21,6 +21,19 @@ func NewBrokerageHandler(
 	return &BrokerageHandler{ctx: ctx, profileID: profileID, brokerages: brokerages}
 }
 
+// ListBrokerageAccounts returns all brokerage accounts for the current user.
+func (h *BrokerageHandler) ListBrokerageAccounts() ([]*BrokerageAccountResponse, error) {
+	accounts, err := h.brokerages.ListByProfileID(h.ctx, h.profileID)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*BrokerageAccountResponse, len(accounts))
+	for i, a := range accounts {
+		result[i] = newBrokerageAccountResponse(a)
+	}
+	return result, nil
+}
+
 // CreateBrokerageAccount creates a new brokerage account for the current user.
 func (h *BrokerageHandler) CreateBrokerageAccount(
 	name string, buyFee, sellFee float64,

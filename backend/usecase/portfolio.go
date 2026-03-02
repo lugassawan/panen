@@ -63,6 +63,14 @@ func (s *PortfolioService) Create(ctx context.Context, p *portfolio.Portfolio) e
 	return s.portfolios.Create(ctx, p)
 }
 
+// ListByBrokerageAccountID returns all portfolios for a brokerage account.
+func (s *PortfolioService) ListByBrokerageAccountID(
+	ctx context.Context,
+	brokerageAccountID string,
+) ([]*portfolio.Portfolio, error) {
+	return s.portfolios.ListByBrokerageAccountID(ctx, brokerageAccountID)
+}
+
 // AddHolding adds or updates a holding within a portfolio, recording a buy transaction.
 func (s *PortfolioService) AddHolding(
 	ctx context.Context,

@@ -19,6 +19,19 @@ func NewPortfolioHandler(ctx context.Context, portfolios *usecase.PortfolioServi
 	return &PortfolioHandler{ctx: ctx, portfolios: portfolios}
 }
 
+// ListPortfolios returns all portfolios for a brokerage account.
+func (h *PortfolioHandler) ListPortfolios(brokerageAcctID string) ([]*PortfolioResponse, error) {
+	portfolios, err := h.portfolios.ListByBrokerageAccountID(h.ctx, brokerageAcctID)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*PortfolioResponse, len(portfolios))
+	for i, p := range portfolios {
+		result[i] = newPortfolioResponse(p)
+	}
+	return result, nil
+}
+
 // CreatePortfolio creates a new portfolio under the given brokerage account.
 func (h *PortfolioHandler) CreatePortfolio(
 	brokerageAcctID, name, mode, riskProfile string,

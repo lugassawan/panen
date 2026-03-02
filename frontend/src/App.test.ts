@@ -5,6 +5,12 @@ import App from "./App.svelte";
 
 vi.mock("../wailsjs/go/backend/App", () => ({
   LookupStock: vi.fn(() => Promise.resolve({})),
+  ListBrokerageAccounts: vi.fn(() => Promise.resolve([])),
+  ListPortfolios: vi.fn(() => Promise.resolve([])),
+  GetPortfolio: vi.fn(() => Promise.resolve({ portfolio: {}, holdings: [] })),
+  CreateBrokerageAccount: vi.fn(() => Promise.resolve({})),
+  CreatePortfolio: vi.fn(() => Promise.resolve({})),
+  AddHolding: vi.fn(() => Promise.resolve({})),
 }));
 
 describe("App navigation", () => {
@@ -38,7 +44,7 @@ describe("App navigation", () => {
     const nav = screen.getByRole("navigation", { name: /main/i });
     await user.click(within(nav).getByText("Portfolio"));
 
-    expect(screen.getByText("Portfolio management — coming soon")).toBeInTheDocument();
+    expect(await screen.findByText("Set Up Your Brokerage")).toBeInTheDocument();
     expect(screen.queryByLabelText("Stock ticker")).not.toBeInTheDocument();
   });
 
