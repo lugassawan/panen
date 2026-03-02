@@ -120,6 +120,39 @@ func TestHoldingRepoUniqueConstraint(t *testing.T) {
 	}
 }
 
+func TestHoldingRepoGetByPortfolioAndTicker(t *testing.T) {
+	f := setupHoldingTest(t)
+
+	h := &portfolio.Holding{
+		ID: shared.NewID(), PortfolioID: f.port.ID,
+		Ticker: "BBCA", AvgBuyPrice: 8500, Lots: 10,
+		CreatedAt: f.now, UpdatedAt: f.now,
+	}
+	if err := f.repo.Create(f.ctx, h); err != nil {
+		t.Fatalf("Create() error = %v", err)
+	}
+
+	got, err := f.repo.GetByPortfolioAndTicker(f.ctx, f.port.ID, "BBCA")
+	if err != nil {
+		t.Fatalf("GetByPortfolioAndTicker() error = %v", err)
+	}
+	if got.ID != h.ID {
+		t.Errorf("ID = %q, want %q", got.ID, h.ID)
+	}
+	if got.AvgBuyPrice != 8500 {
+		t.Errorf("AvgBuyPrice = %f, want 8500", got.AvgBuyPrice)
+	}
+}
+
+func TestHoldingRepoGetByPortfolioAndTickerNotFound(t *testing.T) {
+	f := setupHoldingTest(t)
+
+	_, err := f.repo.GetByPortfolioAndTicker(f.ctx, f.port.ID, "NONEXIST")
+	if !errors.Is(err, shared.ErrNotFound) {
+		t.Errorf("GetByPortfolioAndTicker() error = %v, want ErrNotFound", err)
+	}
+}
+
 func TestHoldingRepoListByPortfolioID(t *testing.T) {
 	f := setupHoldingTest(t)
 
