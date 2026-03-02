@@ -23,7 +23,7 @@ func TestDataDir(t *testing.T) {
 		if err != nil {
 			t.Fatalf("DataDir() error = %v", err)
 		}
-		want := filepath.Join("Panen", "data")
+		want := filepath.Join(appName, "data")
 		if !strings.HasSuffix(dir, want) {
 			t.Errorf("DataDir() = %q, want suffix %q", dir, want)
 		}
