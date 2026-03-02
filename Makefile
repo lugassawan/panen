@@ -3,7 +3,7 @@
 	coverage coverage-go coverage-frontend playwright-install
 
 dev:
-	wails dev
+	wails dev -tags dev
 
 build:
 	wails build

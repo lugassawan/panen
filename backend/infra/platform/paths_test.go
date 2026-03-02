@@ -18,7 +18,7 @@ func TestDataDir(t *testing.T) {
 		}
 	})
 
-	t.Run("ends with Panen/data", func(t *testing.T) {
+	t.Run("ends with appName/data", func(t *testing.T) {
 		dir, err := DataDir()
 		if err != nil {
 			t.Fatalf("DataDir() error = %v", err)
