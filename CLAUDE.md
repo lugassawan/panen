@@ -57,6 +57,7 @@ make frontend-install  # Install frontend dependencies
 - **Branches**: `feat/`, `fix/`, `chore/` prefixes
 - **Worktrees**: Only use git worktrees when running parallel agents on independent tasks — never for single sequential work or when targeting main/master (pre-commit hook blocks direct commits)
 - **Code review**: Prefer running code review before creating PRs (e.g., via available code-review skills or agents)
+- **PRs**: Title uses `type: description` (same as commits); body follows `.github/pull_request_template.md`
 
 ## Custom Linter (panenlint)
 
