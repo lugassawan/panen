@@ -1,6 +1,3 @@
-SHELL := /bin/bash
-export PATH := $(shell mise bin-paths 2>/dev/null | tr '\n' ':'):$(PATH)
-
 .PHONY: dev build lint fmt frontend-install setup custom-gcl \
 	test test-unit test-go test-frontend test-integration test-e2e \
 	coverage coverage-go coverage-frontend playwright-install
