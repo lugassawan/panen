@@ -1,64 +1,20 @@
 package presenter
 
 import (
-	"fmt"
 	"time"
 
-	"github.com/lugassawan/panen/backend/internal/domain/brokerage"
-	"github.com/lugassawan/panen/backend/internal/domain/portfolio"
-	"github.com/lugassawan/panen/backend/internal/domain/stock"
-	"github.com/lugassawan/panen/backend/internal/domain/valuation"
-	"github.com/lugassawan/panen/backend/internal/usecase"
+	"github.com/lugassawan/panen/backend/domain/brokerage"
+	"github.com/lugassawan/panen/backend/domain/portfolio"
+	"github.com/lugassawan/panen/backend/domain/stock"
+	"github.com/lugassawan/panen/backend/domain/valuation"
+	"github.com/lugassawan/panen/backend/usecase"
 )
 
 const timeLayout = "2006-01-02T15:04:05Z"
 
-// --- String → domain type converters (presentation concern) ---
+// --- Domain → DTO constructors (presentation concern) ---
 
-func toValuationRisk(rp string) (valuation.RiskProfile, error) {
-	switch rp {
-	case "CONSERVATIVE":
-		return valuation.RiskConservative, nil
-	case "MODERATE":
-		return valuation.RiskModerate, nil
-	case "AGGRESSIVE":
-		return valuation.RiskAggressive, nil
-	default:
-		return "", invalidValue(usecase.ErrInvalidRisk, rp)
-	}
-}
-
-func toPortfolioRisk(rp string) (portfolio.RiskProfile, error) {
-	switch rp {
-	case "CONSERVATIVE":
-		return portfolio.RiskProfileConservative, nil
-	case "MODERATE":
-		return portfolio.RiskProfileModerate, nil
-	case "AGGRESSIVE":
-		return portfolio.RiskProfileAggressive, nil
-	default:
-		return "", invalidValue(usecase.ErrInvalidRisk, rp)
-	}
-}
-
-func toPortfolioMode(m string) (portfolio.Mode, error) {
-	switch m {
-	case "VALUE":
-		return portfolio.ModeValue, nil
-	case "DIVIDEND":
-		return portfolio.ModeDividend, nil
-	default:
-		return "", invalidValue(usecase.ErrInvalidMode, m)
-	}
-}
-
-func invalidValue(sentinel error, got string) error {
-	return fmt.Errorf("%w: %s", sentinel, got)
-}
-
-// --- Domain → DTO builders (presentation concern) ---
-
-func buildStockResponse(
+func newStockValuationResponse(
 	data *stock.Data,
 	result *valuation.ValuationResult,
 	riskProfile string,
@@ -87,7 +43,7 @@ func buildStockResponse(
 	}
 }
 
-func buildBrokerageResponse(acct *brokerage.Account) *BrokerageAccountResponse {
+func newBrokerageAccountResponse(acct *brokerage.Account) *BrokerageAccountResponse {
 	return &BrokerageAccountResponse{
 		ID:          acct.ID,
 		BrokerName:  acct.BrokerName,
@@ -99,7 +55,7 @@ func buildBrokerageResponse(acct *brokerage.Account) *BrokerageAccountResponse {
 	}
 }
 
-func buildPortfolioResponse(p *portfolio.Portfolio) *PortfolioResponse {
+func newPortfolioResponse(p *portfolio.Portfolio) *PortfolioResponse {
 	return &PortfolioResponse{
 		ID:              p.ID,
 		BrokerageAcctID: p.BrokerageAccountID,
@@ -114,21 +70,21 @@ func buildPortfolioResponse(p *portfolio.Portfolio) *PortfolioResponse {
 	}
 }
 
-func buildPortfolioDetailResponse(
+func newPortfolioDetailResponse(
 	p *portfolio.Portfolio,
 	holdings []*usecase.HoldingWithValuation,
 ) *PortfolioDetailResponse {
 	items := make([]HoldingDetailResponse, len(holdings))
 	for i, hwv := range holdings {
-		items[i] = buildHoldingDetailResponse(hwv)
+		items[i] = newHoldingDetailResponse(hwv)
 	}
 	return &PortfolioDetailResponse{
-		Portfolio: *buildPortfolioResponse(p),
+		Portfolio: *newPortfolioResponse(p),
 		Holdings:  items,
 	}
 }
 
-func buildHoldingDetailResponse(hwv *usecase.HoldingWithValuation) HoldingDetailResponse {
+func newHoldingDetailResponse(hwv *usecase.HoldingWithValuation) HoldingDetailResponse {
 	resp := HoldingDetailResponse{
 		ID:          hwv.Holding.ID,
 		Ticker:      hwv.Holding.Ticker,
