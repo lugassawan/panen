@@ -24,7 +24,7 @@ func toValuationRisk(rp string) (valuation.RiskProfile, error) {
 	case "AGGRESSIVE":
 		return valuation.RiskAggressive, nil
 	default:
-		return "", fmt.Errorf("%w: %s", usecase.ErrInvalidRisk, rp)
+		return "", invalidValue(usecase.ErrInvalidRisk, rp)
 	}
 }
 
@@ -37,7 +37,7 @@ func toPortfolioRisk(rp string) (portfolio.RiskProfile, error) {
 	case "AGGRESSIVE":
 		return portfolio.RiskProfileAggressive, nil
 	default:
-		return "", fmt.Errorf("%w: %s", usecase.ErrInvalidRisk, rp)
+		return "", invalidValue(usecase.ErrInvalidRisk, rp)
 	}
 }
 
@@ -48,8 +48,12 @@ func toPortfolioMode(m string) (portfolio.Mode, error) {
 	case "DIVIDEND":
 		return portfolio.ModeDividend, nil
 	default:
-		return "", fmt.Errorf("%w: %s", usecase.ErrInvalidMode, m)
+		return "", invalidValue(usecase.ErrInvalidMode, m)
 	}
+}
+
+func invalidValue(sentinel error, got string) error {
+	return fmt.Errorf("%w: %s", sentinel, got)
 }
 
 // --- Domain → DTO builders (presentation concern) ---
