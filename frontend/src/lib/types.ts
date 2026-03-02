@@ -30,6 +30,47 @@ export interface StockValuationResponse {
   source: string;
 }
 
+export interface BrokerageAccountResponse {
+  id: string;
+  brokerName: string;
+  buyFeePct: number;
+  sellFeePct: number;
+  isManualFee: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PortfolioResponse {
+  id: string;
+  brokerageAcctId: string;
+  name: string;
+  mode: string;
+  riskProfile: string;
+  capital: number;
+  monthlyAddition: number;
+  maxStocks: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface HoldingDetailResponse {
+  id: string;
+  ticker: string;
+  avgBuyPrice: number;
+  lots: number;
+  currentPrice?: number;
+  grahamNumber?: number;
+  entryPrice?: number;
+  exitTarget?: number;
+  verdict?: string;
+  marginOfSafety?: number;
+}
+
+export interface PortfolioDetailResponse {
+  portfolio: PortfolioResponse;
+  holdings: HoldingDetailResponse[];
+}
+
 export type RiskProfile = "CONSERVATIVE" | "MODERATE" | "AGGRESSIVE";
 
 export type Verdict = "UNDERVALUED" | "FAIR" | "OVERVALUED";
