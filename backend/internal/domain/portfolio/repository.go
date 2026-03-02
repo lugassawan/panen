@@ -15,6 +15,7 @@ type Repository interface {
 type HoldingRepository interface {
 	Create(ctx context.Context, holding *Holding) error
 	GetByID(ctx context.Context, id string) (*Holding, error)
+	GetByPortfolioAndTicker(ctx context.Context, portfolioID, ticker string) (*Holding, error)
 	ListByPortfolioID(ctx context.Context, portfolioID string) ([]*Holding, error)
 	Update(ctx context.Context, holding *Holding) error
 	Delete(ctx context.Context, id string) error

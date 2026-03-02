@@ -15,6 +15,8 @@ const (
 		VALUES (?, ?, ?, ?, ?, ?, ?)`
 	holdingGetByID = `SELECT id, portfolio_id, ticker, avg_buy_price, lots, created_at, updated_at
 		FROM holdings WHERE id = ?`
+	holdingGetByPortfolioAndTicker = `SELECT id, portfolio_id, ticker, avg_buy_price, lots, created_at, updated_at
+		FROM holdings WHERE portfolio_id = ? AND ticker = ?`
 	holdingListByPortfolioID = `SELECT id, portfolio_id, ticker, avg_buy_price, lots, created_at, updated_at
 		FROM holdings WHERE portfolio_id = ? ORDER BY ticker`
 	holdingUpdate = `UPDATE holdings SET ticker = ?, avg_buy_price = ?, lots = ?, updated_at = ?
@@ -43,6 +45,30 @@ func (r *HoldingRepo) GetByID(ctx context.Context, id string) (*portfolio.Holdin
 	var h portfolio.Holding
 	var createdAt, updatedAt string
 	err := r.db.QueryRowContext(ctx, holdingGetByID, id).Scan(
+		&h.ID, &h.PortfolioID, &h.Ticker, &h.AvgBuyPrice, &h.Lots,
+		&createdAt, &updatedAt)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, shared.ErrNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+	if h.CreatedAt, err = parseTime(createdAt); err != nil {
+		return nil, err
+	}
+	if h.UpdatedAt, err = parseTime(updatedAt); err != nil {
+		return nil, err
+	}
+	return &h, nil
+}
+
+func (r *HoldingRepo) GetByPortfolioAndTicker(
+	ctx context.Context,
+	portfolioID, ticker string,
+) (*portfolio.Holding, error) {
+	var h portfolio.Holding
+	var createdAt, updatedAt string
+	err := r.db.QueryRowContext(ctx, holdingGetByPortfolioAndTicker, portfolioID, ticker).Scan(
 		&h.ID, &h.PortfolioID, &h.Ticker, &h.AvgBuyPrice, &h.Lots,
 		&createdAt, &updatedAt)
 	if errors.Is(err, sql.ErrNoRows) {
