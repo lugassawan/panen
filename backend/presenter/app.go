@@ -96,7 +96,7 @@ func ensureDefaultUser(ctx context.Context, users user.Repository) (string, erro
 	now := time.Now().UTC()
 	p := &user.Profile{
 		ID:        shared.NewID(),
-		Name:      "Default",
+		Name:      platform.Username(),
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
