@@ -1,7 +1,8 @@
 <script lang="ts">
 import { CreateBrokerageAccount } from "../../wailsjs/go/backend/App";
+import type { BrokerageAccountResponse } from "../lib/types";
 
-let { onCreated }: { onCreated: () => void } = $props();
+let { onCreated }: { onCreated: (acct: BrokerageAccountResponse) => void } = $props();
 
 let name = $state("");
 let buyFee = $state(0.15);
@@ -18,8 +19,8 @@ async function submit() {
 
   loading = true;
   try {
-    await CreateBrokerageAccount(name.trim(), buyFee, sellFee);
-    onCreated();
+    const acct = await CreateBrokerageAccount(name.trim(), buyFee, sellFee);
+    onCreated(acct);
   } catch (e: unknown) {
     error = e instanceof Error ? e.message : String(e);
   } finally {
