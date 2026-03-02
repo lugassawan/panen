@@ -74,6 +74,7 @@ CREATE TABLE stock_data (
 	dividend_yield REAL NOT NULL DEFAULT 0,
 	payout_ratio   REAL NOT NULL DEFAULT 0,
 	fetched_at     TEXT NOT NULL,
-	source         TEXT NOT NULL
+	source         TEXT NOT NULL,
+	UNIQUE(ticker, source)
 );
 `
