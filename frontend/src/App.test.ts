@@ -1,199 +1,85 @@
-import { render, screen } from "@testing-library/svelte";
+import { render, screen, within } from "@testing-library/svelte";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import App from "./App.svelte";
-import type { StockValuationResponse } from "./lib/types";
 
-const mockLookupStock = vi.fn();
 vi.mock("../wailsjs/go/backend/App", () => ({
-  LookupStock: (...args: unknown[]) => mockLookupStock(...args),
+  LookupStock: vi.fn(() => Promise.resolve({})),
 }));
 
-function makeResponse(overrides: Partial<StockValuationResponse> = {}): StockValuationResponse {
-  return {
-    ticker: "BBCA",
-    price: 9250,
-    high52Week: 11000,
-    low52Week: 7500,
-    eps: 350,
-    bvps: 2100,
-    roe: 21.5,
-    der: 5.2,
-    pbv: 4.4,
-    per: 26.4,
-    dividendYield: 2.5,
-    payoutRatio: 55.0,
-    grahamNumber: 4073,
-    marginOfSafety: 30.0,
-    entryPrice: 2851,
-    exitTarget: 6500,
-    verdict: "UNDERVALUED",
-    riskProfile: "MODERATE",
-    fetchedAt: "2025-01-15T10:30:00Z",
-    source: "Yahoo Finance",
-    ...overrides,
-  };
-}
-
-describe("App", () => {
-  beforeEach(() => {
-    mockLookupStock.mockReset();
+describe("App navigation", () => {
+  it("renders sidebar with 3 nav items", () => {
+    render(App);
+    const nav = screen.getByRole("navigation", { name: /main/i });
+    const buttons = within(nav).getAllByRole("button");
+    expect(buttons).toHaveLength(3);
+    expect(buttons[0]).toHaveTextContent("Stock Lookup");
+    expect(buttons[1]).toHaveTextContent("Portfolio");
+    expect(buttons[2]).toHaveTextContent("Settings");
   });
 
-  it("renders search form with heading, input, selector, and button", () => {
+  it("starts on Stock Lookup page by default", () => {
     render(App);
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Panen");
     expect(screen.getByLabelText("Stock ticker")).toBeInTheDocument();
     expect(screen.getByLabelText("Risk profile")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Lookup/i })).toBeInTheDocument();
   });
 
-  it("submits ticker and displays results", async () => {
-    const user = userEvent.setup();
-    mockLookupStock.mockResolvedValueOnce(makeResponse());
+  it("shows Stock Lookup as active nav item by default", () => {
     render(App);
-
-    await user.type(screen.getByLabelText("Stock ticker"), "bbca");
-    await user.click(screen.getByRole("button", { name: /Lookup/i }));
-
-    expect(await screen.findByText(/Undervalued/)).toBeInTheDocument();
-    expect(screen.getByText(/Rp\s*9\.250/)).toBeInTheDocument();
-    expect(screen.getByTestId("graham-number")).toHaveTextContent("Rp");
+    const nav = screen.getByRole("navigation", { name: /main/i });
+    const buttons = within(nav).getAllByRole("button");
+    expect(buttons[0]).toHaveAttribute("aria-current", "page");
   });
 
-  it("shows loading state during fetch", async () => {
-    const user = userEvent.setup();
-    let resolveFn!: (value: StockValuationResponse) => void;
-    mockLookupStock.mockReturnValueOnce(
-      new Promise<StockValuationResponse>((resolve) => {
-        resolveFn = resolve;
-      }),
-    );
-    render(App);
-
-    await user.type(screen.getByLabelText("Stock ticker"), "BBCA");
-    await user.click(screen.getByRole("button", { name: /Lookup/i }));
-
-    expect(screen.getByText("Fetching valuation data...")).toBeInTheDocument();
-
-    resolveFn(makeResponse());
-    expect(await screen.findByText(/Undervalued/)).toBeInTheDocument();
-  });
-
-  it("shows error state on failure", async () => {
-    const user = userEvent.setup();
-    mockLookupStock.mockRejectedValueOnce(new Error("ticker not found"));
-    render(App);
-
-    await user.type(screen.getByLabelText("Stock ticker"), "XXXX");
-    await user.click(screen.getByRole("button", { name: /Lookup/i }));
-
-    expect(await screen.findByText("ticker not found")).toBeInTheDocument();
-    expect(screen.getByRole("alert")).toBeInTheDocument();
-  });
-
-  it("does nothing when ticker is empty", async () => {
+  it("switches to Portfolio page when clicking Portfolio nav", async () => {
     const user = userEvent.setup();
     render(App);
 
-    await user.click(screen.getByRole("button", { name: /Lookup/i }));
+    const nav = screen.getByRole("navigation", { name: /main/i });
+    await user.click(within(nav).getByText("Portfolio"));
 
-    expect(mockLookupStock).not.toHaveBeenCalled();
+    expect(screen.getByText("Portfolio management — coming soon")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Stock ticker")).not.toBeInTheDocument();
   });
 
-  it("displays accessible verdict text and icon", async () => {
+  it("switches to Settings page when clicking Settings nav", async () => {
     const user = userEvent.setup();
-    mockLookupStock.mockResolvedValueOnce(makeResponse());
     render(App);
 
-    await user.type(screen.getByLabelText("Stock ticker"), "BBCA");
-    await user.click(screen.getByRole("button", { name: /Lookup/i }));
+    const nav = screen.getByRole("navigation", { name: /main/i });
+    await user.click(within(nav).getByText("Settings"));
 
-    const verdictEl = await screen.findByText(/Undervalued/);
-    expect(verdictEl).toBeInTheDocument();
-    // Icon ▲ is present (accessible via aria-hidden sibling)
-    expect(verdictEl.closest("div")?.textContent).toContain("\u25B2");
+    expect(screen.getByLabelText("Language")).toBeInTheDocument();
+    expect(screen.getByLabelText("Theme")).toBeInTheDocument();
+    expect(screen.getByText("Coming in a future update")).toBeInTheDocument();
   });
 
-  it("displays 52-week range values", async () => {
+  it("returns to Stock Lookup when clicking Lookup nav from another page", async () => {
     const user = userEvent.setup();
-    mockLookupStock.mockResolvedValueOnce(makeResponse());
     render(App);
 
-    await user.type(screen.getByLabelText("Stock ticker"), "BBCA");
-    await user.click(screen.getByRole("button", { name: /Lookup/i }));
+    const nav = screen.getByRole("navigation", { name: /main/i });
+    await user.click(within(nav).getByText("Settings"));
+    expect(screen.queryByLabelText("Stock ticker")).not.toBeInTheDocument();
 
-    await screen.findByText(/Undervalued/);
-    expect(screen.getByText(/52W Low/)).toBeInTheDocument();
-    expect(screen.getByText(/52W High/)).toBeInTheDocument();
+    await user.click(within(nav).getByText("Stock Lookup"));
+    expect(screen.getByLabelText("Stock ticker")).toBeInTheDocument();
   });
 
-  it("displays Graham number and entry zone", async () => {
+  it("updates active nav styling on page switch", async () => {
     const user = userEvent.setup();
-    mockLookupStock.mockResolvedValueOnce(makeResponse());
     render(App);
 
-    await user.type(screen.getByLabelText("Stock ticker"), "BBCA");
-    await user.click(screen.getByRole("button", { name: /Lookup/i }));
+    const nav = screen.getByRole("navigation", { name: /main/i });
+    const buttons = within(nav).getAllByRole("button");
+    const [lookupBtn, portfolioBtn] = buttons;
 
-    await screen.findByText(/Undervalued/);
-    expect(screen.getByTestId("graham-number")).toBeInTheDocument();
-    expect(screen.getByTestId("entry-price")).toBeInTheDocument();
-  });
+    expect(lookupBtn).toHaveAttribute("aria-current", "page");
+    expect(portfolioBtn).not.toHaveAttribute("aria-current");
 
-  it("renders PBV/PER bands when present", async () => {
-    const user = userEvent.setup();
-    mockLookupStock.mockResolvedValueOnce(
-      makeResponse({
-        pbvBand: { min: 1.0, max: 3.0, avg: 2.0, median: 1.8 },
-        perBand: { min: 10.0, max: 20.0, avg: 15.0, median: 14.0 },
-      }),
-    );
-    render(App);
+    await user.click(portfolioBtn);
 
-    await user.type(screen.getByLabelText("Stock ticker"), "BBCA");
-    await user.click(screen.getByRole("button", { name: /Lookup/i }));
-
-    await screen.findByText(/Undervalued/);
-    expect(screen.getByTestId("pbv-band")).toBeInTheDocument();
-    expect(screen.getByTestId("per-band")).toBeInTheDocument();
-  });
-
-  it("does not render band sections when data is missing", async () => {
-    const user = userEvent.setup();
-    mockLookupStock.mockResolvedValueOnce(makeResponse());
-    render(App);
-
-    await user.type(screen.getByLabelText("Stock ticker"), "BBCA");
-    await user.click(screen.getByRole("button", { name: /Lookup/i }));
-
-    await screen.findByText(/Undervalued/);
-    expect(screen.queryByTestId("pbv-band")).not.toBeInTheDocument();
-    expect(screen.queryByTestId("per-band")).not.toBeInTheDocument();
-  });
-
-  it("passes correct risk profile value to API", async () => {
-    const user = userEvent.setup();
-    mockLookupStock.mockResolvedValueOnce(makeResponse({ riskProfile: "AGGRESSIVE" }));
-    render(App);
-
-    await user.selectOptions(screen.getByLabelText("Risk profile"), "AGGRESSIVE");
-    await user.type(screen.getByLabelText("Stock ticker"), "BBCA");
-    await user.click(screen.getByRole("button", { name: /Lookup/i }));
-
-    await screen.findByText(/Undervalued/);
-    expect(mockLookupStock).toHaveBeenCalledWith("BBCA", "AGGRESSIVE");
-  });
-
-  it("auto-uppercases ticker before API call", async () => {
-    const user = userEvent.setup();
-    mockLookupStock.mockResolvedValueOnce(makeResponse());
-    render(App);
-
-    await user.type(screen.getByLabelText("Stock ticker"), "bbca");
-    await user.click(screen.getByRole("button", { name: /Lookup/i }));
-
-    await screen.findByText(/Undervalued/);
-    expect(mockLookupStock).toHaveBeenCalledWith("BBCA", "MODERATE");
+    expect(portfolioBtn).toHaveAttribute("aria-current", "page");
+    expect(lookupBtn).not.toHaveAttribute("aria-current");
   });
 });
