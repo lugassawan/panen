@@ -4,9 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
-	"time"
 
-	"github.com/lugassawan/panen/backend/domain/shared"
 	"github.com/lugassawan/panen/backend/domain/user"
 	"github.com/lugassawan/panen/backend/infra/database"
 	"github.com/lugassawan/panen/backend/infra/platform"
@@ -91,13 +89,7 @@ func ensureDefaultUser(ctx context.Context, users user.Repository) (string, erro
 		return profiles[0].ID, nil
 	}
 
-	now := time.Now().UTC()
-	p := &user.Profile{
-		ID:        shared.NewID(),
-		Name:      platform.Username(),
-		CreatedAt: now,
-		UpdatedAt: now,
-	}
+	p := user.NewProfile(platform.Username())
 	if err := users.Create(ctx, p); err != nil {
 		return "", err
 	}

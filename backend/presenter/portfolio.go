@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/lugassawan/panen/backend/domain/portfolio"
-	"github.com/lugassawan/panen/backend/domain/shared"
 	"github.com/lugassawan/panen/backend/usecase"
 )
 
@@ -35,20 +34,7 @@ func (h *PortfolioHandler) CreatePortfolio(
 		return nil, err
 	}
 
-	now := time.Now().UTC()
-	p := &portfolio.Portfolio{
-		ID:                 shared.NewID(),
-		BrokerageAccountID: brokerageAcctID,
-		Name:               name,
-		Mode:               m,
-		RiskProfile:        rp,
-		Capital:            capital,
-		MonthlyAddition:    monthlyAddition,
-		MaxStocks:          maxStocks,
-		Universe:           []string{},
-		CreatedAt:          now,
-		UpdatedAt:          now,
-	}
+	p := portfolio.NewPortfolio(brokerageAcctID, name, m, rp, capital, monthlyAddition, maxStocks)
 	if err := h.portfolios.Create(h.ctx, p); err != nil {
 		return nil, err
 	}

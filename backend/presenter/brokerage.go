@@ -2,10 +2,8 @@ package presenter
 
 import (
 	"context"
-	"time"
 
 	"github.com/lugassawan/panen/backend/domain/brokerage"
-	"github.com/lugassawan/panen/backend/domain/shared"
 	"github.com/lugassawan/panen/backend/usecase"
 )
 
@@ -27,16 +25,7 @@ func NewBrokerageHandler(
 func (h *BrokerageHandler) CreateBrokerageAccount(
 	name string, buyFee, sellFee float64,
 ) (*BrokerageAccountResponse, error) {
-	now := time.Now().UTC()
-	acct := &brokerage.Account{
-		ID:         shared.NewID(),
-		ProfileID:  h.profileID,
-		BrokerName: name,
-		BuyFeePct:  buyFee,
-		SellFeePct: sellFee,
-		CreatedAt:  now,
-		UpdatedAt:  now,
-	}
+	acct := brokerage.NewAccount(h.profileID, name, buyFee, sellFee)
 	if err := h.brokerages.Create(h.ctx, acct); err != nil {
 		return nil, err
 	}

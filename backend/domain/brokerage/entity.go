@@ -1,6 +1,10 @@
 package brokerage
 
-import "time"
+import (
+	"time"
+
+	"github.com/lugassawan/panen/backend/domain/shared"
+)
 
 // Account represents a securities brokerage account belonging to a user profile.
 type Account struct {
@@ -12,4 +16,18 @@ type Account struct {
 	IsManualFee bool
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
+}
+
+// NewAccount creates a new Account with generated ID and timestamps.
+func NewAccount(profileID, brokerName string, buyFee, sellFee float64) *Account {
+	now := time.Now().UTC()
+	return &Account{
+		ID:         shared.NewID(),
+		ProfileID:  profileID,
+		BrokerName: brokerName,
+		BuyFeePct:  buyFee,
+		SellFeePct: sellFee,
+		CreatedAt:  now,
+		UpdatedAt:  now,
+	}
 }
