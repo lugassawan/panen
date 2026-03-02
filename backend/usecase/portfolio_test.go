@@ -111,7 +111,7 @@ func TestPortfolioServiceCreateInvalidMode(t *testing.T) {
 		Mode: "INVALID", RiskProfile: portfolio.RiskProfileModerate,
 	}
 	err := f.svc.Create(f.ctx, p)
-	if !errors.Is(err, ErrInvalidMode) {
+	if !errors.Is(err, portfolio.ErrInvalidMode) {
 		t.Errorf("Create() error = %v, want ErrInvalidMode", err)
 	}
 }
@@ -124,7 +124,7 @@ func TestPortfolioServiceCreateInvalidRisk(t *testing.T) {
 		Mode: portfolio.ModeValue, RiskProfile: "BAD",
 	}
 	err := f.svc.Create(f.ctx, p)
-	if !errors.Is(err, ErrInvalidRisk) {
+	if !errors.Is(err, portfolio.ErrInvalidRisk) {
 		t.Errorf("Create() error = %v, want ErrInvalidRisk", err)
 	}
 }

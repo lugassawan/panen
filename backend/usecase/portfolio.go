@@ -52,11 +52,11 @@ func (s *PortfolioService) Create(ctx context.Context, p *portfolio.Portfolio) e
 	if strings.TrimSpace(p.Name) == "" {
 		return ErrEmptyName
 	}
-	if !validMode(p.Mode) {
-		return ErrInvalidMode
+	if _, err := portfolio.ParseMode(string(p.Mode)); err != nil {
+		return err
 	}
-	if !validPortfolioRisk(p.RiskProfile) {
-		return ErrInvalidRisk
+	if _, err := portfolio.ParseRiskProfile(string(p.RiskProfile)); err != nil {
+		return err
 	}
 	return s.portfolios.Create(ctx, p)
 }
@@ -185,14 +185,4 @@ func (s *PortfolioService) GetDetail(
 	}
 
 	return p, result, nil
-}
-
-func validMode(m portfolio.Mode) bool {
-	return m == portfolio.ModeValue || m == portfolio.ModeDividend
-}
-
-func validPortfolioRisk(rp portfolio.RiskProfile) bool {
-	return rp == portfolio.RiskProfileConservative ||
-		rp == portfolio.RiskProfileModerate ||
-		rp == portfolio.RiskProfileAggressive
 }

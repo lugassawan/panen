@@ -26,11 +26,11 @@ func (h *PortfolioHandler) CreatePortfolio(
 	capital, monthlyAddition float64,
 	maxStocks int,
 ) (*PortfolioResponse, error) {
-	m, err := toPortfolioMode(mode)
+	m, err := portfolio.ParseMode(mode)
 	if err != nil {
 		return nil, err
 	}
-	rp, err := toPortfolioRisk(riskProfile)
+	rp, err := portfolio.ParseRiskProfile(riskProfile)
 	if err != nil {
 		return nil, err
 	}

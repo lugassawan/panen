@@ -1,7 +1,6 @@
 package presenter
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/lugassawan/panen/backend/domain/brokerage"
@@ -12,49 +11,6 @@ import (
 )
 
 const timeLayout = "2006-01-02T15:04:05Z"
-
-// --- String → domain type converters (presentation concern) ---
-
-func toValuationRisk(rp string) (valuation.RiskProfile, error) {
-	switch rp {
-	case "CONSERVATIVE":
-		return valuation.RiskConservative, nil
-	case "MODERATE":
-		return valuation.RiskModerate, nil
-	case "AGGRESSIVE":
-		return valuation.RiskAggressive, nil
-	default:
-		return "", invalidValue(usecase.ErrInvalidRisk, rp)
-	}
-}
-
-func toPortfolioRisk(rp string) (portfolio.RiskProfile, error) {
-	switch rp {
-	case "CONSERVATIVE":
-		return portfolio.RiskProfileConservative, nil
-	case "MODERATE":
-		return portfolio.RiskProfileModerate, nil
-	case "AGGRESSIVE":
-		return portfolio.RiskProfileAggressive, nil
-	default:
-		return "", invalidValue(usecase.ErrInvalidRisk, rp)
-	}
-}
-
-func toPortfolioMode(m string) (portfolio.Mode, error) {
-	switch m {
-	case "VALUE":
-		return portfolio.ModeValue, nil
-	case "DIVIDEND":
-		return portfolio.ModeDividend, nil
-	default:
-		return "", invalidValue(usecase.ErrInvalidMode, m)
-	}
-}
-
-func invalidValue(sentinel error, got string) error {
-	return fmt.Errorf("%w: %s", sentinel, got)
-}
 
 // --- Domain → DTO builders (presentation concern) ---
 
