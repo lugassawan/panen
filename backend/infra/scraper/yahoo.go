@@ -7,7 +7,10 @@ import (
 	"io"
 	"math"
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
+	"strings"
+	"sync"
 
 	"golang.org/x/time/rate"
 
@@ -15,30 +18,36 @@ import (
 )
 
 const (
-	defaultBaseURL = "https://query1.finance.yahoo.com"
-	userAgent      = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+	defaultBaseURL   = "https://query1.finance.yahoo.com"
+	defaultCookieURL = "https://fc.yahoo.com"
+	userAgent        = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
 		"AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+	headerUserAgent = "User-Agent"
 	maxResponseSize = 5 << 20 // 5 MB
 )
 
 // Yahoo fetches stock data from Yahoo Finance JSON APIs.
 type Yahoo struct {
-	client  *http.Client
-	limiter *rate.Limiter
-	baseURL string
+	client    *http.Client
+	jar       http.CookieJar
+	limiter   *rate.Limiter
+	baseURL   string
+	cookieURL string
+	crumb     string
+	mu        sync.Mutex
 }
 
 // Option configures the Yahoo provider.
 type Option func(*Yahoo)
 
-// WithClient sets a custom HTTP client.
-func WithClient(c *http.Client) Option {
-	return func(y *Yahoo) { y.client = c }
+// WithBaseURL overrides the base URL (useful for tests).
+func WithBaseURL(u string) Option {
+	return func(y *Yahoo) { y.baseURL = u }
 }
 
-// WithBaseURL overrides the base URL (useful for tests).
-func WithBaseURL(url string) Option {
-	return func(y *Yahoo) { y.baseURL = url }
+// WithCookieURL overrides the cookie URL (useful for tests).
+func WithCookieURL(u string) Option {
+	return func(y *Yahoo) { y.cookieURL = u }
 }
 
 // WithRateLimit sets custom rate limiter parameters.
@@ -48,13 +57,18 @@ func WithRateLimit(rps float64, burst int) Option {
 
 // NewYahoo creates a Yahoo provider with the given options.
 func NewYahoo(opts ...Option) *Yahoo {
+	jar, _ := cookiejar.New(nil) // never returns an error with nil options
 	y := &Yahoo{
-		client:  http.DefaultClient,
-		limiter: rate.NewLimiter(2, 5),
-		baseURL: defaultBaseURL,
+		jar:       jar,
+		limiter:   rate.NewLimiter(2, 5),
+		baseURL:   defaultBaseURL,
+		cookieURL: defaultCookieURL,
 	}
 	for _, o := range opts {
 		o(y)
+	}
+	if y.client == nil {
+		y.client = &http.Client{Jar: y.jar}
 	}
 	return y
 }
@@ -140,33 +154,136 @@ func (y *Yahoo) FetchFinancials(ctx context.Context, ticker string) (*stock.Fina
 	}, nil
 }
 
-func (y *Yahoo) doGet(ctx context.Context, url string) ([]byte, error) {
+func (y *Yahoo) ensureCrumb(ctx context.Context) error {
+	y.mu.Lock()
+	defer y.mu.Unlock()
+
+	if y.crumb != "" {
+		return nil
+	}
+
+	// Step 1: GET cookie URL to receive session cookie (status is irrelevant).
+	cookieReq, err := http.NewRequestWithContext(ctx, http.MethodGet, y.cookieURL, nil)
+	if err != nil {
+		return fmt.Errorf("creating cookie request: %w", err)
+	}
+	cookieReq.Header.Set(headerUserAgent, userAgent)
+
+	cookieResp, err := y.client.Do(cookieReq) //nolint:gosec // URL is controlled constant
+	if err != nil {
+		return fmt.Errorf("fetching session cookie: %w", err)
+	}
+	_ = cookieResp.Body.Close()
+
+	// Step 2: GET crumb using the session cookie.
+	crumbURL := y.baseURL + "/v1/test/getcrumb"
+	crumbReq, err := http.NewRequestWithContext(ctx, http.MethodGet, crumbURL, nil)
+	if err != nil {
+		return fmt.Errorf("creating crumb request: %w", err)
+	}
+	crumbReq.Header.Set(headerUserAgent, userAgent)
+
+	crumbResp, err := y.client.Do(crumbReq) //nolint:gosec // URL is controlled constant
+	if err != nil {
+		return fmt.Errorf("fetching crumb: %w", err)
+	}
+	defer crumbResp.Body.Close()
+
+	if crumbResp.StatusCode != http.StatusOK {
+		return fmt.Errorf("%w: crumb request returned %d", stock.ErrSourceDown, crumbResp.StatusCode)
+	}
+
+	body, err := io.ReadAll(io.LimitReader(crumbResp.Body, 512))
+	if err != nil {
+		return fmt.Errorf("reading crumb: %w", err)
+	}
+
+	y.crumb = strings.TrimSpace(string(body))
+	if y.crumb == "" {
+		return fmt.Errorf("%w: empty crumb response", stock.ErrSourceDown)
+	}
+
+	return nil
+}
+
+func (y *Yahoo) clearCrumb() {
+	y.mu.Lock()
+	defer y.mu.Unlock()
+
+	y.crumb = ""
+	// Replace jar to clear all cookies.
+	jar, _ := cookiejar.New(nil)
+	y.jar = jar
+	y.client.Jar = jar
+}
+
+func (y *Yahoo) doGet(ctx context.Context, reqURL string) ([]byte, error) {
 	if err := y.limiter.Wait(ctx); err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return nil, fmt.Errorf("creating request: %w", err)
-	}
-	req.Header.Set("User-Agent", userAgent)
-
-	resp, err := y.client.Do(req) //nolint:gosec // URL is constructed from controlled baseURL + ticker path segment
-	if err != nil {
-		return nil, fmt.Errorf("executing request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, mapHTTPError(resp.StatusCode)
+	if err := y.ensureCrumb(ctx); err != nil {
+		return nil, err
 	}
 
-	body, err := io.ReadAll(io.LimitReader(resp.Body, maxResponseSize))
+	body, status, err := y.executeGet(ctx, reqURL)
 	if err != nil {
-		return nil, fmt.Errorf("reading response: %w", err)
+		return nil, err
+	}
+
+	if status == http.StatusUnauthorized {
+		// Clear stale crumb and retry once.
+		y.clearCrumb()
+		if err := y.ensureCrumb(ctx); err != nil {
+			return nil, err
+		}
+		body, status, err = y.executeGet(ctx, reqURL)
+		if err != nil {
+			return nil, err
+		}
+		if status == http.StatusUnauthorized {
+			return nil, fmt.Errorf("%w: authentication failed", stock.ErrSourceDown)
+		}
+	}
+
+	if status != http.StatusOK {
+		return nil, mapHTTPError(status)
 	}
 
 	return body, nil
+}
+
+func (y *Yahoo) executeGet(ctx context.Context, reqURL string) ([]byte, int, error) {
+	y.mu.Lock()
+	crumb := y.crumb
+	y.mu.Unlock()
+
+	parsed, err := url.Parse(reqURL)
+	if err != nil {
+		return nil, 0, fmt.Errorf("parsing request URL: %w", err)
+	}
+	q := parsed.Query()
+	q.Set("crumb", crumb)
+	parsed.RawQuery = q.Encode()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, parsed.String(), nil)
+	if err != nil {
+		return nil, 0, fmt.Errorf("creating request: %w", err)
+	}
+	req.Header.Set(headerUserAgent, userAgent)
+
+	resp, err := y.client.Do(req) //nolint:gosec // URL is constructed from controlled baseURL + ticker path segment
+	if err != nil {
+		return nil, 0, fmt.Errorf("executing request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(io.LimitReader(resp.Body, maxResponseSize))
+	if err != nil {
+		return nil, 0, fmt.Errorf("reading response: %w", err)
+	}
+
+	return body, resp.StatusCode, nil
 }
 
 func mapHTTPError(code int) error {
