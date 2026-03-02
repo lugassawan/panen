@@ -36,10 +36,24 @@ func newStockValuationResponse(
 		MarginOfSafety: result.MarginOfSafety,
 		EntryPrice:     result.EntryPrice,
 		ExitTarget:     result.ExitTarget,
+		PBVBand:        newBandStatsResponse(result.PBVBand),
+		PERBand:        newBandStatsResponse(result.PERBand),
 		Verdict:        string(result.Verdict),
 		RiskProfile:    riskProfile,
 		FetchedAt:      formatDTO(data.FetchedAt),
 		Source:         data.Source,
+	}
+}
+
+func newBandStatsResponse(band *valuation.BandStats) *BandStatsResponse {
+	if band == nil {
+		return nil
+	}
+	return &BandStatsResponse{
+		Min:    band.Min,
+		Max:    band.Max,
+		Avg:    band.Avg,
+		Median: band.Median,
 	}
 }
 

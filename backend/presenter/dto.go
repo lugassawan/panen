@@ -1,27 +1,37 @@
 package presenter
 
+// BandStatsResponse is the frontend-facing response for PBV/PER band statistics.
+type BandStatsResponse struct {
+	Min    float64 `json:"min"`
+	Max    float64 `json:"max"`
+	Avg    float64 `json:"avg"`
+	Median float64 `json:"median"`
+}
+
 // StockValuationResponse is the frontend-facing response for stock lookup.
 type StockValuationResponse struct {
-	Ticker         string  `json:"ticker"`
-	Price          float64 `json:"price"`
-	High52Week     float64 `json:"high52Week"`
-	Low52Week      float64 `json:"low52Week"`
-	EPS            float64 `json:"eps"`
-	BVPS           float64 `json:"bvps"`
-	ROE            float64 `json:"roe"`
-	DER            float64 `json:"der"`
-	PBV            float64 `json:"pbv"`
-	PER            float64 `json:"per"`
-	DividendYield  float64 `json:"dividendYield"`
-	PayoutRatio    float64 `json:"payoutRatio"`
-	GrahamNumber   float64 `json:"grahamNumber"`
-	MarginOfSafety float64 `json:"marginOfSafety"`
-	EntryPrice     float64 `json:"entryPrice"`
-	ExitTarget     float64 `json:"exitTarget"`
-	Verdict        string  `json:"verdict"`
-	RiskProfile    string  `json:"riskProfile"`
-	FetchedAt      string  `json:"fetchedAt"`
-	Source         string  `json:"source"`
+	Ticker         string             `json:"ticker"`
+	Price          float64            `json:"price"`
+	High52Week     float64            `json:"high52Week"`
+	Low52Week      float64            `json:"low52Week"`
+	EPS            float64            `json:"eps"`
+	BVPS           float64            `json:"bvps"`
+	ROE            float64            `json:"roe"`
+	DER            float64            `json:"der"`
+	PBV            float64            `json:"pbv"`
+	PER            float64            `json:"per"`
+	DividendYield  float64            `json:"dividendYield"`
+	PayoutRatio    float64            `json:"payoutRatio"`
+	GrahamNumber   float64            `json:"grahamNumber"`
+	MarginOfSafety float64            `json:"marginOfSafety"`
+	EntryPrice     float64            `json:"entryPrice"`
+	ExitTarget     float64            `json:"exitTarget"`
+	PBVBand        *BandStatsResponse `json:"pbvBand,omitempty"`
+	PERBand        *BandStatsResponse `json:"perBand,omitempty"`
+	Verdict        string             `json:"verdict"`
+	RiskProfile    string             `json:"riskProfile"`
+	FetchedAt      string             `json:"fetchedAt"`
+	Source         string             `json:"source"`
 }
 
 // BrokerageAccountResponse is the frontend-facing response for a brokerage account.
