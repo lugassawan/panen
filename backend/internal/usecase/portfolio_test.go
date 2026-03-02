@@ -205,6 +205,7 @@ func TestPortfolioServiceAddHoldingValidation(t *testing.T) {
 		lots      int
 		wantErr   error
 	}{
+		{name: "empty portfolio id", portfolio: "", price: 100, lots: 1, ticker: "BBCA", wantErr: ErrEmptyID},
 		{name: "empty ticker", portfolio: f.port.ID, ticker: "", price: 100, lots: 1, wantErr: ErrEmptyTicker},
 		{name: "zero price", portfolio: f.port.ID, ticker: "BBCA", price: 0, lots: 1, wantErr: ErrInvalidPrice},
 		{name: "negative lots", portfolio: f.port.ID, ticker: "BBCA", price: 100, lots: -1, wantErr: ErrInvalidLots},

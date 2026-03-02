@@ -70,7 +70,7 @@ func (s *PortfolioService) AddHolding(
 	date time.Time,
 ) (*portfolio.Holding, error) {
 	if strings.TrimSpace(portfolioID) == "" {
-		return nil, ErrEmptyName
+		return nil, ErrEmptyID
 	}
 	ticker = strings.ToUpper(strings.TrimSpace(ticker))
 	if ticker == "" {
@@ -93,7 +93,8 @@ func (s *PortfolioService) AddHolding(
 		return nil, err
 	}
 
-	fee := price * float64(lots) * 100 * acct.BuyFeePct / 100
+	shares := float64(lots) * 100 // 1 lot = 100 shares on IDX
+	fee := price * shares * acct.BuyFeePct / 100
 	now := time.Now().UTC()
 
 	existing, err := s.holdings.GetByPortfolioAndTicker(ctx, portfolioID, ticker)
