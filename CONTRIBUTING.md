@@ -25,7 +25,7 @@ make build  # Production build
 ```sh
 make lint   # Run all linters (Go + frontend)
 make fmt    # Auto-format all code
-make test   # Run all tests
+make test   # Run all unit + integration tests
 ```
 
 ### Go
@@ -38,6 +38,64 @@ make test   # Run all tests
 
 - Formatted and linted with [Biome](https://biomejs.dev/) v2 (managed by mise, not a npm devDependency)
 - 2-space indentation, double quotes, semicolons
+
+## Testing
+
+Run all fast tests (unit + integration) with:
+
+```sh
+make test
+```
+
+### Go Tests
+
+```sh
+make test-go    # Run Go tests (app + lint analyzers)
+```
+
+- Standard library `testing` package (no testify)
+- Table-driven tests with `t.Run()` subtests
+- Test files: `*_test.go` alongside source
+
+### Frontend Unit Tests
+
+```sh
+make test-frontend    # Run once
+cd frontend && pnpm run test:unit:watch  # Watch mode
+```
+
+- Vitest + `@testing-library/svelte` + jsdom
+- Test files: `*.test.ts` in `frontend/src/`
+- Mock Wails bindings with `vi.mock()` (see CLAUDE.md for pattern)
+
+### Frontend Integration Tests
+
+```sh
+make test-integration
+```
+
+- Same stack as unit tests, separate config (`vitest-integration.config.ts`)
+- Test files: `*.integration.test.ts` in `frontend/src/`
+- Longer timeout (10s) for tests involving multiple component interactions
+
+### E2E Tests
+
+```sh
+make playwright-install  # One-time: install Chromium
+make test-e2e            # Run E2E tests
+```
+
+- Playwright with Chromium, auto-starts Vite dev server
+- Test files: `frontend/e2e/*.spec.ts`
+- Not included in `make test` (requires browser, slower)
+
+### Coverage
+
+```sh
+make coverage            # Go + frontend coverage reports
+make coverage-go         # Go only → coverage/go/
+make coverage-frontend   # Frontend only → coverage/frontend/
+```
 
 ## Git Workflow
 

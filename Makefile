@@ -1,7 +1,9 @@
 SHELL := /bin/bash
 export PATH := $(shell mise bin-paths 2>/dev/null | tr '\n' ':'):$(PATH)
 
-.PHONY: dev build lint fmt frontend-install setup custom-gcl test
+.PHONY: dev build lint fmt frontend-install setup custom-gcl \
+	test test-unit test-go test-frontend test-integration test-e2e \
+	coverage coverage-go coverage-frontend playwright-install
 
 dev:
 	wails dev
@@ -18,11 +20,42 @@ lint: custom-gcl
 
 fmt:
 	gofmt -w .
+	golines -w --max-len=120 .
 	cd frontend && biome format --write .
 
-test:
+# Test targets — `make test` runs unit + integration (fast); E2E is separate
+test: test-unit test-integration
+
+test-unit: test-go test-frontend
+
+test-go:
 	go test ./...
 	cd tools/lint && go test ./...
+
+test-frontend:
+	cd frontend && pnpm run test:unit
+
+test-integration:
+	cd frontend && pnpm run test:integration
+
+test-e2e:
+	cd frontend && pnpm run test:e2e
+
+# Coverage targets
+coverage: coverage-go coverage-frontend
+
+coverage-go:
+	mkdir -p coverage/go
+	go test -coverprofile=coverage/go/coverage.out ./...
+	go tool cover -html=coverage/go/coverage.out -o coverage/go/coverage.html
+	# Note: tools/lint/ is a separate Go module; its coverage is not included here.
+
+coverage-frontend:
+	cd frontend && pnpm run coverage
+
+# Playwright browser install (run once before E2E tests)
+playwright-install:
+	cd frontend && pnpm exec playwright install --with-deps chromium
 
 frontend-install:
 	cd frontend && pnpm install

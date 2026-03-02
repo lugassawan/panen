@@ -35,6 +35,13 @@
     }
   },
   "files": {
-    "includes": ["**", "!**/dist", "!**/wailsjs"]
+    "includes": [
+      "**",
+      "!**/dist",
+      "!**/wailsjs",
+      "!coverage",
+      "!playwright-report",
+      "!test-results"
+    ]
   }
 }

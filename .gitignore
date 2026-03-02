@@ -36,6 +36,10 @@ custom-gcl
 
 # Code coverage profiles and other test artifacts
 *.out
-coverage.*
+coverage/
 *.coverprofile
 profile.cov
+
+# Playwright artifacts
+frontend/playwright-report/
+frontend/test-results/

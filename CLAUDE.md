@@ -33,7 +33,13 @@ make dev               # Start Wails dev server with HMR
 make build             # Production build → build/bin/
 make lint              # Build custom linter + run golangci-lint + Biome
 make fmt               # Auto-format Go + frontend code
-make test              # Run Go tests (app + lint analyzers)
+make test              # Run all unit + integration tests (Go + frontend)
+make test-go           # Go tests only (app + lint analyzers)
+make test-frontend     # Frontend unit tests only (Vitest)
+make test-integration  # Frontend integration tests only (Vitest)
+make test-e2e          # Frontend E2E tests (Playwright, requires browser)
+make coverage          # Generate coverage reports (Go + frontend)
+make playwright-install # Install Chromium for E2E tests (run once)
 make frontend-install  # Install frontend dependencies
 ```
 
@@ -54,6 +60,44 @@ make frontend-install  # Install frontend dependencies
 - **nolateexport**: forbids exported standalone functions after unexported ones
 
 `make lint` builds the custom binary (`custom-gcl`) via `.custom-gcl.yml` before running.
+
+## Testing
+
+### Backend (Go)
+
+- Standard library `testing` package — no testify
+- Table-driven tests with `t.Run()` subtests
+- Test files: `*_test.go` alongside source files
+- Run: `make test-go` or `go test ./...`
+
+### Frontend Unit/Integration (Vitest)
+
+- **Unit tests**: `*.test.ts` in `frontend/src/` — run with `make test-frontend`
+- **Integration tests**: `*.integration.test.ts` — run with `make test-integration`
+- Uses `@testing-library/svelte` + `jsdom` environment
+- Separate Vitest configs: `vitest.config.ts` (unit) and `vitest-integration.config.ts` (integration)
+
+### Frontend E2E (Playwright)
+
+- Tests in `frontend/e2e/*.spec.ts` — run with `make test-e2e`
+- Chromium only, auto-starts Vite dev server
+- Requires `make playwright-install` before first run
+
+### Wails Mock Pattern
+
+Auto-generated `wailsjs/` bindings are gitignored and unavailable in tests. Mock them inline:
+
+```ts
+vi.mock("../wailsjs/go/app/App", () => ({
+  Greet: vi.fn((name: string) => Promise.resolve(`Hello ${name}!`)),
+}));
+```
+
+### Coverage
+
+- Go: `make coverage-go` → `coverage/go/`
+- Frontend: `make coverage-frontend` → `coverage/frontend/`
+- Both: `make coverage`
 
 ## Architecture
 
