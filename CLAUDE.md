@@ -15,14 +15,18 @@ Desktop decision engine for Indonesian Stock Exchange (IDX) investors.
 
 ```
 panen/
-├── backend/app/       # Go application logic (Wails-bound structs)
-├── frontend/src/      # Svelte 5 components and TypeScript
-├── frontend/wailsjs/  # Auto-generated Wails bindings (gitignored)
-├── tools/lint/        # Custom golangci-lint plugin (panenlint)
-├── build/             # Build assets (app icon)
-├── docs/plans/        # Design documents
-├── main.go            # Wails entry point
-└── wails.json         # Wails project config
+├── backend/presenter/   # Wails-bound App struct, DTOs, controllers
+├── backend/internal/    # Domain, use case, and infrastructure layers
+│   ├── domain/          # Entities, value objects, repository interfaces
+│   ├── usecase/         # Application services (orchestration + validation)
+│   └── infra/           # Database, scraper, platform implementations
+├── frontend/src/        # Svelte 5 components and TypeScript
+├── frontend/wailsjs/    # Auto-generated Wails bindings (gitignored)
+├── tools/lint/          # Custom golangci-lint plugin (panenlint)
+├── build/               # Build assets (app icon)
+├── docs/plans/          # Design documents
+├── main.go              # Wails entry point
+└── wails.json           # Wails project config
 ```
 
 ## Commands
@@ -103,7 +107,7 @@ vi.mock("../wailsjs/go/app/App", () => ({
 
 ## Architecture
 
-- `main.go` is a thin Wails bootstrap — all app logic lives in `backend/app/`
+- `main.go` is a thin Wails bootstrap — all app logic lives in `backend/presenter/` and `backend/internal/`
 - Go methods on bound structs are auto-exposed to the frontend via `frontend/wailsjs/`
 - Frontend is a standard Vite project; Wails proxies it during dev
 - Git hooks live in `.githooks/` — other tools can inject blocks using `# BEGIN/END` markers
