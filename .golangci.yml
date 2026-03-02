@@ -59,6 +59,8 @@ linters:
     goconst:
       min-len: 3
       min-occurrences: 3
+      ignore-calls: false
+      ignore-string-values: "%[a-zA-Z]"
     lll:
       line-length: 120
     dupl:
@@ -85,6 +87,8 @@ linters:
     rules:
       - path: (_test\.go|testutil/)
         linters: [gosec]
+      - path: _test\.go
+        linters: [goconst]
       - path: _test\.go
         linters: [gocognit]
       - path: _test\.go
