@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/lugassawan/panen/backend/domain/stock"
@@ -50,50 +51,61 @@ const quoteSummaryFixture = `{
 
 func newTestServer(t *testing.T) *httptest.Server {
 	t.Helper()
+	return newTestServerWithHandler(t, nil)
+}
+
+func newTestServerWithHandler(
+	t *testing.T,
+	override func(w http.ResponseWriter, r *http.Request) bool,
+) *httptest.Server {
+	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if override != nil && override(w, r) {
+			return
+		}
 		switch {
-		case strings.Contains(r.URL.Path, "/v8/finance/chart/NOTFOUND.JK"):
-			w.WriteHeader(http.StatusNotFound)
-		case strings.Contains(r.URL.Path, "/v8/finance/chart/RATELIMIT.JK"):
-			w.WriteHeader(http.StatusTooManyRequests)
-		case strings.Contains(r.URL.Path, "/v8/finance/chart/SERVERERR.JK"):
-			w.WriteHeader(http.StatusInternalServerError)
-		case strings.Contains(r.URL.Path, "/v8/finance/chart/BADJSON.JK"):
-			w.Header().Set("Content-Type", "application/json")
-			_, _ = w.Write([]byte(`{invalid json`))
-		case strings.Contains(r.URL.Path, "/v8/finance/chart/EMPTY.JK"):
-			w.Header().Set("Content-Type", "application/json")
-			_, _ = w.Write([]byte(`{"chart":{"result":[],"error":null}}`))
+		case r.URL.Path == "/v1/test/getcrumb":
+			_, _ = w.Write([]byte("testcrumb123"))
 		case strings.Contains(r.URL.Path, "/v8/finance/chart/"):
-			w.Header().Set("Content-Type", "application/json")
-			_, _ = w.Write([]byte(chartFixture))
-
-		case strings.Contains(r.URL.Path, "/v10/finance/quoteSummary/NOTFOUND.JK"):
-			w.WriteHeader(http.StatusNotFound)
-		case strings.Contains(r.URL.Path, "/v10/finance/quoteSummary/RATELIMIT.JK"):
-			w.WriteHeader(http.StatusTooManyRequests)
-		case strings.Contains(r.URL.Path, "/v10/finance/quoteSummary/SERVERERR.JK"):
-			w.WriteHeader(http.StatusInternalServerError)
-		case strings.Contains(r.URL.Path, "/v10/finance/quoteSummary/BADJSON.JK"):
-			w.Header().Set("Content-Type", "application/json")
-			_, _ = w.Write([]byte(`{invalid json`))
-		case strings.Contains(r.URL.Path, "/v10/finance/quoteSummary/EMPTY.JK"):
-			w.Header().Set("Content-Type", "application/json")
-			_, _ = w.Write([]byte(`{"quoteSummary":{"result":[],"error":null}}`))
+			handleTestEndpoint(w, r, chartFixture)
 		case strings.Contains(r.URL.Path, "/v10/finance/quoteSummary/"):
-			w.Header().Set("Content-Type", "application/json")
-			_, _ = w.Write([]byte(quoteSummaryFixture))
-
+			handleTestEndpoint(w, r, quoteSummaryFixture)
 		default:
 			w.WriteHeader(http.StatusNotFound)
 		}
 	}))
 }
 
+func handleTestEndpoint(w http.ResponseWriter, r *http.Request, successBody string) {
+	switch {
+	case strings.Contains(r.URL.Path, "NOTFOUND.JK"):
+		w.WriteHeader(http.StatusNotFound)
+	case strings.Contains(r.URL.Path, "RATELIMIT.JK"):
+		w.WriteHeader(http.StatusTooManyRequests)
+	case strings.Contains(r.URL.Path, "SERVERERR.JK"):
+		w.WriteHeader(http.StatusInternalServerError)
+	case strings.Contains(r.URL.Path, "BADJSON.JK"):
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{invalid json`))
+	case strings.Contains(r.URL.Path, "EMPTY.JK"):
+		w.Header().Set("Content-Type", "application/json")
+		// Determine the empty response based on which endpoint prefix is present.
+		if strings.Contains(r.URL.Path, "/v8/") {
+			_, _ = w.Write([]byte(`{"chart":{"result":[],"error":null}}`))
+		} else {
+			_, _ = w.Write([]byte(`{"quoteSummary":{"result":[],"error":null}}`))
+		}
+	default:
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(successBody))
+	}
+}
+
 func newTestYahoo(t *testing.T, srv *httptest.Server) *Yahoo {
 	t.Helper()
 	return NewYahoo(
 		WithBaseURL(srv.URL),
+		WithCookieURL(srv.URL),
 		WithRateLimit(100, 100),
 	)
 }
@@ -291,6 +303,76 @@ func TestFetchFinancialsContextCancellation(t *testing.T) {
 	_, err := y.FetchFinancials(ctx, "BBCA")
 	if err == nil {
 		t.Fatal("expected error for cancelled context, got nil")
+	}
+}
+
+func TestFetchPriceWithCrumb(t *testing.T) {
+	var gotCrumb string
+	srv := newTestServerWithHandler(t, func(w http.ResponseWriter, r *http.Request) bool {
+		if strings.Contains(r.URL.Path, "/v8/finance/chart/") {
+			gotCrumb = r.URL.Query().Get("crumb")
+		}
+		return false // let default handler run
+	})
+	defer srv.Close()
+
+	y := newTestYahoo(t, srv)
+	_, err := y.FetchPrice(context.Background(), "BBCA")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if gotCrumb != "testcrumb123" {
+		t.Errorf("crumb = %q, want %q", gotCrumb, "testcrumb123")
+	}
+}
+
+func TestCrumbRefreshOn401(t *testing.T) {
+	var chartCalls atomic.Int32
+	srv := newTestServerWithHandler(t, func(w http.ResponseWriter, r *http.Request) bool {
+		if !strings.Contains(r.URL.Path, "/v8/finance/chart/BBCA.JK") {
+			return false
+		}
+		n := chartCalls.Add(1)
+		if n == 1 {
+			w.WriteHeader(http.StatusUnauthorized)
+			return true
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(chartFixture))
+		return true
+	})
+	defer srv.Close()
+
+	y := newTestYahoo(t, srv)
+	result, err := y.FetchPrice(context.Background(), "BBCA")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result.Price != 9875.0 {
+		t.Errorf("Price = %v, want 9875.0", result.Price)
+	}
+	if got := chartCalls.Load(); got != 2 {
+		t.Errorf("chart calls = %d, want 2 (initial 401 + retry)", got)
+	}
+}
+
+func TestPersistent401ReturnsError(t *testing.T) {
+	srv := newTestServerWithHandler(t, func(w http.ResponseWriter, r *http.Request) bool {
+		if strings.Contains(r.URL.Path, "/v8/finance/chart/") {
+			w.WriteHeader(http.StatusUnauthorized)
+			return true
+		}
+		return false
+	})
+	defer srv.Close()
+
+	y := newTestYahoo(t, srv)
+	_, err := y.FetchPrice(context.Background(), "BBCA")
+	if err == nil {
+		t.Fatal("expected error for persistent 401, got nil")
+	}
+	if !errors.Is(err, stock.ErrSourceDown) {
+		t.Errorf("expected ErrSourceDown, got: %v", err)
 	}
 }
 
