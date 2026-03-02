@@ -52,6 +52,8 @@ func (s *PortfolioService) Create(ctx context.Context, p *portfolio.Portfolio) e
 	if strings.TrimSpace(p.Name) == "" {
 		return ErrEmptyName
 	}
+	// Defense-in-depth: re-validate even though presenter parses these before construction.
+	// The usecase is a standalone API boundary callable by future non-presenter callers.
 	if _, err := portfolio.ParseMode(string(p.Mode)); err != nil {
 		return err
 	}

@@ -28,7 +28,7 @@ func (h *StockHandler) LookupStock(ticker, riskProfile string) (*StockValuationR
 	if err != nil {
 		return nil, err
 	}
-	return buildStockResponse(data, result, riskProfile), nil
+	return newStockValuationResponse(data, result, riskProfile), nil
 }
 
 // GetStockValuation returns cached stock valuation without fetching new data.
@@ -41,5 +41,5 @@ func (h *StockHandler) GetStockValuation(ticker, riskProfile string) (*StockValu
 	if err != nil {
 		return nil, err
 	}
-	return buildStockResponse(data, result, riskProfile), nil
+	return newStockValuationResponse(data, result, riskProfile), nil
 }

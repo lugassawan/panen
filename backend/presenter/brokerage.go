@@ -29,5 +29,5 @@ func (h *BrokerageHandler) CreateBrokerageAccount(
 	if err := h.brokerages.Create(h.ctx, acct); err != nil {
 		return nil, err
 	}
-	return buildBrokerageResponse(acct), nil
+	return newBrokerageAccountResponse(acct), nil
 }

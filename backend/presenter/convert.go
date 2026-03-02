@@ -12,9 +12,9 @@ import (
 
 const timeLayout = "2006-01-02T15:04:05Z"
 
-// --- Domain → DTO builders (presentation concern) ---
+// --- Domain → DTO constructors (presentation concern) ---
 
-func buildStockResponse(
+func newStockValuationResponse(
 	data *stock.Data,
 	result *valuation.ValuationResult,
 	riskProfile string,
@@ -43,7 +43,7 @@ func buildStockResponse(
 	}
 }
 
-func buildBrokerageResponse(acct *brokerage.Account) *BrokerageAccountResponse {
+func newBrokerageAccountResponse(acct *brokerage.Account) *BrokerageAccountResponse {
 	return &BrokerageAccountResponse{
 		ID:          acct.ID,
 		BrokerName:  acct.BrokerName,
@@ -55,7 +55,7 @@ func buildBrokerageResponse(acct *brokerage.Account) *BrokerageAccountResponse {
 	}
 }
 
-func buildPortfolioResponse(p *portfolio.Portfolio) *PortfolioResponse {
+func newPortfolioResponse(p *portfolio.Portfolio) *PortfolioResponse {
 	return &PortfolioResponse{
 		ID:              p.ID,
 		BrokerageAcctID: p.BrokerageAccountID,
@@ -70,21 +70,21 @@ func buildPortfolioResponse(p *portfolio.Portfolio) *PortfolioResponse {
 	}
 }
 
-func buildPortfolioDetailResponse(
+func newPortfolioDetailResponse(
 	p *portfolio.Portfolio,
 	holdings []*usecase.HoldingWithValuation,
 ) *PortfolioDetailResponse {
 	items := make([]HoldingDetailResponse, len(holdings))
 	for i, hwv := range holdings {
-		items[i] = buildHoldingDetailResponse(hwv)
+		items[i] = newHoldingDetailResponse(hwv)
 	}
 	return &PortfolioDetailResponse{
-		Portfolio: *buildPortfolioResponse(p),
+		Portfolio: *newPortfolioResponse(p),
 		Holdings:  items,
 	}
 }
 
-func buildHoldingDetailResponse(hwv *usecase.HoldingWithValuation) HoldingDetailResponse {
+func newHoldingDetailResponse(hwv *usecase.HoldingWithValuation) HoldingDetailResponse {
 	resp := HoldingDetailResponse{
 		ID:          hwv.Holding.ID,
 		Ticker:      hwv.Holding.Ticker,

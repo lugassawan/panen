@@ -38,7 +38,7 @@ func (h *PortfolioHandler) CreatePortfolio(
 	if err := h.portfolios.Create(h.ctx, p); err != nil {
 		return nil, err
 	}
-	return buildPortfolioResponse(p), nil
+	return newPortfolioResponse(p), nil
 }
 
 // AddHolding adds a stock holding to a portfolio.
@@ -73,5 +73,5 @@ func (h *PortfolioHandler) GetPortfolio(id string) (*PortfolioDetailResponse, er
 	if err != nil {
 		return nil, err
 	}
-	return buildPortfolioDetailResponse(p, holdings), nil
+	return newPortfolioDetailResponse(p, holdings), nil
 }
