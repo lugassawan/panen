@@ -61,7 +61,11 @@ func checkBlock(pass *analysis.Pass, block *ast.BlockStmt) {
 				continue
 			}
 			if _, isStruct := ts.Type.(*ast.StructType); isStruct {
-				pass.Reportf(ts.Pos(), "named struct type %q should be declared at package level, not inside a function", ts.Name.Name)
+				pass.Reportf(
+					ts.Pos(),
+					"named struct type %q should be declared at package level, not inside a function",
+					ts.Name.Name,
+				)
 			}
 		}
 		return true
