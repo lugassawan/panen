@@ -1,12 +1,18 @@
 <script lang="ts">
 import { LoaderCircle } from "lucide-svelte";
-import { GetPortfolio, ListBrokerageAccounts, ListPortfolios } from "../../wailsjs/go/backend/App";
+import {
+  GetPortfolio,
+  ListBrokerageAccounts,
+  ListBrokerConfigs,
+  ListPortfolios,
+} from "../../wailsjs/go/backend/App";
 import AddHoldingForm from "../components/AddHoldingForm.svelte";
 import BrokerageAccountForm from "../components/BrokerageAccountForm.svelte";
 import PortfolioForm from "../components/PortfolioForm.svelte";
 import { formatPercent, formatRupiah } from "../lib/format";
 import type {
   BrokerageAccountResponse,
+  BrokerConfigResponse,
   HoldingDetailResponse,
   PortfolioDetailResponse,
 } from "../lib/types";
@@ -19,13 +25,16 @@ let error = $state<string | null>(null);
 let brokerageAcctId = $state<string | null>(null);
 let detail = $state<PortfolioDetailResponse | null>(null);
 let onboardingStep = $state<1 | 2>(1);
+let brokerConfigs = $state<BrokerConfigResponse[]>([]);
 
 async function load() {
   state = "loading";
   error = null;
 
   try {
-    const accounts: BrokerageAccountResponse[] = await ListBrokerageAccounts();
+    const [accounts, configs]: [BrokerageAccountResponse[], BrokerConfigResponse[]] =
+      await Promise.all([ListBrokerageAccounts(), ListBrokerConfigs()]);
+    brokerConfigs = configs ?? [];
     if (!accounts || accounts.length === 0) {
       state = "onboarding";
       onboardingStep = 1;
@@ -100,7 +109,8 @@ load();
         <h2 class="mb-6 text-xl font-semibold text-text-primary">Set Up Your Brokerage</h2>
         <div class="rounded border border-border-default bg-bg-elevated p-6">
           <BrokerageAccountForm
-            onCreated={(acct) => {
+            {brokerConfigs}
+            onSaved={(acct) => {
               brokerageAcctId = acct.id;
               onboardingStep = 2;
             }}

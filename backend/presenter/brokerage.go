@@ -36,11 +36,46 @@ func (h *BrokerageHandler) ListBrokerageAccounts() ([]*BrokerageAccountResponse,
 
 // CreateBrokerageAccount creates a new brokerage account for the current user.
 func (h *BrokerageHandler) CreateBrokerageAccount(
-	name string, buyFee, sellFee float64,
+	name, brokerCode string, buyFee, sellFee, sellTax float64, isManualFee bool,
 ) (*BrokerageAccountResponse, error) {
-	acct := brokerage.NewAccount(h.profileID, name, buyFee, sellFee)
+	acct := brokerage.NewAccount(h.profileID, name, brokerCode, buyFee, sellFee, sellTax)
+	acct.IsManualFee = isManualFee
 	if err := h.brokerages.Create(h.ctx, acct); err != nil {
 		return nil, err
 	}
 	return newBrokerageAccountResponse(acct), nil
+}
+
+// GetBrokerageAccount returns a single brokerage account by ID.
+func (h *BrokerageHandler) GetBrokerageAccount(id string) (*BrokerageAccountResponse, error) {
+	acct, err := h.brokerages.GetByID(h.ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return newBrokerageAccountResponse(acct), nil
+}
+
+// UpdateBrokerageAccount updates an existing brokerage account.
+func (h *BrokerageHandler) UpdateBrokerageAccount(
+	id, name, brokerCode string, buyFee, sellFee, sellTax float64, isManualFee bool,
+) (*BrokerageAccountResponse, error) {
+	acct, err := h.brokerages.GetByID(h.ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	acct.BrokerName = name
+	acct.BrokerCode = brokerCode
+	acct.BuyFeePct = buyFee
+	acct.SellFeePct = sellFee
+	acct.SellTaxPct = sellTax
+	acct.IsManualFee = isManualFee
+	if err := h.brokerages.Update(h.ctx, acct); err != nil {
+		return nil, err
+	}
+	return newBrokerageAccountResponse(acct), nil
+}
+
+// DeleteBrokerageAccount removes a brokerage account by ID.
+func (h *BrokerageHandler) DeleteBrokerageAccount(id string) error {
+	return h.brokerages.Delete(h.ctx, id)
 }

@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Briefcase, Search, Settings } from "lucide-svelte";
+import { Briefcase, Landmark, Search, Settings } from "lucide-svelte";
 import type { Component } from "svelte";
 import type { Page } from "../lib/types";
 
@@ -8,6 +8,7 @@ let { currentPage, onNavigate }: { currentPage: Page; onNavigate: (page: Page) =
 const navItems: { page: Page; label: string; icon: Component }[] = [
   { page: "lookup", label: "Stock Lookup", icon: Search },
   { page: "portfolio", label: "Portfolio", icon: Briefcase },
+  { page: "brokerage", label: "Brokerage", icon: Landmark },
   { page: "settings", label: "Settings", icon: Settings },
 ];
 </script>

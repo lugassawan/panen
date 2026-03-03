@@ -48,8 +48,8 @@ func TestBrokerageRepoCreateAndGetByID(t *testing.T) {
 
 	a := &brokerage.Account{
 		ID: shared.NewID(), ProfileID: f.profile.ID,
-		BrokerName: "Ajaib", BuyFeePct: 0.15, SellFeePct: 0.25,
-		IsManualFee: true, CreatedAt: f.now, UpdatedAt: f.now,
+		BrokerName: "Ajaib", BrokerCode: "AJAIB", BuyFeePct: 0.15, SellFeePct: 0.25,
+		SellTaxPct: 0.1, IsManualFee: true, CreatedAt: f.now, UpdatedAt: f.now,
 	}
 	if err := f.repo.Create(f.ctx, a); err != nil {
 		t.Fatalf("Create() error = %v", err)
@@ -62,11 +62,17 @@ func TestBrokerageRepoCreateAndGetByID(t *testing.T) {
 	if got.BrokerName != "Ajaib" {
 		t.Errorf("BrokerName = %q, want %q", got.BrokerName, "Ajaib")
 	}
+	if got.BrokerCode != "AJAIB" {
+		t.Errorf("BrokerCode = %q, want %q", got.BrokerCode, "AJAIB")
+	}
 	if !got.IsManualFee {
 		t.Error("IsManualFee = false, want true")
 	}
 	if got.BuyFeePct != 0.15 {
 		t.Errorf("BuyFeePct = %f, want 0.15", got.BuyFeePct)
+	}
+	if got.SellTaxPct != 0.1 {
+		t.Errorf("SellTaxPct = %f, want 0.1", got.SellTaxPct)
 	}
 }
 

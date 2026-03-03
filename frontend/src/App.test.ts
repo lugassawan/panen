@@ -6,9 +6,12 @@ import App from "./App.svelte";
 vi.mock("../wailsjs/go/backend/App", () => ({
   LookupStock: vi.fn(() => Promise.resolve({})),
   ListBrokerageAccounts: vi.fn(() => Promise.resolve([])),
+  ListBrokerConfigs: vi.fn(() => Promise.resolve([])),
   ListPortfolios: vi.fn(() => Promise.resolve([])),
   GetPortfolio: vi.fn(() => Promise.resolve({ portfolio: {}, holdings: [] })),
   CreateBrokerageAccount: vi.fn(() => Promise.resolve({})),
+  UpdateBrokerageAccount: vi.fn(() => Promise.resolve({})),
+  DeleteBrokerageAccount: vi.fn(() => Promise.resolve()),
   CreatePortfolio: vi.fn(() => Promise.resolve({})),
   AddHolding: vi.fn(() => Promise.resolve({})),
 }));
@@ -24,14 +27,15 @@ vi.mock("./lib/stores/theme.svelte", () => ({
 }));
 
 describe("App navigation", () => {
-  it("renders sidebar with 3 nav items", () => {
+  it("renders sidebar with 4 nav items", () => {
     render(App);
     const nav = screen.getByRole("navigation", { name: /main/i });
     const buttons = within(nav).getAllByRole("button");
-    expect(buttons).toHaveLength(3);
+    expect(buttons).toHaveLength(4);
     expect(buttons[0]).toHaveTextContent("Stock Lookup");
     expect(buttons[1]).toHaveTextContent("Portfolio");
-    expect(buttons[2]).toHaveTextContent("Settings");
+    expect(buttons[2]).toHaveTextContent("Brokerage");
+    expect(buttons[3]).toHaveTextContent("Settings");
   });
 
   it("starts on Stock Lookup page by default", () => {
@@ -55,6 +59,17 @@ describe("App navigation", () => {
     await user.click(within(nav).getByText("Portfolio"));
 
     expect(await screen.findByText("Set Up Your Brokerage")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Stock ticker")).not.toBeInTheDocument();
+  });
+
+  it("switches to Brokerage page when clicking Brokerage nav", async () => {
+    const user = userEvent.setup();
+    render(App);
+
+    const nav = screen.getByRole("navigation", { name: /main/i });
+    await user.click(within(nav).getByText("Brokerage"));
+
+    expect(await screen.findByText("Brokerage Accounts")).toBeInTheDocument();
     expect(screen.queryByLabelText("Stock ticker")).not.toBeInTheDocument();
   });
 

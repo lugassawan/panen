@@ -1,0 +1,66 @@
+[
+  {
+    "code": "XC",
+    "name": "Ajaib Sekuritas",
+    "buyFeePct": 0.15,
+    "sellFeePct": 0.15,
+    "sellTaxPct": 0.10,
+    "notes": "Commission-free for certain promo periods"
+  },
+  {
+    "code": "XL",
+    "name": "Stockbit Sekuritas",
+    "buyFeePct": 0.15,
+    "sellFeePct": 0.15,
+    "sellTaxPct": 0.10,
+    "notes": ""
+  },
+  {
+    "code": "PD",
+    "name": "Indo Premier Sekuritas (IPOT)",
+    "buyFeePct": 0.19,
+    "sellFeePct": 0.19,
+    "sellTaxPct": 0.10,
+    "notes": ""
+  },
+  {
+    "code": "CC",
+    "name": "Mandiri Sekuritas",
+    "buyFeePct": 0.15,
+    "sellFeePct": 0.15,
+    "sellTaxPct": 0.10,
+    "notes": "Most online transactions"
+  },
+  {
+    "code": "SQ",
+    "name": "BCA Sekuritas",
+    "buyFeePct": 0.15,
+    "sellFeePct": 0.15,
+    "sellTaxPct": 0.10,
+    "notes": "BCAS online rate"
+  },
+  {
+    "code": "YP",
+    "name": "Mirae Asset Sekuritas",
+    "buyFeePct": 0.15,
+    "sellFeePct": 0.15,
+    "sellTaxPct": 0.10,
+    "notes": "Neo HOTS online rate"
+  },
+  {
+    "code": "NI",
+    "name": "BNI Sekuritas",
+    "buyFeePct": 0.15,
+    "sellFeePct": 0.15,
+    "sellTaxPct": 0.10,
+    "notes": "e-Smart online rate"
+  },
+  {
+    "code": "KK",
+    "name": "Phillip Sekuritas",
+    "buyFeePct": 0.18,
+    "sellFeePct": 0.18,
+    "sellTaxPct": 0.10,
+    "notes": "POEMS online rate"
+  }
+]

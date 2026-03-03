@@ -81,3 +81,35 @@ func TestMigrate(t *testing.T) {
 		}
 	})
 }
+
+func TestMigrateV2AddsBrokerColumns(t *testing.T) {
+	db := newTestDB(t)
+	ctx := context.Background()
+
+	_, err := db.ExecContext(ctx, `INSERT INTO user_profiles (id, name, created_at, updated_at)
+		VALUES ('u1', 'Test', '2025-01-01T00:00:00Z', '2025-01-01T00:00:00Z')`)
+	if err != nil {
+		t.Fatalf("insert user: %v", err)
+	}
+	_, err = db.ExecContext(ctx, `INSERT INTO brokerage_accounts
+		(id, profile_id, broker_name, created_at, updated_at)
+		VALUES ('b1', 'u1', 'Test Broker', '2025-01-01T00:00:00Z', '2025-01-01T00:00:00Z')`)
+	if err != nil {
+		t.Fatalf("insert brokerage: %v", err)
+	}
+
+	var sellTaxPct float64
+	var brokerCode string
+	err = db.QueryRowContext(ctx,
+		"SELECT sell_tax_pct, broker_code FROM brokerage_accounts WHERE id = 'b1'",
+	).Scan(&sellTaxPct, &brokerCode)
+	if err != nil {
+		t.Fatalf("query error = %v", err)
+	}
+	if sellTaxPct != 0 {
+		t.Errorf("sell_tax_pct = %v, want 0", sellTaxPct)
+	}
+	if brokerCode != "" {
+		t.Errorf("broker_code = %q, want empty string", brokerCode)
+	}
+}

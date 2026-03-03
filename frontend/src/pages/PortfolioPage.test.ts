@@ -10,6 +10,7 @@ import type {
 import PortfolioPage from "./PortfolioPage.svelte";
 
 const mockListBrokerageAccounts = vi.fn();
+const mockListBrokerConfigs = vi.fn();
 const mockListPortfolios = vi.fn();
 const mockGetPortfolio = vi.fn();
 const mockCreateBrokerageAccount = vi.fn();
@@ -18,6 +19,7 @@ const mockAddHolding = vi.fn();
 
 vi.mock("../../wailsjs/go/backend/App", () => ({
   ListBrokerageAccounts: (...args: unknown[]) => mockListBrokerageAccounts(...args),
+  ListBrokerConfigs: (...args: unknown[]) => mockListBrokerConfigs(...args),
   ListPortfolios: (...args: unknown[]) => mockListPortfolios(...args),
   GetPortfolio: (...args: unknown[]) => mockGetPortfolio(...args),
   CreateBrokerageAccount: (...args: unknown[]) => mockCreateBrokerageAccount(...args),
@@ -31,8 +33,10 @@ function makeBrokerage(
   return {
     id: "b1",
     brokerName: "Ajaib",
+    brokerCode: "XC",
     buyFeePct: 0.15,
-    sellFeePct: 0.25,
+    sellFeePct: 0.15,
+    sellTaxPct: 0.1,
     isManualFee: false,
     createdAt: "2025-01-01T00:00:00Z",
     updatedAt: "2025-01-01T00:00:00Z",
@@ -79,11 +83,14 @@ function makePortfolioDetail(
 describe("PortfolioPage", () => {
   beforeEach(() => {
     mockListBrokerageAccounts.mockReset();
+    mockListBrokerConfigs.mockReset();
     mockListPortfolios.mockReset();
     mockGetPortfolio.mockReset();
     mockCreateBrokerageAccount.mockReset();
     mockCreatePortfolio.mockReset();
     mockAddHolding.mockReset();
+
+    mockListBrokerConfigs.mockResolvedValue([]);
   });
 
   it("shows loading state on mount", () => {
