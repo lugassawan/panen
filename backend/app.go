@@ -10,6 +10,7 @@ import (
 	"github.com/lugassawan/panen/backend/infra/database"
 	"github.com/lugassawan/panen/backend/infra/platform"
 	"github.com/lugassawan/panen/backend/infra/scraper"
+	"github.com/lugassawan/panen/backend/infra/watchlistconfig"
 	"github.com/lugassawan/panen/backend/presenter"
 	"github.com/lugassawan/panen/backend/usecase"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -22,6 +23,7 @@ type App struct {
 	*presenter.PortfolioHandler
 	*presenter.BrokerageHandler
 	*presenter.BrokerConfigHandler
+	*presenter.WatchlistHandler
 	db *database.DB
 }
 
@@ -57,6 +59,8 @@ func (a *App) Startup(ctx context.Context) {
 	holdingRepo := database.NewHoldingRepo(conn)
 	buyTxnRepo := database.NewBuyTransactionRepo(conn)
 	stockRepo := database.NewStockDataRepo(conn)
+	watchlistRepo := database.NewWatchlistRepo(conn)
+	watchlistItemRepo := database.NewWatchlistItemRepo(conn)
 	yahoo := scraper.NewYahoo()
 
 	stocks := usecase.NewStockService(stockRepo, yahoo)
@@ -71,10 +75,22 @@ func (a *App) Startup(ctx context.Context) {
 	loader := brokerConfigLoader.NewLoader(dataDir)
 	brokerConfigs := loader.Load(ctx)
 
+	indexLoader := watchlistconfig.NewIndexLoader(dataDir)
+	indexRegistry := indexLoader.Load(ctx)
+	sectorRegistry := watchlistconfig.NewSectorRegistry()
+	watchlistSvc := usecase.NewWatchlistService(
+		watchlistRepo,
+		watchlistItemRepo,
+		stockRepo,
+		indexRegistry,
+		sectorRegistry,
+	)
+
 	a.StockHandler = presenter.NewStockHandler(ctx, stocks)
 	a.PortfolioHandler = presenter.NewPortfolioHandler(ctx, portfolios)
 	a.BrokerageHandler = presenter.NewBrokerageHandler(ctx, profileID, brokerages)
 	a.BrokerConfigHandler = presenter.NewBrokerConfigHandler(brokerConfigs)
+	a.WatchlistHandler = presenter.NewWatchlistHandler(ctx, profileID, watchlistSvc)
 }
 
 // Shutdown closes the database connection.
