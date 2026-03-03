@@ -56,7 +56,7 @@ func (l *IndexLoader) Load(ctx context.Context) *IndexRegistry {
 		return reg
 	}
 
-	return nil
+	return &IndexRegistry{indices: map[string][]string{}}
 }
 
 func (l *IndexLoader) fetchRemote(ctx context.Context) ([]byte, error) {

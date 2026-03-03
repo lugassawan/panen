@@ -202,9 +202,14 @@ func (s *WatchlistService) enrichTickers(
 	result := make([]*WatchlistItemWithData, 0, len(tickers))
 
 	for _, ticker := range tickers {
+		sector := s.sectorRegistry.SectorOf(ticker)
+		if sectorFilter != "" && sector != sectorFilter {
+			continue
+		}
+
 		item := &WatchlistItemWithData{
 			Ticker: ticker,
-			Sector: s.sectorRegistry.SectorOf(ticker),
+			Sector: sector,
 		}
 
 		data, err := s.stockData.GetByTicker(ctx, ticker)
@@ -217,16 +222,12 @@ func (s *WatchlistService) enrichTickers(
 				BVPS:        data.BVPS,
 				PBV:         data.PBV,
 				PER:         data.PER,
-				RiskProfile: valuation.RiskModerate,
+				RiskProfile: valuation.RiskModerate, // default for watchlist browsing
 			}
 			val, valErr := valuation.Evaluate(input)
 			if valErr == nil {
 				item.Valuation = val
 			}
-		}
-
-		if sectorFilter != "" && item.Sector != sectorFilter {
-			continue
 		}
 
 		result = append(result, item)
