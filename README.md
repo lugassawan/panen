@@ -28,6 +28,8 @@ Panen helps IDX investors make informed decisions with clarity and conviction. I
 |-------|-----------|
 | Backend | Go 1.26, Wails v2 |
 | Frontend | Svelte 5, TypeScript, Tailwind CSS v4 |
+| Icons | Lucide (lucide-svelte) |
+| Fonts | Plus Jakarta Sans, DM Sans, DM Mono (self-hosted WOFF2) |
 | Build | Vite 7, pnpm |
 | Linting | golangci-lint v2 (custom plugin), Biome v2 |
 | Tool versioning | mise |
@@ -61,8 +63,15 @@ make dev      # Start development server with HMR
 
 ```
 panen/
-├── backend/app/       # Go application logic (Wails-bound structs)
-├── frontend/src/      # Svelte 5 components and TypeScript
+├── backend/
+│   ├── app.go         # Composition root (App struct, Startup, Shutdown)
+│   ├── presenter/     # Per-domain handlers, DTOs, converters
+│   ├── domain/        # Entities, value objects, repository interfaces
+│   ├── usecase/       # Application services (orchestration + validation)
+│   └── infra/         # Database, scraper, platform implementations
+├── frontend/src/
+│   ├── assets/fonts/  # Self-hosted WOFF2 font files
+│   └── ...            # Svelte 5 components and TypeScript
 ├── tools/lint/        # Custom golangci-lint plugin (panenlint)
 ├── build/assets/      # Brand SVG assets
 ├── main.go            # Wails entry point

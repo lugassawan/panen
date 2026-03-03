@@ -1,4 +1,5 @@
 <script lang="ts">
+import { LoaderCircle } from "lucide-svelte";
 import type { Snippet } from "svelte";
 
 let {
@@ -41,10 +42,7 @@ const variantClasses: Record<string, string> = {
   class="inline-flex items-center justify-center gap-2 rounded-md font-medium focus-ring transition-fast disabled:opacity-50 disabled:pointer-events-none {sizeClasses[size]} {variantClasses[variant]}"
 >
   {#if loading}
-    <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-      <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"></circle>
-      <path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="4" stroke-linecap="round" class="opacity-75"></path>
-    </svg>
+    <LoaderCircle size={16} strokeWidth={2} class="animate-spin" />
   {/if}
   {@render children()}
 </button>

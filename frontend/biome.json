@@ -39,6 +39,18 @@
       "nursery": {}
     }
   },
+  "overrides": [
+    {
+      "includes": ["**/*.svelte"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedImports": "off"
+          }
+        }
+      }
+    }
+  ],
   "files": {
     "includes": [
       "**",
