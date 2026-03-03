@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/lugassawan/panen/backend/domain/settings"
@@ -60,10 +61,11 @@ type RefreshService struct {
 	collector TickerCollector
 	emitter   EventEmitter
 
-	mu     sync.Mutex
-	status RefreshStatus
-	cancel context.CancelFunc
-	done   chan struct{}
+	mu      sync.Mutex
+	status  RefreshStatus
+	running atomic.Bool
+	cancel  context.CancelFunc
+	done    chan struct{}
 }
 
 // NewRefreshService creates a new RefreshService.
@@ -115,21 +117,25 @@ func (r *RefreshService) GetStatus() RefreshStatus {
 	return r.status
 }
 
+const defaultInterval = 720 * time.Minute
+
+func (r *RefreshService) readInterval() time.Duration {
+	cfg, err := r.settings.GetRefreshSettings(context.Background())
+	if err != nil {
+		return defaultInterval
+	}
+	if d := time.Duration(cfg.IntervalMinutes) * time.Minute; d > 0 {
+		return d
+	}
+	return defaultInterval
+}
+
 func (r *RefreshService) loop(ctx context.Context) {
 	defer close(r.done)
 
-	// Run immediately on startup.
 	_ = r.refresh(ctx)
 
-	cfg, err := r.settings.GetRefreshSettings(ctx)
-	if err != nil {
-		return
-	}
-
-	interval := time.Duration(cfg.IntervalMinutes) * time.Minute
-	if interval <= 0 {
-		interval = 720 * time.Minute // fallback to default
-	}
+	interval := r.readInterval()
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
@@ -138,16 +144,11 @@ func (r *RefreshService) loop(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			cfg, err = r.settings.GetRefreshSettings(ctx)
-			if err != nil {
+			cfg, err := r.settings.GetRefreshSettings(ctx)
+			if err != nil || !cfg.AutoRefreshEnabled {
 				continue
 			}
 
-			if !cfg.AutoRefreshEnabled {
-				continue
-			}
-
-			// Recreate ticker if interval changed.
 			newInterval := time.Duration(cfg.IntervalMinutes) * time.Minute
 			if newInterval > 0 && newInterval != interval {
 				interval = newInterval
@@ -167,6 +168,11 @@ func (r *RefreshService) setStatus(s RefreshStatus) {
 }
 
 func (r *RefreshService) refresh(ctx context.Context) error {
+	if !r.running.CompareAndSwap(false, true) {
+		return nil // another refresh is already in progress
+	}
+	defer r.running.Store(false)
+
 	r.setStatus(RefreshStatus{State: "syncing"})
 
 	start := time.Now()
@@ -186,39 +192,18 @@ func (r *RefreshService) refresh(ctx context.Context) error {
 			break
 		}
 
-		existing, err := r.stockData.GetByTickerAndSource(ctx, ticker, r.provider.Source())
-		if err != nil && !errors.Is(err, shared.ErrNotFound) {
-			failed++
-			r.emitter.Emit("refresh:progress", RefreshProgress{
-				Ticker: ticker, Index: i, Total: total,
-				Status: "error", Error: err.Error(),
-			})
-			continue
-		}
-
-		if existing != nil && time.Since(existing.FetchedAt) < cacheTTL {
+		progress := r.refreshTicker(ctx, ticker)
+		switch progress.Status {
+		case "success":
+			fetched++
+		case "skipped":
 			skipped++
-			r.emitter.Emit("refresh:progress", RefreshProgress{
-				Ticker: ticker, Index: i, Total: total,
-				Status: "skipped",
-			})
-			continue
-		}
-
-		if err := r.fetchWithRetry(ctx, ticker); err != nil {
+		default:
 			failed++
-			r.emitter.Emit("refresh:progress", RefreshProgress{
-				Ticker: ticker, Index: i, Total: total,
-				Status: "error", Error: err.Error(),
-			})
-			continue
 		}
-
-		fetched++
-		r.emitter.Emit("refresh:progress", RefreshProgress{
-			Ticker: ticker, Index: i, Total: total,
-			Status: "success",
-		})
+		progress.Index = i
+		progress.Total = total
+		r.emitter.Emit("refresh:progress", progress)
 	}
 
 	duration := time.Since(start)
@@ -248,6 +233,20 @@ func (r *RefreshService) refresh(ctx context.Context) error {
 	})
 
 	return nil
+}
+
+func (r *RefreshService) refreshTicker(ctx context.Context, ticker string) RefreshProgress {
+	existing, err := r.stockData.GetByTickerAndSource(ctx, ticker, r.provider.Source())
+	if err != nil && !errors.Is(err, shared.ErrNotFound) {
+		return RefreshProgress{Ticker: ticker, Status: "error", Error: err.Error()}
+	}
+	if existing != nil && time.Since(existing.FetchedAt) < cacheTTL {
+		return RefreshProgress{Ticker: ticker, Status: "skipped"}
+	}
+	if err := r.fetchWithRetry(ctx, ticker); err != nil {
+		return RefreshProgress{Ticker: ticker, Status: "error", Error: err.Error()}
+	}
+	return RefreshProgress{Ticker: ticker, Status: "success"}
 }
 
 func (r *RefreshService) fetchWithRetry(ctx context.Context, ticker string) error {

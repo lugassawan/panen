@@ -2,11 +2,14 @@ package presenter
 
 import (
 	"context"
+	"errors"
 
 	"github.com/lugassawan/panen/backend/domain/settings"
 	"github.com/lugassawan/panen/backend/usecase"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
+
+var errInvalidInterval = errors.New("interval must be positive")
 
 // WailsEmitter wraps the Wails runtime event emitter to satisfy usecase.EventEmitter.
 type WailsEmitter struct {
@@ -69,6 +72,9 @@ func (h *RefreshHandler) GetRefreshSettings() (*RefreshSettingsResponse, error) 
 
 // UpdateRefreshSettings updates the auto-refresh enabled flag and interval.
 func (h *RefreshHandler) UpdateRefreshSettings(enabled bool, intervalMinutes int) error {
+	if intervalMinutes <= 0 {
+		return errInvalidInterval
+	}
 	cfg, err := h.settings.GetRefreshSettings(h.ctx)
 	if err != nil {
 		return err

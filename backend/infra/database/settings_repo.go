@@ -80,15 +80,21 @@ func (r *SettingsRepo) SaveRefreshSettings(ctx context.Context, s *settings.Refr
 		lastRefreshed = formatTime(s.LastRefreshedAt)
 	}
 
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = tx.Rollback() }()
+
 	pairs := [][2]string{
 		{"auto_refresh_enabled", autoRefresh},
 		{"refresh_interval_minutes", interval},
 		{"last_refreshed_at", lastRefreshed},
 	}
 	for _, p := range pairs {
-		if _, err := r.db.ExecContext(ctx, settingsUpsert, p[0], p[1]); err != nil {
+		if _, err := tx.ExecContext(ctx, settingsUpsert, p[0], p[1]); err != nil {
 			return err
 		}
 	}
-	return nil
+	return tx.Commit()
 }
