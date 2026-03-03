@@ -25,7 +25,8 @@ panen/
 ├── frontend/wailsjs/    # Auto-generated Wails bindings (gitignored)
 ├── tools/lint/          # Custom golangci-lint plugin (panenlint)
 ├── build/               # Build assets (app icon)
-├── docs/plans/          # Design documents
+├── docs/                # Documentation
+│   └── design-system.md # Design system reference (tokens, components, patterns)
 ├── main.go              # Wails entry point
 └── wails.json           # Wails project config
 ```
@@ -106,6 +107,39 @@ vi.mock("../wailsjs/go/backend/App", () => ({
 - Go: `make coverage-go` → `coverage/go/`
 - Frontend: `make coverage-frontend` → `coverage/frontend/`
 - Both: `make coverage`
+
+## Design System
+
+Full reference: `docs/design-system.md`
+
+### Tokens & Theming
+
+- All design tokens live in `frontend/src/app.css` via Tailwind v4 `@theme` — no `tailwind.config.js`
+- Two brand palettes: **green** (Value Mode, primary accent) and **gold** (Dividend Mode)
+- Semantic colors (`bg-primary`, `text-secondary`, `border-default`) adapt to light/dark via CSS variables in `:root` / `.dark`
+- Theme store (`lib/stores/theme.svelte.ts`): light/dark/system, persists to `localStorage`, toggles `.dark` class on `<html>`
+- Mode store (`lib/stores/mode.svelte.ts`): value/dividend, switches accent colors globally
+
+### Typography
+
+- `font-display` (Plus Jakarta Sans): headings, tickers, brand
+- `font-body` (DM Sans): body text, labels — set on `html` as default
+- `font-mono` (DM Mono): **always** use for financial numbers (prices, percentages, ratios)
+
+### Components
+
+Reusable components in `frontend/src/lib/components/`: Button, Badge, Alert, ThemeToggle, ModeTabs, StockCard
+
+### Key Rules
+
+- Use semantic color tokens (`bg-bg-elevated`, `text-text-secondary`, `border-border-default`), not raw palette colors for themed surfaces
+- Use `text-profit` / `text-loss` for financial gain/loss colors (adapts to theme)
+- Use `focus-ring` on all interactive elements
+- Use `transition-fast` (120ms) for hover/focus, `transition-normal` (200ms) for dropdowns
+- Three-layer depth: `bg-secondary` (sidebar) → `bg-primary` (canvas) → `bg-elevated` (cards)
+- Sidebar width: `w-sidebar` (220px)
+- No SvelteKit APIs (`$lib`, `$app/environment`) — use relative imports
+- `localStorage` only for UI preferences (theme); all other state via Go backend
 
 ## Architecture
 
