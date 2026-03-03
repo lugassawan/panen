@@ -11,9 +11,9 @@
  *   <span style:color={mode.accentColor}>Active</span>
  */
 
-type InvestmentMode = "value" | "dividend";
+export type InvestmentMode = "value" | "dividend";
 
-interface ModeConfig {
+export interface ModeConfig {
   label: string;
   emoji: string;
   accent: string;

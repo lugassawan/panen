@@ -14,80 +14,78 @@
 
 const browser = typeof window !== "undefined";
 
-type ThemePreference = "light" | "dark" | "system";
-type ResolvedTheme = "light" | "dark";
+export type ThemePreference = "light" | "dark" | "system";
+export type ResolvedTheme = "light" | "dark";
 
 const STORAGE_KEY = "panen-theme";
 
-function createThemeStore() {
-  let preference = $state<ThemePreference>(loadPreference());
-  let resolved = $state<ResolvedTheme>(resolve(preference));
+function loadPreference(): ThemePreference {
+  if (!browser) return "system";
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored === "light" || stored === "dark" || stored === "system") return stored;
+  return "system";
+}
 
-  // Watch OS preference changes
+function resolve(pref: ThemePreference): ResolvedTheme {
+  if (pref === "system") {
+    if (!browser) return "light";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  return pref;
+}
+
+function applyTheme(resolvedTheme: ResolvedTheme) {
+  if (!browser) return;
+  const root = document.documentElement;
+  root.classList.toggle("dark", resolvedTheme === "dark");
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) {
+    meta.setAttribute("content", resolvedTheme === "dark" ? "#111112" : "#FEFCF7");
+  }
+}
+
+function createThemeStore() {
+  const initialPref = loadPreference();
+  const initialResolved = resolve(initialPref);
+  let preference = $state<ThemePreference>(initialPref);
+  let resolved = $state<ResolvedTheme>(initialResolved);
+
   if (browser) {
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     mq.addEventListener("change", () => {
       if (preference === "system") {
-        resolved = resolve("system");
-        applyTheme(resolved);
+        const newResolved = resolve("system");
+        resolved = newResolved;
+        applyTheme(newResolved);
       }
     });
 
-    // Apply on init
-    applyTheme(resolved);
-  }
-
-  function loadPreference(): ThemePreference {
-    if (!browser) return "system";
-    return (localStorage.getItem(STORAGE_KEY) as ThemePreference) ?? "system";
-  }
-
-  function resolve(pref: ThemePreference): ResolvedTheme {
-    if (pref === "system") {
-      if (!browser) return "light";
-      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    }
-    return pref;
-  }
-
-  function applyTheme(theme: ResolvedTheme) {
-    if (!browser) return;
-    const root = document.documentElement;
-    root.classList.toggle("dark", theme === "dark");
-    // Update meta theme-color for native title bar
-    const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) {
-      meta.setAttribute("content", theme === "dark" ? "#111112" : "#FEFCF7");
-    }
+    applyTheme(initialResolved);
   }
 
   return {
-    /** The resolved theme: 'light' | 'dark' */
     get current(): ResolvedTheme {
       return resolved;
     },
 
-    /** The user's preference: 'light' | 'dark' | 'system' */
     get preference(): ThemePreference {
       return preference;
     },
 
-    /** Whether dark mode is active */
     get isDark(): boolean {
       return resolved === "dark";
     },
 
-    /** Set theme preference */
     set(pref: ThemePreference) {
       preference = pref;
-      resolved = resolve(pref);
+      const newResolved = resolve(pref);
+      resolved = newResolved;
       if (browser) {
         localStorage.setItem(STORAGE_KEY, pref);
-        applyTheme(resolved);
+        applyTheme(newResolved);
       }
     },
 
-    /** Cycle: light → dark → system → light */
     toggle() {
       const cycle: ThemePreference[] = ["light", "dark", "system"];
       const next = cycle[(cycle.indexOf(preference) + 1) % cycle.length];
