@@ -1,4 +1,6 @@
 <script lang="ts">
+// biome-ignore lint/correctness/noUnusedImports: component used in Svelte template
+import { X } from "lucide-svelte";
 import type { Snippet } from "svelte";
 
 let {
@@ -35,9 +37,7 @@ const variantClasses: Record<string, string> = {
           class="shrink-0 opacity-70 hover:opacity-100 transition-fast"
           aria-label="Dismiss"
         >
-          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <X size={16} strokeWidth={2} />
         </button>
       {/if}
     </div>

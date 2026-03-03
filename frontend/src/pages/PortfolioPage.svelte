@@ -1,4 +1,6 @@
 <script lang="ts">
+// biome-ignore lint/correctness/noUnusedImports: component used in Svelte template
+import { LoaderCircle } from "lucide-svelte";
 import { GetPortfolio, ListBrokerageAccounts, ListPortfolios } from "../../wailsjs/go/backend/App";
 import AddHoldingForm from "../components/AddHoldingForm.svelte";
 import BrokerageAccountForm from "../components/BrokerageAccountForm.svelte";
@@ -86,10 +88,7 @@ load();
 <div class="mx-auto max-w-4xl px-4 py-8">
   {#if state === "loading"}
     <div class="flex items-center justify-center gap-2 py-12 text-text-secondary" role="status">
-      <svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"></circle>
-        <path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="4" stroke-linecap="round" class="opacity-75"></path>
-      </svg>
+      <LoaderCircle size={20} strokeWidth={2} class="animate-spin" />
       <span>Loading portfolio…</span>
     </div>
   {:else if state === "error"}
