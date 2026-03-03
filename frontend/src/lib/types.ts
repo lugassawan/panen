@@ -33,11 +33,22 @@ export interface StockValuationResponse {
 export interface BrokerageAccountResponse {
   id: string;
   brokerName: string;
+  brokerCode: string;
   buyFeePct: number;
   sellFeePct: number;
+  sellTaxPct: number;
   isManualFee: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface BrokerConfigResponse {
+  code: string;
+  name: string;
+  buyFeePct: number;
+  sellFeePct: number;
+  sellTaxPct: number;
+  notes: string;
 }
 
 export interface PortfolioResponse {
@@ -75,4 +86,4 @@ export type RiskProfile = "CONSERVATIVE" | "MODERATE" | "AGGRESSIVE";
 
 export type Verdict = "UNDERVALUED" | "FAIR" | "OVERVALUED";
 
-export type Page = "lookup" | "portfolio" | "settings";
+export type Page = "lookup" | "portfolio" | "brokerage" | "settings";
