@@ -84,38 +84,16 @@ async function loadItems() {
 
   try {
     if (activeType === "preset" && activePreset) {
-      const result = await GetPresetItems(activePreset);
+      const result = await GetPresetItems(activePreset, "");
       items = result ?? [];
     } else if (activeType === "watchlist" && activeWatchlist) {
-      const result = await GetWatchlistItems(activeWatchlist.id, activeSector);
+      const result = await GetWatchlistItems(activeWatchlist.id, "");
       items = result ?? [];
     }
 
-    if (items.length > 0) {
-      const sectorId = activeType === "preset" ? (activePreset ?? "") : (activeWatchlist?.id ?? "");
-      const sectorList = await ListWatchlistSectors(sectorId, activeType === "preset");
-      sectors = sectorList ?? [];
-    }
+    const sectorList = await ListWatchlistSectors();
+    sectors = sectorList ?? [];
 
-    itemsState = "loaded";
-  } catch (e: unknown) {
-    itemsError = e instanceof Error ? e.message : String(e);
-    itemsState = "error";
-  }
-}
-
-async function reloadItemsWithSector() {
-  if (!activeWatchlist && !activePreset) return;
-  itemsState = "loading";
-  itemsError = null;
-  try {
-    if (activeType === "preset" && activePreset) {
-      const result = await GetPresetItems(activePreset);
-      items = result ?? [];
-    } else if (activeType === "watchlist" && activeWatchlist) {
-      const result = await GetWatchlistItems(activeWatchlist.id, activeSector);
-      items = result ?? [];
-    }
     itemsState = "loaded";
   } catch (e: unknown) {
     itemsError = e instanceof Error ? e.message : String(e);
@@ -141,7 +119,6 @@ function selectWatchlist(wl: WatchlistResponse) {
 
 function selectSector(sector: string) {
   activeSector = sector;
-  reloadItemsWithSector();
 }
 
 async function submitCreateWatchlist(e: Event) {
