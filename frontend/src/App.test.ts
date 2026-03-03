@@ -14,6 +14,15 @@ vi.mock("../wailsjs/go/backend/App", () => ({
   DeleteBrokerageAccount: vi.fn(() => Promise.resolve()),
   CreatePortfolio: vi.fn(() => Promise.resolve({})),
   AddHolding: vi.fn(() => Promise.resolve({})),
+  ListWatchlists: vi.fn(() => Promise.resolve([])),
+  ListIndexNames: vi.fn(() => Promise.resolve([])),
+  ListWatchlistSectors: vi.fn(() => Promise.resolve([])),
+  CreateWatchlist: vi.fn(() => Promise.resolve({})),
+  DeleteWatchlist: vi.fn(() => Promise.resolve()),
+  AddToWatchlist: vi.fn(() => Promise.resolve()),
+  RemoveFromWatchlist: vi.fn(() => Promise.resolve()),
+  GetWatchlistItems: vi.fn(() => Promise.resolve([])),
+  GetPresetItems: vi.fn(() => Promise.resolve([])),
 }));
 
 vi.mock("./lib/stores/theme.svelte", () => ({
@@ -27,15 +36,16 @@ vi.mock("./lib/stores/theme.svelte", () => ({
 }));
 
 describe("App navigation", () => {
-  it("renders sidebar with 4 nav items", () => {
+  it("renders sidebar with 5 nav items", () => {
     render(App);
     const nav = screen.getByRole("navigation", { name: /main/i });
     const buttons = within(nav).getAllByRole("button");
-    expect(buttons).toHaveLength(4);
+    expect(buttons).toHaveLength(5);
     expect(buttons[0]).toHaveTextContent("Stock Lookup");
-    expect(buttons[1]).toHaveTextContent("Portfolio");
-    expect(buttons[2]).toHaveTextContent("Brokerage");
-    expect(buttons[3]).toHaveTextContent("Settings");
+    expect(buttons[1]).toHaveTextContent("Watchlist");
+    expect(buttons[2]).toHaveTextContent("Portfolio");
+    expect(buttons[3]).toHaveTextContent("Brokerage");
+    expect(buttons[4]).toHaveTextContent("Settings");
   });
 
   it("starts on Stock Lookup page by default", () => {
@@ -103,7 +113,7 @@ describe("App navigation", () => {
 
     const nav = screen.getByRole("navigation", { name: /main/i });
     const buttons = within(nav).getAllByRole("button");
-    const [lookupBtn, portfolioBtn] = buttons;
+    const [lookupBtn, , portfolioBtn] = buttons;
 
     expect(lookupBtn).toHaveAttribute("aria-current", "page");
     expect(portfolioBtn).not.toHaveAttribute("aria-current");

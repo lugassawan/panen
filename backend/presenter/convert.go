@@ -7,6 +7,7 @@ import (
 	"github.com/lugassawan/panen/backend/domain/portfolio"
 	"github.com/lugassawan/panen/backend/domain/stock"
 	"github.com/lugassawan/panen/backend/domain/valuation"
+	"github.com/lugassawan/panen/backend/domain/watchlist"
 	"github.com/lugassawan/panen/backend/usecase"
 )
 
@@ -116,6 +117,40 @@ func newHoldingDetailResponse(hwv *usecase.HoldingWithValuation) HoldingDetailRe
 		resp.ExitTarget = &hwv.Valuation.ExitTarget
 		resp.MarginOfSafety = &hwv.Valuation.MarginOfSafety
 		verdict := string(hwv.Valuation.Verdict)
+		resp.Verdict = &verdict
+	}
+	return resp
+}
+
+func newWatchlistResponse(w *watchlist.Watchlist) *WatchlistResponse {
+	return &WatchlistResponse{
+		ID:        w.ID,
+		Name:      w.Name,
+		CreatedAt: formatDTO(w.CreatedAt),
+		UpdatedAt: formatDTO(w.UpdatedAt),
+	}
+}
+
+func newWatchlistItemResponse(item *usecase.WatchlistItemWithData) *WatchlistItemResponse {
+	resp := &WatchlistItemResponse{
+		Ticker: item.Ticker,
+		Sector: item.Sector,
+	}
+	if item.StockData != nil {
+		resp.Price = &item.StockData.Price
+		resp.ROE = &item.StockData.ROE
+		resp.DER = &item.StockData.DER
+		resp.EPS = &item.StockData.EPS
+		resp.DividendYield = &item.StockData.DividendYield
+		resp.PayoutRatio = &item.StockData.PayoutRatio
+		fetchedAt := formatDTO(item.StockData.FetchedAt)
+		resp.FetchedAt = &fetchedAt
+	}
+	if item.Valuation != nil {
+		resp.GrahamNumber = &item.Valuation.GrahamNumber
+		resp.EntryPrice = &item.Valuation.EntryPrice
+		resp.ExitTarget = &item.Valuation.ExitTarget
+		verdict := string(item.Valuation.Verdict)
 		resp.Verdict = &verdict
 	}
 	return resp

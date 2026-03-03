@@ -88,4 +88,27 @@ export type RiskProfile = "CONSERVATIVE" | "MODERATE" | "AGGRESSIVE";
 
 export type Verdict = "UNDERVALUED" | "FAIR" | "OVERVALUED";
 
-export type Page = "lookup" | "portfolio" | "brokerage" | "settings";
+export type Page = "lookup" | "watchlist" | "portfolio" | "brokerage" | "settings";
+
+export interface WatchlistResponse {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WatchlistItemResponse {
+  ticker: string;
+  sector: string;
+  price?: number;
+  roe?: number;
+  der?: number;
+  eps?: number;
+  dividendYield?: number;
+  payoutRatio?: number;
+  grahamNumber?: number;
+  entryPrice?: number;
+  exitTarget?: number;
+  verdict?: string;
+  fetchedAt?: string;
+}

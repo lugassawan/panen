@@ -4,6 +4,7 @@ package database
 var migrations = []string{
 	migrationV1,
 	migrationV2,
+	migrationV3,
 }
 
 const migrationV1 = `
@@ -83,4 +84,22 @@ CREATE TABLE stock_data (
 const migrationV2 = `
 ALTER TABLE brokerage_accounts ADD COLUMN sell_tax_pct REAL NOT NULL DEFAULT 0;
 ALTER TABLE brokerage_accounts ADD COLUMN broker_code TEXT NOT NULL DEFAULT '';
+`
+
+const migrationV3 = `
+CREATE TABLE watchlists (
+	id         TEXT PRIMARY KEY,
+	profile_id TEXT NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE,
+	name       TEXT NOT NULL,
+	created_at TEXT NOT NULL,
+	updated_at TEXT NOT NULL,
+	UNIQUE(profile_id, name)
+);
+CREATE TABLE watchlist_items (
+	id           TEXT PRIMARY KEY,
+	watchlist_id TEXT NOT NULL REFERENCES watchlists(id) ON DELETE CASCADE,
+	ticker       TEXT NOT NULL,
+	created_at   TEXT NOT NULL,
+	UNIQUE(watchlist_id, ticker)
+);
 `
