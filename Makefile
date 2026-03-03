@@ -1,4 +1,5 @@
-.PHONY: dev build lint fmt frontend-install setup custom-gcl \
+.PHONY: dev build build-darwin build-linux build-windows build-all \
+	lint fmt frontend-install setup custom-gcl \
 	test test-unit test-go test-frontend test-integration test-e2e \
 	coverage coverage-go coverage-frontend playwright-install
 
@@ -7,6 +8,23 @@ dev:
 
 build:
 	wails build
+
+build-darwin:
+	wails build -clean -platform darwin/universal
+
+build-linux:
+	@if [ "$$(uname)" != "Linux" ]; then \
+		echo "Error: Linux builds require a Linux host (GTK headers needed)." >&2; \
+		exit 1; \
+	fi
+	wails build -clean -platform linux/amd64
+
+build-windows:
+	wails build -clean -platform windows/amd64
+
+# build-all builds for platforms that support cross-compilation from the current host.
+# Linux is excluded because Wails requires native GTK headers (use CI or a Linux host).
+build-all: build-darwin build-windows
 
 custom-gcl:
 	golangci-lint custom
