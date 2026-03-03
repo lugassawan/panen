@@ -1,7 +1,8 @@
 .PHONY: dev build build-darwin build-linux build-windows build-all \
 	lint fmt frontend-install setup custom-gcl \
 	test test-unit test-go test-frontend test-integration test-e2e \
-	coverage coverage-go coverage-frontend playwright-install
+	coverage coverage-go coverage-frontend playwright-install \
+	release-check
 
 dev:
 	wails dev -tags dev
@@ -79,3 +80,12 @@ setup:
 	go install github.com/wailsapp/wails/v2/cmd/wails@latest
 	cd frontend && pnpm install
 	git config core.hooksPath .githooks
+
+release-check:
+	@TAG_VERSION="$(VERSION)"; \
+	WAILS_VERSION=$$(jq -r '.info.productVersion' wails.json); \
+	if [ -z "$$TAG_VERSION" ]; then echo "Usage: make release-check VERSION=0.2.0"; exit 1; fi; \
+	if [ "$$TAG_VERSION" != "$$WAILS_VERSION" ]; then \
+		echo "ERROR: VERSION ($$TAG_VERSION) != wails.json productVersion ($$WAILS_VERSION)"; exit 1; \
+	fi; \
+	echo "Version $$WAILS_VERSION OK"

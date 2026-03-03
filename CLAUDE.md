@@ -27,6 +27,7 @@ panen/
 ├── build/               # Build assets (app icon)
 ├── docs/                # Documentation
 │   └── design-system.md # Design system reference (tokens, components, patterns)
+├── scripts/             # Release and install scripts
 ├── main.go              # Wails entry point
 └── wails.json           # Wails project config
 ```
@@ -47,6 +48,7 @@ make test-e2e          # Frontend E2E tests (Playwright, requires browser)
 make coverage          # Generate coverage reports (Go + frontend)
 make playwright-install # Install Chromium for E2E tests (run once)
 make frontend-install  # Install frontend dependencies
+make release-check     # Validate VERSION against wails.json productVersion
 ```
 
 ## Conventions
@@ -148,3 +150,42 @@ Reusable components in `frontend/src/lib/components/`: Button, Badge, Alert, The
 - Go methods on bound structs are auto-exposed to the frontend via `frontend/wailsjs/`
 - Frontend is a standard Vite project; Wails proxies it during dev
 - Git hooks live in `.githooks/` — other tools can inject blocks using `# BEGIN/END` markers
+
+## Release
+
+### Workflow
+
+1. Update `wails.json` `info.productVersion` to the new version (e.g. `0.2.0`)
+2. Commit: `chore: bump version to 0.2.0`
+3. Run: `scripts/release.sh 0.2.0` (validates version, creates tag, pushes)
+4. CI builds all platforms, creates GitHub Release with archives + checksums
+
+```sh
+scripts/release.sh 0.2.0    # Manual version
+scripts/release.sh --auto    # Auto-detect from conventional commits
+make release-check VERSION=0.2.0  # Local validation only (no tag/push)
+```
+
+### Archive Formats
+
+| Platform | Archive | Contents |
+|----------|---------|----------|
+| macOS | `panen-darwin-universal.zip` | `panen.app/` bundle |
+| Linux | `panen-linux-amd64.tar.gz` | Binary + `.desktop` + icon |
+| Windows | `panen-windows-amd64.zip` | `panen.exe` |
+
+Release builds use `garble` + Wails `-obfuscated` for Go binary obfuscation.
+
+### Install Script
+
+```sh
+# Install latest release (macOS/Linux)
+curl -fsSL https://raw.githubusercontent.com/lugassawan/panen/main/scripts/install.sh | sh
+
+# Install specific version
+PANEN_VERSION=v0.2.0 curl -fsSL https://raw.githubusercontent.com/lugassawan/panen/main/scripts/install.sh | sh
+```
+
+Install locations (no sudo required):
+- **macOS**: `~/Applications/panen.app`
+- **Linux**: `~/.local/bin/panen` + `.desktop` + icon
