@@ -14,7 +14,7 @@ type Repository interface {
 // ItemRepository defines persistence operations for watchlist items.
 type ItemRepository interface {
 	Add(ctx context.Context, item *Item) error
-	Remove(ctx context.Context, id string) error
+	Remove(ctx context.Context, watchlistID, ticker string) error
 	ListByWatchlistID(ctx context.Context, watchlistID string) ([]*Item, error)
 	ExistsByWatchlistAndTicker(ctx context.Context, watchlistID, ticker string) (bool, error)
 }

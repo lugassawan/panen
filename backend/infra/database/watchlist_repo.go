@@ -107,7 +107,7 @@ const (
 	watchlistItemAdd = `INSERT INTO watchlist_items
 		(id, watchlist_id, ticker, created_at)
 		VALUES (?, ?, ?, ?)`
-	watchlistItemRemove            = `DELETE FROM watchlist_items WHERE id = ?`
+	watchlistItemRemove            = `DELETE FROM watchlist_items WHERE watchlist_id = ? AND ticker = ?`
 	watchlistItemListByWatchlistID = `SELECT id, watchlist_id, ticker, created_at
 		FROM watchlist_items WHERE watchlist_id = ? ORDER BY ticker`
 	watchlistItemExists = `SELECT COUNT(*) FROM watchlist_items
@@ -130,8 +130,8 @@ func (r *WatchlistItemRepo) Add(ctx context.Context, item *watchlist.Item) error
 	return err
 }
 
-func (r *WatchlistItemRepo) Remove(ctx context.Context, id string) error {
-	res, err := r.db.ExecContext(ctx, watchlistItemRemove, id)
+func (r *WatchlistItemRepo) Remove(ctx context.Context, watchlistID, ticker string) error {
+	res, err := r.db.ExecContext(ctx, watchlistItemRemove, watchlistID, ticker)
 	if err != nil {
 		return err
 	}

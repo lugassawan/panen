@@ -357,7 +357,7 @@ func TestWatchlistItemRepoRemove(t *testing.T) {
 		t.Fatalf("Add() item2 error = %v", err)
 	}
 
-	if err := f.itemRepo.Remove(f.ctx, item1.ID); err != nil {
+	if err := f.itemRepo.Remove(f.ctx, w.ID, item1.Ticker); err != nil {
 		t.Fatalf("Remove() error = %v", err)
 	}
 
@@ -384,7 +384,19 @@ func TestWatchlistItemRepoRemove(t *testing.T) {
 func TestWatchlistItemRepoRemoveNotFound(t *testing.T) {
 	f := setupWatchlistTest(t)
 
-	err := f.itemRepo.Remove(f.ctx, "nonexistent")
+	// Create a watchlist to remove from — ticker doesn't exist
+	w := &watchlist.Watchlist{
+		ID:        shared.NewID(),
+		ProfileID: f.profile.ID,
+		Name:      "Remove Not Found",
+		CreatedAt: f.now,
+		UpdatedAt: f.now,
+	}
+	if err := f.repo.Create(f.ctx, w); err != nil {
+		t.Fatalf("Create() watchlist error = %v", err)
+	}
+
+	err := f.itemRepo.Remove(f.ctx, w.ID, "NONEXIST")
 	if !errors.Is(err, shared.ErrNotFound) {
 		t.Errorf("Remove() error = %v, want ErrNotFound", err)
 	}
