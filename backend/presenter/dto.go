@@ -115,3 +115,17 @@ type WatchlistItemResponse struct {
 	Verdict       *string  `json:"verdict,omitempty"`
 	FetchedAt     *string  `json:"fetchedAt,omitempty"`
 }
+
+// RefreshStatusResponse is the frontend-facing response for refresh status.
+type RefreshStatusResponse struct {
+	State       string `json:"state"`
+	LastRefresh string `json:"lastRefresh"`
+	Error       string `json:"error,omitempty"`
+}
+
+// RefreshSettingsResponse is the frontend-facing response for refresh settings.
+type RefreshSettingsResponse struct {
+	AutoRefreshEnabled bool   `json:"autoRefreshEnabled"`
+	IntervalMinutes    int    `json:"intervalMinutes"`
+	LastRefreshedAt    string `json:"lastRefreshedAt"`
+}
