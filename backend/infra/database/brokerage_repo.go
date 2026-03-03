@@ -11,15 +11,16 @@ import (
 
 const (
 	brokerageInsert = `INSERT INTO brokerage_accounts
-		(id, profile_id, broker_name, buy_fee_pct, sell_fee_pct, is_manual_fee, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-	brokerageGetByID = `SELECT id, profile_id, broker_name, buy_fee_pct, sell_fee_pct,
-		is_manual_fee, created_at, updated_at FROM brokerage_accounts WHERE id = ?`
-	brokerageListByProfileID = `SELECT id, profile_id, broker_name, buy_fee_pct, sell_fee_pct,
-		is_manual_fee, created_at, updated_at FROM brokerage_accounts
+		(id, profile_id, broker_name, broker_code, buy_fee_pct, sell_fee_pct, sell_tax_pct,
+		 is_manual_fee, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	brokerageGetByID = `SELECT id, profile_id, broker_name, broker_code, buy_fee_pct, sell_fee_pct,
+		sell_tax_pct, is_manual_fee, created_at, updated_at FROM brokerage_accounts WHERE id = ?`
+	brokerageListByProfileID = `SELECT id, profile_id, broker_name, broker_code, buy_fee_pct,
+		sell_fee_pct, sell_tax_pct, is_manual_fee, created_at, updated_at FROM brokerage_accounts
 		WHERE profile_id = ? ORDER BY created_at`
-	brokerageUpdate = `UPDATE brokerage_accounts SET broker_name = ?, buy_fee_pct = ?,
-		sell_fee_pct = ?, is_manual_fee = ?, updated_at = ? WHERE id = ?`
+	brokerageUpdate = `UPDATE brokerage_accounts SET broker_name = ?, broker_code = ?, buy_fee_pct = ?,
+		sell_fee_pct = ?, sell_tax_pct = ?, is_manual_fee = ?, updated_at = ? WHERE id = ?`
 	brokerageDelete = `DELETE FROM brokerage_accounts WHERE id = ?`
 )
 
@@ -35,8 +36,8 @@ func NewBrokerageRepo(db *sql.DB) *BrokerageRepo {
 
 func (r *BrokerageRepo) Create(ctx context.Context, a *brokerage.Account) error {
 	_, err := r.db.ExecContext(ctx, brokerageInsert,
-		a.ID, a.ProfileID, a.BrokerName, a.BuyFeePct, a.SellFeePct,
-		boolToInt(a.IsManualFee), formatTime(a.CreatedAt), formatTime(a.UpdatedAt))
+		a.ID, a.ProfileID, a.BrokerName, a.BrokerCode, a.BuyFeePct, a.SellFeePct,
+		a.SellTaxPct, boolToInt(a.IsManualFee), formatTime(a.CreatedAt), formatTime(a.UpdatedAt))
 	return err
 }
 
@@ -45,8 +46,8 @@ func (r *BrokerageRepo) GetByID(ctx context.Context, id string) (*brokerage.Acco
 	var isManual int
 	var createdAt, updatedAt string
 	err := r.db.QueryRowContext(ctx, brokerageGetByID, id).Scan(
-		&a.ID, &a.ProfileID, &a.BrokerName, &a.BuyFeePct, &a.SellFeePct,
-		&isManual, &createdAt, &updatedAt)
+		&a.ID, &a.ProfileID, &a.BrokerName, &a.BrokerCode, &a.BuyFeePct, &a.SellFeePct,
+		&a.SellTaxPct, &isManual, &createdAt, &updatedAt)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, shared.ErrNotFound
 	}
@@ -75,8 +76,8 @@ func (r *BrokerageRepo) ListByProfileID(ctx context.Context, profileID string) (
 		var a brokerage.Account
 		var isManual int
 		var createdAt, updatedAt string
-		if err := rows.Scan(&a.ID, &a.ProfileID, &a.BrokerName, &a.BuyFeePct,
-			&a.SellFeePct, &isManual, &createdAt, &updatedAt); err != nil {
+		if err := rows.Scan(&a.ID, &a.ProfileID, &a.BrokerName, &a.BrokerCode, &a.BuyFeePct,
+			&a.SellFeePct, &a.SellTaxPct, &isManual, &createdAt, &updatedAt); err != nil {
 			return nil, err
 		}
 		a.IsManualFee = isManual != 0
@@ -93,8 +94,8 @@ func (r *BrokerageRepo) ListByProfileID(ctx context.Context, profileID string) (
 
 func (r *BrokerageRepo) Update(ctx context.Context, a *brokerage.Account) error {
 	res, err := r.db.ExecContext(ctx, brokerageUpdate,
-		a.BrokerName, a.BuyFeePct, a.SellFeePct,
-		boolToInt(a.IsManualFee), formatTime(a.UpdatedAt), a.ID)
+		a.BrokerName, a.BrokerCode, a.BuyFeePct, a.SellFeePct,
+		a.SellTaxPct, boolToInt(a.IsManualFee), formatTime(a.UpdatedAt), a.ID)
 	if err != nil {
 		return err
 	}

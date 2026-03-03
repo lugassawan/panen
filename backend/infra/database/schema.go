@@ -3,6 +3,7 @@ package database
 // migrations holds all schema migration DDL strings, ordered by version.
 var migrations = []string{
 	migrationV1,
+	migrationV2,
 }
 
 const migrationV1 = `
@@ -77,4 +78,9 @@ CREATE TABLE stock_data (
 	source         TEXT NOT NULL,
 	UNIQUE(ticker, source)
 );
+`
+
+const migrationV2 = `
+ALTER TABLE brokerage_accounts ADD COLUMN sell_tax_pct REAL NOT NULL DEFAULT 0;
+ALTER TABLE brokerage_accounts ADD COLUMN broker_code TEXT NOT NULL DEFAULT '';
 `
