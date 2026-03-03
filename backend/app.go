@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/lugassawan/panen/backend/domain/user"
+	brokerConfigLoader "github.com/lugassawan/panen/backend/infra/brokerconfig"
 	"github.com/lugassawan/panen/backend/infra/database"
 	"github.com/lugassawan/panen/backend/infra/platform"
 	"github.com/lugassawan/panen/backend/infra/scraper"
@@ -20,6 +21,7 @@ type App struct {
 	*presenter.StockHandler
 	*presenter.PortfolioHandler
 	*presenter.BrokerageHandler
+	*presenter.BrokerConfigHandler
 	db *database.DB
 }
 
@@ -59,16 +61,20 @@ func (a *App) Startup(ctx context.Context) {
 
 	stocks := usecase.NewStockService(stockRepo, yahoo)
 	portfolios := usecase.NewPortfolioService(portfolioRepo, holdingRepo, buyTxnRepo, brokerageRepo, stockRepo)
-	brokerages := usecase.NewBrokerageService(brokerageRepo)
+	brokerages := usecase.NewBrokerageService(brokerageRepo, portfolioRepo)
 
 	profileID, err := ensureDefaultUser(ctx, userRepo)
 	if err != nil {
 		runtime.LogFatalf(ctx, "ensure default user: %v", err)
 	}
 
+	loader := brokerConfigLoader.NewLoader(dataDir)
+	brokerConfigs := loader.Load(ctx)
+
 	a.StockHandler = presenter.NewStockHandler(ctx, stocks)
 	a.PortfolioHandler = presenter.NewPortfolioHandler(ctx, portfolios)
 	a.BrokerageHandler = presenter.NewBrokerageHandler(ctx, profileID, brokerages)
+	a.BrokerConfigHandler = presenter.NewBrokerConfigHandler(brokerConfigs)
 }
 
 // Shutdown closes the database connection.
