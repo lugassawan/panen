@@ -92,10 +92,8 @@ async function loadItems() {
     }
 
     if (items.length > 0) {
-      const sectorList = await ListWatchlistSectors(
-        activeType === "preset" ? activePreset! : activeWatchlist!.id,
-        activeType === "preset",
-      );
+      const sectorId = activeType === "preset" ? (activePreset ?? "") : (activeWatchlist?.id ?? "");
+      const sectorList = await ListWatchlistSectors(sectorId, activeType === "preset");
       sectors = sectorList ?? [];
     }
 
