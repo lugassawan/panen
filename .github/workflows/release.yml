@@ -1,0 +1,176 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch: # For CI testing builds only (no release created)
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            platform: darwin/universal
+            archive_name: panen-darwin-universal.zip
+          - os: ubuntu-latest
+            platform: linux/amd64
+            archive_name: panen-linux-amd64.tar.gz
+          - os: windows-latest
+            platform: windows/amd64
+            archive_name: panen-windows-amd64.zip
+
+    runs-on: ${{ matrix.os }}
+    name: Build (${{ matrix.os }})
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "25"
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install Wails CLI
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.11.0
+
+      - name: Install garble
+        run: go install mvdan.cc/garble@v0.15.0
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          pnpm install
+
+      - name: Validate version
+        if: github.ref_type == 'tag'
+        shell: bash
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          WAILS_VERSION=$(jq -r '.info.productVersion' wails.json)
+          if [ "$TAG_VERSION" != "$WAILS_VERSION" ]; then
+            echo "::error::Tag version ($TAG_VERSION) does not match wails.json productVersion ($WAILS_VERSION)"
+            exit 1
+          fi
+          echo "Version $WAILS_VERSION OK"
+
+      - name: Build
+        run: wails build -clean -obfuscated -platform ${{ matrix.platform }}
+
+      - name: Package (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          cd build/bin
+          zip -r ../../${{ matrix.archive_name }} panen.app/
+
+      - name: Package (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          mkdir -p dist/panen
+          cp build/bin/panen dist/panen/
+          cp build/linux/panen.desktop dist/panen/
+          cp build/linux/panen.png dist/panen/
+          tar -czf ${{ matrix.archive_name }} -C dist panen
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path build/bin/panen.exe -DestinationPath ${{ matrix.archive_name }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.archive_name }}
+          path: ${{ matrix.archive_name }}
+
+  release:
+    needs: build
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    name: Create Release
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Generate checksums
+        run: |
+          cd artifacts
+          sha256sum *.zip *.tar.gz > SHA256SUMS.txt
+
+      - name: Generate changelog
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          PREV_TAG=$(git tag --sort=-v:refname | grep -v "^${TAG}$" | head -n 1 || true)
+
+          if [ -z "$PREV_TAG" ]; then
+            RANGE="$TAG"
+          else
+            RANGE="${PREV_TAG}..${TAG}"
+          fi
+
+          echo "## What's Changed" > release_notes.md
+          echo "" >> release_notes.md
+
+          ALL=$(git log "$RANGE" --pretty=format:'%s')
+          FEATS=$(echo "$ALL" | grep '^feat:' | sed 's/^/- /' || true)
+          FIXES=$(echo "$ALL" | grep '^fix:' | sed 's/^/- /' || true)
+          OTHERS=$(echo "$ALL" | grep -v '^feat:' | grep -v '^fix:' | sed 's/^/- /' || true)
+
+          if [ -n "$FEATS" ]; then
+            echo "### Features" >> release_notes.md
+            echo "$FEATS" >> release_notes.md
+            echo "" >> release_notes.md
+          fi
+
+          if [ -n "$FIXES" ]; then
+            echo "### Bug Fixes" >> release_notes.md
+            echo "$FIXES" >> release_notes.md
+            echo "" >> release_notes.md
+          fi
+
+          if [ -n "$OTHERS" ]; then
+            echo "### Other Changes" >> release_notes.md
+            echo "$OTHERS" >> release_notes.md
+            echo "" >> release_notes.md
+          fi
+
+          echo "### Checksums" >> release_notes.md
+          echo '```' >> release_notes.md
+          cat artifacts/SHA256SUMS.txt >> release_notes.md
+          echo '```' >> release_notes.md
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --notes-file release_notes.md \
+            artifacts/*
