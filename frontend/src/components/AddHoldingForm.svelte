@@ -45,21 +45,21 @@ async function submit() {
 	class="flex flex-wrap items-end gap-3"
 >
 	<div>
-		<label for="holding-ticker" class="mb-1 block text-sm text-neutral-400">
+		<label for="holding-ticker" class="mb-1 block text-sm text-text-secondary">
 			Ticker
 		</label>
 		<input
 			id="holding-ticker"
 			bind:value={ticker}
 			placeholder="e.g. BBCA"
-			class="w-28 rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm uppercase placeholder:normal-case placeholder:text-neutral-500 outline-none focus:border-amber-500"
+			class="w-28 rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary uppercase placeholder:normal-case placeholder:text-text-muted outline-none focus:border-green-700 focus-ring"
 		/>
 	</div>
 
 	<div>
 		<label
 			for="holding-buy-price"
-			class="mb-1 block text-sm text-neutral-400"
+			class="mb-1 block text-sm text-text-secondary"
 		>
 			Buy Price
 		</label>
@@ -68,12 +68,12 @@ async function submit() {
 			type="number"
 			bind:value={buyPrice}
 			min="0"
-			class="w-32 rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm outline-none focus:border-amber-500"
+			class="w-32 rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary outline-none focus:border-green-700 focus-ring"
 		/>
 	</div>
 
 	<div>
-		<label for="holding-lots" class="mb-1 block text-sm text-neutral-400">
+		<label for="holding-lots" class="mb-1 block text-sm text-text-secondary">
 			Lots
 		</label>
 		<input
@@ -81,33 +81,33 @@ async function submit() {
 			type="number"
 			bind:value={lots}
 			min="1"
-			class="w-20 rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm outline-none focus:border-amber-500"
+			class="w-20 rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary outline-none focus:border-green-700 focus-ring"
 		/>
 	</div>
 
 	<div>
-		<label for="holding-date" class="mb-1 block text-sm text-neutral-400">
+		<label for="holding-date" class="mb-1 block text-sm text-text-secondary">
 			Date
 		</label>
 		<input
 			id="holding-date"
 			type="date"
 			bind:value={date}
-			class="rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm outline-none focus:border-amber-500"
+			class="rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary outline-none focus:border-green-700 focus-ring"
 		/>
 	</div>
 
 	<button
 		type="submit"
 		disabled={loading}
-		class="rounded bg-amber-600 px-5 py-2 text-sm font-medium hover:bg-amber-500 disabled:opacity-50"
+		class="rounded bg-green-700 px-5 py-2 text-sm font-medium text-text-inverse hover:bg-green-800 disabled:opacity-50 focus-ring transition-fast"
 	>
 		{loading ? "Adding…" : "Add Holding"}
 	</button>
 
 	{#if error}
 		<div
-			class="w-full rounded border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400"
+			class="w-full rounded border border-negative/20 bg-negative-bg px-4 py-3 text-sm text-negative"
 			role="alert"
 		>
 			{error}

@@ -11,22 +11,22 @@ export interface VerdictDisplay {
 const verdictMap: Record<Verdict, VerdictDisplay> = {
   UNDERVALUED: {
     label: "Undervalued",
-    colorClass: "text-emerald-400",
-    bgClass: "bg-emerald-500/10 border-emerald-500/30",
+    colorClass: "text-positive",
+    bgClass: "bg-positive-bg border-positive/20",
     icon: "\u25B2",
     description: "Trading below estimated intrinsic value",
   },
   FAIR: {
     label: "Fair Value",
-    colorClass: "text-amber-400",
-    bgClass: "bg-amber-500/10 border-amber-500/30",
+    colorClass: "text-warning",
+    bgClass: "bg-warning-bg border-warning/20",
     icon: "\u25C6",
     description: "Trading near estimated intrinsic value",
   },
   OVERVALUED: {
     label: "Overvalued",
-    colorClass: "text-red-400",
-    bgClass: "bg-red-500/10 border-red-500/30",
+    colorClass: "text-negative",
+    bgClass: "bg-negative-bg border-negative/20",
     icon: "\u25BC",
     description: "Trading above estimated intrinsic value",
   },
@@ -34,8 +34,8 @@ const verdictMap: Record<Verdict, VerdictDisplay> = {
 
 const fallback: VerdictDisplay = {
   label: "Unknown",
-  colorClass: "text-neutral-400",
-  bgClass: "bg-neutral-500/10 border-neutral-500/30",
+  colorClass: "text-text-muted",
+  bgClass: "bg-bg-tertiary border-border-default",
   icon: "?",
   description: "Verdict not recognized",
 };

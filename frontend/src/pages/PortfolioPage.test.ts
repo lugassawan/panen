@@ -170,7 +170,7 @@ describe("PortfolioPage", () => {
       // P/L = (9500 - 8500) / 8500 * 100 = 11.76%
       const plCell = screen.getByTestId("pl-BBCA");
       expect(plCell.textContent).toMatch(/11[.,]76/);
-      expect(plCell.className).toMatch(/text-emerald/);
+      expect(plCell.className).toMatch(/text-profit/);
     });
 
     it("shows P/L % with color coding for loss", async () => {
@@ -190,7 +190,7 @@ describe("PortfolioPage", () => {
       await screen.findByText("BBCA");
       const plCell = screen.getByTestId("pl-BBCA");
       expect(plCell.textContent).toMatch(/10[.,]53/);
-      expect(plCell.className).toMatch(/text-red/);
+      expect(plCell.className).toMatch(/text-loss/);
     });
 
     it("shows verdict badge", async () => {
