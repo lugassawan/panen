@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Panen
+Comment=Desktop decision engine for Indonesian Stock Exchange (IDX) investors
+Exec=panen
+Icon=panen
+Terminal=false
+Categories=Office;Finance;
+StartupWMClass=panen
