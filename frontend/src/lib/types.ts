@@ -112,3 +112,31 @@ export interface WatchlistItemResponse {
   verdict?: string;
   fetchedAt?: string;
 }
+
+export interface RefreshProgress {
+  ticker: string;
+  index: number;
+  total: number;
+  status: "success" | "skipped" | "error";
+  error?: string;
+}
+
+export interface RefreshSummary {
+  total: number;
+  fetched: number;
+  skipped: number;
+  failed: number;
+  duration: string;
+}
+
+export interface RefreshStatus {
+  state: "idle" | "syncing" | "error";
+  lastRefresh: string;
+  error?: string;
+}
+
+export interface RefreshSettingsResponse {
+  autoRefreshEnabled: boolean;
+  intervalMinutes: number;
+  lastRefreshedAt: string;
+}
