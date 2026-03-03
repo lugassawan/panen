@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -60,7 +61,65 @@ func (s *PortfolioService) Create(ctx context.Context, p *portfolio.Portfolio) e
 	if _, err := portfolio.ParseRiskProfile(string(p.RiskProfile)); err != nil {
 		return err
 	}
+
+	siblings, err := s.portfolios.ListByBrokerageAccountID(ctx, p.BrokerageAccountID)
+	if err != nil {
+		return err
+	}
+	for _, sib := range siblings {
+		if sib.Mode == p.Mode {
+			return ErrDuplicateMode
+		}
+	}
+
 	return s.portfolios.Create(ctx, p)
+}
+
+// GetByID returns a single portfolio by ID.
+func (s *PortfolioService) GetByID(ctx context.Context, id string) (*portfolio.Portfolio, error) {
+	if strings.TrimSpace(id) == "" {
+		return nil, ErrEmptyID
+	}
+	return s.portfolios.GetByID(ctx, id)
+}
+
+// Update validates and persists changes to a portfolio.
+func (s *PortfolioService) Update(ctx context.Context, p *portfolio.Portfolio) error {
+	if strings.TrimSpace(p.ID) == "" {
+		return ErrEmptyID
+	}
+	if strings.TrimSpace(p.Name) == "" {
+		return ErrEmptyName
+	}
+	if _, err := portfolio.ParseRiskProfile(string(p.RiskProfile)); err != nil {
+		return err
+	}
+
+	existing, err := s.portfolios.GetByID(ctx, p.ID)
+	if err != nil {
+		return err
+	}
+	if p.Mode != existing.Mode {
+		return ErrModeImmutable
+	}
+
+	p.UpdatedAt = time.Now().UTC()
+	return s.portfolios.Update(ctx, p)
+}
+
+// Delete removes a portfolio if it has no holdings.
+func (s *PortfolioService) Delete(ctx context.Context, id string) error {
+	if strings.TrimSpace(id) == "" {
+		return ErrEmptyID
+	}
+	holdings, err := s.holdings.ListByPortfolioID(ctx, id)
+	if err != nil {
+		return err
+	}
+	if len(holdings) > 0 {
+		return fmt.Errorf("%w: %d holding(s) linked", ErrHasHoldings, len(holdings))
+	}
+	return s.portfolios.Delete(ctx, id)
 }
 
 // ListByBrokerageAccountID returns all portfolios for a brokerage account.
@@ -100,6 +159,10 @@ func (s *PortfolioService) AddHolding(
 
 	acct, err := s.brokerages.GetByID(ctx, p.BrokerageAccountID)
 	if err != nil {
+		return nil, err
+	}
+
+	if err := s.checkDuplicateHolding(ctx, p.BrokerageAccountID, portfolioID, ticker); err != nil {
 		return nil, err
 	}
 
@@ -178,4 +241,29 @@ func (s *PortfolioService) GetDetail(
 	}
 
 	return p, result, nil
+}
+
+// checkDuplicateHolding ensures a ticker is not already held in a sibling portfolio
+// under the same brokerage account.
+func (s *PortfolioService) checkDuplicateHolding(
+	ctx context.Context,
+	brokerageAccountID, portfolioID, ticker string,
+) error {
+	siblings, err := s.portfolios.ListByBrokerageAccountID(ctx, brokerageAccountID)
+	if err != nil {
+		return err
+	}
+	for _, sib := range siblings {
+		if sib.ID == portfolioID {
+			continue
+		}
+		_, sibErr := s.holdings.GetByPortfolioAndTicker(ctx, sib.ID, ticker)
+		if sibErr == nil {
+			return fmt.Errorf("%w: %s in portfolio %q", ErrDuplicateHolding, ticker, sib.Name)
+		}
+		if !errors.Is(sibErr, shared.ErrNotFound) {
+			return sibErr
+		}
+	}
+	return nil
 }

@@ -1,6 +1,7 @@
 <script lang="ts">
-import { LoaderCircle } from "lucide-svelte";
+import { ArrowLeft, LoaderCircle, Pencil, Plus, Trash2 } from "lucide-svelte";
 import {
+  DeletePortfolio,
   GetPortfolio,
   ListBrokerageAccounts,
   ListBrokerConfigs,
@@ -8,17 +9,27 @@ import {
 } from "../../wailsjs/go/backend/App";
 import AddHoldingForm from "../components/AddHoldingForm.svelte";
 import BrokerageAccountForm from "../components/BrokerageAccountForm.svelte";
+import ConfirmDialog from "../components/ConfirmDialog.svelte";
 import PortfolioForm from "../components/PortfolioForm.svelte";
+import Button from "../lib/components/Button.svelte";
 import { formatPercent, formatRupiah } from "../lib/format";
 import type {
   BrokerageAccountResponse,
   BrokerConfigResponse,
   HoldingDetailResponse,
   PortfolioDetailResponse,
+  PortfolioResponse,
 } from "../lib/types";
 import { getVerdictDisplay } from "../lib/verdict";
 
-type PageState = "loading" | "onboarding" | "create-portfolio" | "view" | "error";
+type PageState =
+  | "loading"
+  | "onboarding"
+  | "create-portfolio"
+  | "list"
+  | "view"
+  | "edit-portfolio"
+  | "error";
 
 let state = $state<PageState>("loading");
 let error = $state<string | null>(null);
@@ -26,6 +37,16 @@ let brokerageAcctId = $state<string | null>(null);
 let detail = $state<PortfolioDetailResponse | null>(null);
 let onboardingStep = $state<1 | 2>(1);
 let brokerConfigs = $state<BrokerConfigResponse[]>([]);
+let portfolios = $state<PortfolioResponse[]>([]);
+let editingPortfolio = $state<PortfolioResponse | null>(null);
+let deletingPortfolio = $state<PortfolioResponse | null>(null);
+let deleteLoading = $state(false);
+let deleteError = $state<string | null>(null);
+
+const MODE_BADGE: Record<string, string> = {
+  VALUE: "bg-green-100 text-green-700",
+  DIVIDEND: "bg-gold-100 text-gold-700",
+};
 
 async function load() {
   state = "loading";
@@ -42,18 +63,59 @@ async function load() {
     }
 
     brokerageAcctId = accounts[0].id;
-    const portfolios = await ListPortfolios(brokerageAcctId);
-    if (!portfolios || portfolios.length === 0) {
+    const result = await ListPortfolios(brokerageAcctId);
+    portfolios = result ?? [];
+    if (portfolios.length === 0) {
       state = "create-portfolio";
       return;
     }
 
-    detail = await GetPortfolio(portfolios[0].id);
+    state = "list";
+  } catch (e: unknown) {
+    error = e instanceof Error ? e.message : String(e);
+    state = "error";
+  }
+}
+
+async function viewPortfolio(portfolio: PortfolioResponse) {
+  state = "loading";
+  try {
+    detail = await GetPortfolio(portfolio.id);
     state = "view";
   } catch (e: unknown) {
     error = e instanceof Error ? e.message : String(e);
     state = "error";
   }
+}
+
+function startEdit(portfolio: PortfolioResponse) {
+  editingPortfolio = portfolio;
+  state = "edit-portfolio";
+}
+
+function startDelete(portfolio: PortfolioResponse) {
+  deletingPortfolio = portfolio;
+  deleteError = null;
+}
+
+async function confirmDelete() {
+  if (!deletingPortfolio) return;
+  deleteLoading = true;
+  deleteError = null;
+  try {
+    await DeletePortfolio(deletingPortfolio.id);
+    deletingPortfolio = null;
+    await load();
+  } catch (e: unknown) {
+    deleteError = e instanceof Error ? e.message : String(e);
+  } finally {
+    deleteLoading = false;
+  }
+}
+
+function cancelDelete() {
+  deletingPortfolio = null;
+  deleteError = null;
 }
 
 function getSignal(h: HoldingDetailResponse): string {
@@ -121,7 +183,7 @@ load();
         <div class="rounded border border-border-default bg-bg-elevated p-6">
           <PortfolioForm
             brokerageAcctId={brokerageAcctId ?? ""}
-            onCreated={() => load()}
+            onSaved={() => load()}
           />
         </div>
       {/if}
@@ -132,12 +194,88 @@ load();
       <div class="rounded border border-border-default bg-bg-elevated p-6">
         <PortfolioForm
           brokerageAcctId={brokerageAcctId ?? ""}
-          onCreated={() => load()}
+          onSaved={() => load()}
+        />
+      </div>
+    </div>
+  {:else if state === "list"}
+    <div class="mb-6 flex items-center justify-between">
+      <h2 class="text-xl font-semibold text-text-primary">Portfolios</h2>
+      {#if portfolios.length < 2}
+        <Button onclick={() => { state = "create-portfolio"; }}>
+          <Plus size={16} strokeWidth={2} />
+          New Portfolio
+        </Button>
+      {/if}
+    </div>
+
+    <div class="grid gap-4">
+      {#each portfolios as portfolio}
+        <div
+          class="flex items-center justify-between rounded border border-border-default bg-bg-elevated p-4"
+          data-testid="portfolio-card"
+        >
+          <button
+            type="button"
+            class="flex-1 text-left"
+            onclick={() => viewPortfolio(portfolio)}
+          >
+            <div class="flex items-center gap-2">
+              <p class="font-medium text-text-primary">{portfolio.name}</p>
+              <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {MODE_BADGE[portfolio.mode]}" data-testid="mode-badge">
+                {portfolio.mode === "VALUE" ? "Value" : "Dividend"}
+              </span>
+            </div>
+            <div class="mt-1 flex gap-4 text-sm text-text-secondary">
+              <span>Risk: {portfolio.riskProfile.charAt(0) + portfolio.riskProfile.slice(1).toLowerCase()}</span>
+              <span>Capital: <span class="font-mono">{formatRupiah(portfolio.capital)}</span></span>
+            </div>
+          </button>
+          <div class="flex gap-2">
+            <Button variant="ghost" size="sm" onclick={() => startEdit(portfolio)}>
+              <Pencil size={14} strokeWidth={2} />
+              Edit
+            </Button>
+            <Button variant="ghost" size="sm" onclick={() => startDelete(portfolio)}>
+              <Trash2 size={14} strokeWidth={2} />
+              Delete
+            </Button>
+          </div>
+        </div>
+      {/each}
+    </div>
+  {:else if state === "edit-portfolio" && editingPortfolio}
+    <div class="mx-auto max-w-lg">
+      <h3 class="mb-4 text-lg font-semibold text-text-primary">Edit Portfolio</h3>
+      <div class="rounded border border-border-default bg-bg-elevated p-6">
+        <PortfolioForm
+          existingPortfolio={editingPortfolio}
+          onSaved={() => {
+            editingPortfolio = null;
+            load();
+          }}
+          onCancel={() => {
+            editingPortfolio = null;
+            state = "list";
+          }}
         />
       </div>
     </div>
   {:else if state === "view" && detail}
-    <h2 class="mb-6 text-xl font-semibold text-text-primary">{detail.portfolio.name}</h2>
+    <div class="mb-6 flex items-center gap-3">
+      <button
+        type="button"
+        class="rounded p-1 text-text-secondary hover:bg-bg-tertiary hover:text-text-primary focus-ring transition-fast"
+        onclick={() => load()}
+        aria-label="Back to list"
+      >
+        <ArrowLeft size={20} strokeWidth={2} />
+      </button>
+      <h2 class="text-xl font-semibold text-text-primary">{detail.portfolio.name}</h2>
+      <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {MODE_BADGE[detail.portfolio.mode]}">
+        {detail.portfolio.mode === "VALUE" ? "Value" : "Dividend"}
+      </span>
+    </div>
 
     <!-- Summary Bar -->
     <div class="mb-6 grid grid-cols-3 gap-4">
@@ -218,7 +356,26 @@ load();
     <!-- Add Holding -->
     <div class="rounded border border-border-default bg-bg-elevated p-4">
       <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">Add Holding</h3>
-      <AddHoldingForm portfolioId={detail.portfolio.id} onAdded={() => load()} />
+      <AddHoldingForm portfolioId={detail.portfolio.id} onAdded={() => viewPortfolio(detail!.portfolio)} />
     </div>
   {/if}
 </div>
+
+{#if deletingPortfolio}
+  <ConfirmDialog
+    title="Delete Portfolio"
+    confirmLabel="Delete"
+    confirmVariant="danger"
+    loading={deleteLoading}
+    onConfirm={confirmDelete}
+    onCancel={cancelDelete}
+  >
+    <p>Are you sure you want to delete <strong>{deletingPortfolio.name}</strong>?</p>
+    <p class="mt-1">This action cannot be undone.</p>
+    {#if deleteError}
+      <div class="mt-3 rounded border border-negative/20 bg-negative-bg px-3 py-2 text-sm text-negative" role="alert">
+        {deleteError}
+      </div>
+    {/if}
+  </ConfirmDialog>
+{/if}

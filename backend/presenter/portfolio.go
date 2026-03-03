@@ -88,3 +88,33 @@ func (h *PortfolioHandler) GetPortfolio(id string) (*PortfolioDetailResponse, er
 	}
 	return newPortfolioDetailResponse(p, holdings), nil
 }
+
+// UpdatePortfolio updates a portfolio's mutable fields (mode is locked post-creation).
+func (h *PortfolioHandler) UpdatePortfolio(
+	id, name, riskProfile string,
+	capital, monthlyAddition float64,
+	maxStocks int,
+) (*PortfolioResponse, error) {
+	rp, err := portfolio.ParseRiskProfile(riskProfile)
+	if err != nil {
+		return nil, err
+	}
+	p, err := h.portfolios.GetByID(h.ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	p.Name = name
+	p.RiskProfile = rp
+	p.Capital = capital
+	p.MonthlyAddition = monthlyAddition
+	p.MaxStocks = maxStocks
+	if err := h.portfolios.Update(h.ctx, p); err != nil {
+		return nil, err
+	}
+	return newPortfolioResponse(p), nil
+}
+
+// DeletePortfolio removes a portfolio by ID.
+func (h *PortfolioHandler) DeletePortfolio(id string) error {
+	return h.portfolios.Delete(h.ctx, id)
+}
