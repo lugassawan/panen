@@ -90,3 +90,28 @@ type PortfolioDetailResponse struct {
 	Portfolio PortfolioResponse       `json:"portfolio"`
 	Holdings  []HoldingDetailResponse `json:"holdings"`
 }
+
+// WatchlistResponse is the frontend-facing response for a watchlist.
+type WatchlistResponse struct {
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	CreatedAt string `json:"createdAt"`
+	UpdatedAt string `json:"updatedAt"`
+}
+
+// WatchlistItemResponse is the frontend-facing response for a watchlist item with optional data.
+type WatchlistItemResponse struct {
+	Ticker        string   `json:"ticker"`
+	Sector        string   `json:"sector"`
+	Price         *float64 `json:"price,omitempty"`
+	ROE           *float64 `json:"roe,omitempty"`
+	DER           *float64 `json:"der,omitempty"`
+	EPS           *float64 `json:"eps,omitempty"`
+	DividendYield *float64 `json:"dividendYield,omitempty"`
+	PayoutRatio   *float64 `json:"payoutRatio,omitempty"`
+	GrahamNumber  *float64 `json:"grahamNumber,omitempty"`
+	EntryPrice    *float64 `json:"entryPrice,omitempty"`
+	ExitTarget    *float64 `json:"exitTarget,omitempty"`
+	Verdict       *string  `json:"verdict,omitempty"`
+	FetchedAt     *string  `json:"fetchedAt,omitempty"`
+}
