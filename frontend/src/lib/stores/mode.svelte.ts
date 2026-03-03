@@ -5,7 +5,7 @@
  * Mode determines accent color, visible metrics, and UI behavior.
  *
  * Usage:
- *   import { mode } from "$lib/stores/mode.svelte";
+ *   import { mode } from "../stores/mode.svelte";
  *
  *   <div class={mode.containerClass}>...</div>
  *   <span style:color={mode.accentColor}>Active</span>

@@ -1,4 +1,5 @@
 <script lang="ts">
+import { formatRupiah } from "../format";
 import Badge from "./Badge.svelte";
 
 let {
@@ -33,10 +34,10 @@ const isPositive = $derived(change >= 0);
 
   <div class="mt-3">
     <span class="font-mono text-xl font-semibold">
-      Rp {price.toLocaleString("id-ID")}
+      {formatRupiah(price)}
     </span>
     <span class="ml-2 font-mono text-sm {isPositive ? 'text-profit' : 'text-loss'}">
-      {isPositive ? "+" : ""}{change.toLocaleString("id-ID")}
+      {isPositive ? "+" : ""}{formatRupiah(change)}
       ({isPositive ? "+" : ""}{changePercent.toFixed(2)}%)
     </span>
   </div>

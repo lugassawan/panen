@@ -5,7 +5,7 @@
  * Persists to localStorage, syncs with OS preference.
  *
  * Usage in components:
- *   import { theme } from "$lib/stores/theme.svelte";
+ *   import { theme } from "../stores/theme.svelte";
  *
  *   <button onclick={() => theme.set('dark')}>Dark</button>
  *   <span>{theme.current}</span>    // 'light' | 'dark'
