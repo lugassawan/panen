@@ -53,6 +53,20 @@ func (r *mockStockRepo) DeleteOlderThan(_ context.Context, _ time.Time) (int64, 
 	return 0, nil
 }
 
+func (r *mockStockRepo) ListAllTickers(_ context.Context) ([]string, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	seen := make(map[string]bool)
+	var tickers []string
+	for _, d := range r.items {
+		if !seen[d.Ticker] {
+			seen[d.Ticker] = true
+			tickers = append(tickers, d.Ticker)
+		}
+	}
+	return tickers, nil
+}
+
 // mockProvider is an in-memory stock.DataProvider for testing.
 type mockProvider struct {
 	source    string
