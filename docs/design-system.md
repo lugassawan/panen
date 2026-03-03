@@ -135,7 +135,7 @@ Apply `mode-value` or `mode-dividend` to a parent container. Children reference 
 | `font-body` | DM Sans | Body, labels, UI controls | 400–700 |
 | `font-mono` | DM Mono | Prices, percentages, ratios | 400–500 |
 
-All three fonts are loaded from Google Fonts in `app.css`. The default `html` element uses `font-body`.
+All three fonts are self-hosted as WOFF2 files in `frontend/src/assets/fonts/` and declared via `@font-face` in `app.css`. No external requests to Google Fonts. The default `html` element uses `font-body`.
 
 ### Type Scale
 
@@ -459,11 +459,39 @@ The transition utilities set `transition-duration` and `transition-timing-functi
 
 ## 9. Iconography
 
-- **Navigation and modes:** System emoji (inline, `aria-hidden="true"`)
-- **UI actions** (close, chevron, spinner): Inline SVG, 16–20px, 1.5px stroke, `currentColor`
-- **Lucide Icons** for action icons: 18px default, 1.5px stroke
+**Library:** [Lucide](https://lucide.dev) via `lucide-svelte` — tree-shakeable Svelte components.
 
-Always pair icons with a visible text label. Never communicate state through color alone — combine with icon and text.
+### Usage
+
+```svelte
+<script lang="ts">
+  import { Search, Settings, LoaderCircle } from "lucide-svelte";
+</script>
+
+<!-- Navigation / UI icon -->
+<Search size={20} strokeWidth={1.5} />
+
+<!-- Spinner -->
+<LoaderCircle size={16} strokeWidth={2} class="animate-spin" />
+```
+
+### Sizing Conventions
+
+| Context | Size | Stroke Width |
+|---|---|---|
+| Navigation icons (sidebar) | 20 | 1.5 |
+| Theme toggle, UI actions | 20 | 1.5 |
+| Close / dismiss buttons | 16 | 2 |
+| Loading spinners (inline) | 16 | 2 |
+| Loading spinners (page-level) | 20 | 2 |
+
+### Guidelines
+
+- Import only the icons you need — each is a separate module for tree-shaking
+- Use `class` prop to forward Tailwind classes (e.g., `class="animate-spin"`, `class="shrink-0"`)
+- **Emoji** remains acceptable for modes (`ModeTabs.svelte`) and decorative content (`StockCard.svelte`)
+- Always pair icons with a visible text label
+- Never communicate state through color alone — combine with icon and text
 
 ---
 
