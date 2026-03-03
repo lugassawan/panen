@@ -61,8 +61,10 @@ func newBrokerageAccountResponse(acct *brokerage.Account) *BrokerageAccountRespo
 	return &BrokerageAccountResponse{
 		ID:          acct.ID,
 		BrokerName:  acct.BrokerName,
+		BrokerCode:  acct.BrokerCode,
 		BuyFeePct:   acct.BuyFeePct,
 		SellFeePct:  acct.SellFeePct,
+		SellTaxPct:  acct.SellTaxPct,
 		IsManualFee: acct.IsManualFee,
 		CreatedAt:   formatDTO(acct.CreatedAt),
 		UpdatedAt:   formatDTO(acct.UpdatedAt),

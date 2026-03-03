@@ -38,11 +38,23 @@ type StockValuationResponse struct {
 type BrokerageAccountResponse struct {
 	ID          string  `json:"id"`
 	BrokerName  string  `json:"brokerName"`
+	BrokerCode  string  `json:"brokerCode"`
 	BuyFeePct   float64 `json:"buyFeePct"`
 	SellFeePct  float64 `json:"sellFeePct"`
+	SellTaxPct  float64 `json:"sellTaxPct"`
 	IsManualFee bool    `json:"isManualFee"`
 	CreatedAt   string  `json:"createdAt"`
 	UpdatedAt   string  `json:"updatedAt"`
+}
+
+// BrokerConfigResponse is the frontend-facing response for a broker configuration.
+type BrokerConfigResponse struct {
+	Code       string  `json:"code"`
+	Name       string  `json:"name"`
+	BuyFeePct  float64 `json:"buyFeePct"`
+	SellFeePct float64 `json:"sellFeePct"`
+	SellTaxPct float64 `json:"sellTaxPct"`
+	Notes      string  `json:"notes"`
 }
 
 // PortfolioResponse is the frontend-facing response for a portfolio.

@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/lugassawan/panen/backend/domain/brokerage"
 	"github.com/lugassawan/panen/backend/domain/stock"
 	"github.com/lugassawan/panen/backend/domain/valuation"
 )
@@ -114,4 +115,46 @@ func TestNewBandStatsResponse(t *testing.T) {
 			t.Errorf("expected nil response, got %+v", resp)
 		}
 	})
+}
+
+func TestNewBrokerageAccountResponse(t *testing.T) {
+	now := time.Date(2025, 6, 15, 10, 30, 0, 0, time.UTC)
+	acct := &brokerage.Account{
+		ID:          "b1",
+		BrokerName:  "Ajaib",
+		BrokerCode:  "AJAIB",
+		BuyFeePct:   0.15,
+		SellFeePct:  0.25,
+		SellTaxPct:  0.1,
+		IsManualFee: true,
+		CreatedAt:   now,
+		UpdatedAt:   now,
+	}
+
+	resp := newBrokerageAccountResponse(acct)
+
+	if resp.ID != "b1" {
+		t.Errorf("ID = %q, want b1", resp.ID)
+	}
+	if resp.BrokerName != "Ajaib" {
+		t.Errorf("BrokerName = %q, want Ajaib", resp.BrokerName)
+	}
+	if resp.BrokerCode != "AJAIB" {
+		t.Errorf("BrokerCode = %q, want AJAIB", resp.BrokerCode)
+	}
+	if resp.BuyFeePct != 0.15 {
+		t.Errorf("BuyFeePct = %v, want 0.15", resp.BuyFeePct)
+	}
+	if resp.SellFeePct != 0.25 {
+		t.Errorf("SellFeePct = %v, want 0.25", resp.SellFeePct)
+	}
+	if resp.SellTaxPct != 0.1 {
+		t.Errorf("SellTaxPct = %v, want 0.1", resp.SellTaxPct)
+	}
+	if !resp.IsManualFee {
+		t.Error("IsManualFee = false, want true")
+	}
+	if resp.CreatedAt != "2025-06-15T10:30:00Z" {
+		t.Errorf("CreatedAt = %q, want 2025-06-15T10:30:00Z", resp.CreatedAt)
+	}
 }

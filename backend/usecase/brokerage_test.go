@@ -7,16 +7,17 @@ import (
 	"time"
 
 	"github.com/lugassawan/panen/backend/domain/brokerage"
+	"github.com/lugassawan/panen/backend/domain/portfolio"
 	"github.com/lugassawan/panen/backend/domain/shared"
 )
 
 func TestBrokerageServiceCreateHappy(t *testing.T) {
 	repo := newMockBrokerageRepo()
-	svc := NewBrokerageService(repo)
+	svc := NewBrokerageService(repo, newMockPortfolioRepo())
 
 	acct := &brokerage.Account{
 		ID: shared.NewID(), ProfileID: "p1", BrokerName: "Ajaib",
-		BuyFeePct: 0.15, SellFeePct: 0.25,
+		BrokerCode: "AJAIB", BuyFeePct: 0.15, SellFeePct: 0.25, SellTaxPct: 0.1,
 		CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(),
 	}
 	if err := svc.Create(context.Background(), acct); err != nil {
@@ -33,7 +34,7 @@ func TestBrokerageServiceCreateHappy(t *testing.T) {
 }
 
 func TestBrokerageServiceCreateEmptyName(t *testing.T) {
-	svc := NewBrokerageService(newMockBrokerageRepo())
+	svc := NewBrokerageService(newMockBrokerageRepo(), newMockPortfolioRepo())
 
 	acct := &brokerage.Account{ID: shared.NewID(), BrokerName: "  "}
 	err := svc.Create(context.Background(), acct)
@@ -44,7 +45,7 @@ func TestBrokerageServiceCreateEmptyName(t *testing.T) {
 
 func TestBrokerageServiceListByProfileIDHappy(t *testing.T) {
 	repo := newMockBrokerageRepo()
-	svc := NewBrokerageService(repo)
+	svc := NewBrokerageService(repo, newMockPortfolioRepo())
 	ctx := context.Background()
 
 	acct := &brokerage.Account{
@@ -69,7 +70,7 @@ func TestBrokerageServiceListByProfileIDHappy(t *testing.T) {
 }
 
 func TestBrokerageServiceListByProfileIDEmpty(t *testing.T) {
-	svc := NewBrokerageService(newMockBrokerageRepo())
+	svc := NewBrokerageService(newMockBrokerageRepo(), newMockPortfolioRepo())
 
 	got, err := svc.ListByProfileID(context.Background(), "nonexistent")
 	if err != nil {
@@ -84,28 +85,189 @@ func TestBrokerageServiceListByProfileIDEmpty(t *testing.T) {
 	}
 }
 
-func TestBrokerageServiceCreateNegativeFee(t *testing.T) {
-	svc := NewBrokerageService(newMockBrokerageRepo())
-
-	tests := []struct {
+func negativeFeeTests() []struct {
+	name    string
+	buyFee  float64
+	sellFee float64
+	sellTax float64
+} {
+	return []struct {
 		name    string
 		buyFee  float64
 		sellFee float64
+		sellTax float64
 	}{
-		{name: "negative buy fee", buyFee: -0.1, sellFee: 0},
-		{name: "negative sell fee", buyFee: 0, sellFee: -0.1},
+		{name: "negative buy fee", buyFee: -0.1, sellFee: 0, sellTax: 0},
+		{name: "negative sell fee", buyFee: 0, sellFee: -0.1, sellTax: 0},
+		{name: "negative sell tax", buyFee: 0, sellFee: 0, sellTax: -0.1},
 	}
+}
 
-	for _, tt := range tests {
+func TestBrokerageServiceCreateNegativeFee(t *testing.T) {
+	svc := NewBrokerageService(newMockBrokerageRepo(), newMockPortfolioRepo())
+
+	for _, tt := range negativeFeeTests() {
 		t.Run(tt.name, func(t *testing.T) {
 			acct := &brokerage.Account{
 				ID: shared.NewID(), BrokerName: "Broker",
-				BuyFeePct: tt.buyFee, SellFeePct: tt.sellFee,
+				BuyFeePct: tt.buyFee, SellFeePct: tt.sellFee, SellTaxPct: tt.sellTax,
 			}
 			err := svc.Create(context.Background(), acct)
 			if !errors.Is(err, ErrInvalidFee) {
 				t.Errorf("Create() error = %v, want ErrInvalidFee", err)
 			}
 		})
+	}
+}
+
+func TestBrokerageServiceGetByIDHappy(t *testing.T) {
+	repo := newMockBrokerageRepo()
+	svc := NewBrokerageService(repo, newMockPortfolioRepo())
+	ctx := context.Background()
+
+	acct := &brokerage.Account{
+		ID: shared.NewID(), ProfileID: "p1", BrokerName: "IPOT",
+		CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(),
+	}
+	if err := repo.Create(ctx, acct); err != nil {
+		t.Fatalf("Create() error = %v", err)
+	}
+
+	got, err := svc.GetByID(ctx, acct.ID)
+	if err != nil {
+		t.Fatalf("GetByID() error = %v", err)
+	}
+	if got.BrokerName != "IPOT" {
+		t.Errorf("BrokerName = %q, want IPOT", got.BrokerName)
+	}
+}
+
+func TestBrokerageServiceGetByIDEmptyID(t *testing.T) {
+	svc := NewBrokerageService(newMockBrokerageRepo(), newMockPortfolioRepo())
+
+	_, err := svc.GetByID(context.Background(), "")
+	if !errors.Is(err, ErrEmptyID) {
+		t.Errorf("GetByID() error = %v, want ErrEmptyID", err)
+	}
+}
+
+func TestBrokerageServiceUpdateHappy(t *testing.T) {
+	repo := newMockBrokerageRepo()
+	svc := NewBrokerageService(repo, newMockPortfolioRepo())
+	ctx := context.Background()
+
+	acct := &brokerage.Account{
+		ID: shared.NewID(), ProfileID: "p1", BrokerName: "Stockbit",
+		BuyFeePct: 0.15, SellFeePct: 0.25,
+		CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(),
+	}
+	if err := repo.Create(ctx, acct); err != nil {
+		t.Fatalf("Create() error = %v", err)
+	}
+
+	acct.BrokerName = "Bibit"
+	acct.BuyFeePct = 0.20
+	if err := svc.Update(ctx, acct); err != nil {
+		t.Fatalf("Update() error = %v", err)
+	}
+
+	got, err := repo.GetByID(ctx, acct.ID)
+	if err != nil {
+		t.Fatalf("GetByID() error = %v", err)
+	}
+	if got.BrokerName != "Bibit" {
+		t.Errorf("BrokerName = %q, want Bibit", got.BrokerName)
+	}
+	if got.BuyFeePct != 0.20 {
+		t.Errorf("BuyFeePct = %f, want 0.20", got.BuyFeePct)
+	}
+}
+
+func TestBrokerageServiceUpdateEmptyName(t *testing.T) {
+	svc := NewBrokerageService(newMockBrokerageRepo(), newMockPortfolioRepo())
+
+	acct := &brokerage.Account{ID: shared.NewID(), BrokerName: ""}
+	err := svc.Update(context.Background(), acct)
+	if !errors.Is(err, ErrEmptyName) {
+		t.Errorf("Update() error = %v, want ErrEmptyName", err)
+	}
+}
+
+func TestBrokerageServiceUpdateNegativeFees(t *testing.T) {
+	svc := NewBrokerageService(newMockBrokerageRepo(), newMockPortfolioRepo())
+
+	for _, tt := range negativeFeeTests() {
+		t.Run(tt.name, func(t *testing.T) {
+			acct := &brokerage.Account{
+				ID: shared.NewID(), BrokerName: "Broker",
+				BuyFeePct: tt.buyFee, SellFeePct: tt.sellFee, SellTaxPct: tt.sellTax,
+			}
+			err := svc.Update(context.Background(), acct)
+			if !errors.Is(err, ErrInvalidFee) {
+				t.Errorf("Update() error = %v, want ErrInvalidFee", err)
+			}
+		})
+	}
+}
+
+func TestBrokerageServiceDeleteHappy(t *testing.T) {
+	brokerageRepo := newMockBrokerageRepo()
+	svc := NewBrokerageService(brokerageRepo, newMockPortfolioRepo())
+	ctx := context.Background()
+
+	acct := &brokerage.Account{
+		ID: shared.NewID(), ProfileID: "p1", BrokerName: "IPOT",
+		CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(),
+	}
+	if err := brokerageRepo.Create(ctx, acct); err != nil {
+		t.Fatalf("Create() error = %v", err)
+	}
+
+	if err := svc.Delete(ctx, acct.ID); err != nil {
+		t.Fatalf("Delete() error = %v", err)
+	}
+
+	_, err := brokerageRepo.GetByID(ctx, acct.ID)
+	if !errors.Is(err, shared.ErrNotFound) {
+		t.Errorf("GetByID() after delete error = %v, want ErrNotFound", err)
+	}
+}
+
+func TestBrokerageServiceDeleteHasPortfolios(t *testing.T) {
+	brokerageRepo := newMockBrokerageRepo()
+	portfolioRepo := newMockPortfolioRepo()
+	svc := NewBrokerageService(brokerageRepo, portfolioRepo)
+	ctx := context.Background()
+
+	acct := &brokerage.Account{
+		ID: shared.NewID(), ProfileID: "p1", BrokerName: "IPOT",
+		CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(),
+	}
+	if err := brokerageRepo.Create(ctx, acct); err != nil {
+		t.Fatalf("Create brokerage error = %v", err)
+	}
+
+	p := &portfolio.Portfolio{
+		ID: shared.NewID(), BrokerageAccountID: acct.ID,
+		Name: "My Portfolio", Mode: portfolio.ModeValue,
+		RiskProfile: portfolio.RiskProfileModerate,
+		CreatedAt:   time.Now().UTC(), UpdatedAt: time.Now().UTC(),
+	}
+	if err := portfolioRepo.Create(ctx, p); err != nil {
+		t.Fatalf("Create portfolio error = %v", err)
+	}
+
+	err := svc.Delete(ctx, acct.ID)
+	if !errors.Is(err, ErrHasDependents) {
+		t.Errorf("Delete() error = %v, want ErrHasDependents", err)
+	}
+}
+
+func TestBrokerageServiceDeleteEmptyID(t *testing.T) {
+	svc := NewBrokerageService(newMockBrokerageRepo(), newMockPortfolioRepo())
+
+	err := svc.Delete(context.Background(), "")
+	if !errors.Is(err, ErrEmptyID) {
+		t.Errorf("Delete() error = %v, want ErrEmptyID", err)
 	}
 }
