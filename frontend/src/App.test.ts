@@ -23,6 +23,34 @@ vi.mock("../wailsjs/go/backend/App", () => ({
   RemoveFromWatchlist: vi.fn(() => Promise.resolve()),
   GetWatchlistItems: vi.fn(() => Promise.resolve([])),
   GetPresetItems: vi.fn(() => Promise.resolve([])),
+  TriggerRefresh: vi.fn(() => Promise.resolve()),
+  GetRefreshStatus: vi.fn(() => Promise.resolve({ state: "idle", lastRefresh: "" })),
+  GetRefreshSettings: vi.fn(() =>
+    Promise.resolve({
+      autoRefreshEnabled: true,
+      intervalMinutes: 720,
+      lastRefreshedAt: "",
+    }),
+  ),
+  UpdateRefreshSettings: vi.fn(() => Promise.resolve()),
+}));
+
+vi.mock("../wailsjs/runtime/runtime", () => ({
+  EventsOn: vi.fn(),
+}));
+
+vi.mock("./lib/stores/sync.svelte", () => ({
+  sync: {
+    state: "idle",
+    isSyncing: false,
+    lastRefresh: "",
+    currentTicker: null,
+    progress: null,
+    progressPercent: 0,
+    lastSummary: null,
+    hasError: false,
+    errorMessage: null,
+  },
 }));
 
 vi.mock("./lib/stores/theme.svelte", () => ({

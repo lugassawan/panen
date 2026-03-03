@@ -1,6 +1,7 @@
 <script lang="ts">
 import { Bookmark, Briefcase, Landmark, Search, Settings } from "lucide-svelte";
 import type { Component } from "svelte";
+import SyncIndicator from "../lib/components/SyncIndicator.svelte";
 import type { Page } from "../lib/types";
 
 let { currentPage, onNavigate }: { currentPage: Page; onNavigate: (page: Page) => void } = $props();
@@ -23,7 +24,12 @@ const navItems: { page: Page; label: string; icon: Component }[] = [
   <ul class="flex flex-1 flex-col" role="list">
     {#each navItems as item}
       {@const isSettings = item.page === "settings"}
-      <li class={isSettings ? "mt-auto" : ""}>
+      {#if isSettings}
+        <li class="mt-auto border-t border-border-default">
+          <SyncIndicator />
+        </li>
+      {/if}
+      <li>
         <button
           onclick={() => onNavigate(item.page)}
           class="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm font-medium transition-fast focus-ring {currentPage === item.page
