@@ -330,3 +330,205 @@ func TestPortfolioServiceGetDetailNotFound(t *testing.T) {
 		t.Errorf("GetDetail() error = %v, want ErrNotFound", err)
 	}
 }
+
+func TestPortfolioServiceGetByIDHappy(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	got, err := f.svc.GetByID(f.ctx, f.port.ID)
+	if err != nil {
+		t.Fatalf("GetByID() error = %v", err)
+	}
+	if got.ID != f.port.ID {
+		t.Errorf("ID = %q, want %q", got.ID, f.port.ID)
+	}
+}
+
+func TestPortfolioServiceGetByIDEmptyID(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	_, err := f.svc.GetByID(f.ctx, "")
+	if !errors.Is(err, ErrEmptyID) {
+		t.Errorf("GetByID() error = %v, want ErrEmptyID", err)
+	}
+}
+
+func TestPortfolioServiceUpdateHappy(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	f.port.Name = "Updated Name"
+	f.port.RiskProfile = portfolio.RiskProfileAggressive
+	f.port.Capital = 50000000
+	err := f.svc.Update(f.ctx, f.port)
+	if err != nil {
+		t.Fatalf("Update() error = %v", err)
+	}
+
+	got, _ := f.portfolioRepo.GetByID(f.ctx, f.port.ID)
+	if got.Name != "Updated Name" {
+		t.Errorf("Name = %q, want %q", got.Name, "Updated Name")
+	}
+	if got.RiskProfile != portfolio.RiskProfileAggressive {
+		t.Errorf("RiskProfile = %q, want AGGRESSIVE", got.RiskProfile)
+	}
+}
+
+func TestPortfolioServiceUpdateEmptyID(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	p := &portfolio.Portfolio{ID: "", Name: "X", Mode: portfolio.ModeValue, RiskProfile: portfolio.RiskProfileModerate}
+	err := f.svc.Update(f.ctx, p)
+	if !errors.Is(err, ErrEmptyID) {
+		t.Errorf("Update() error = %v, want ErrEmptyID", err)
+	}
+}
+
+func TestPortfolioServiceUpdateEmptyName(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	f.port.Name = ""
+	err := f.svc.Update(f.ctx, f.port)
+	if !errors.Is(err, ErrEmptyName) {
+		t.Errorf("Update() error = %v, want ErrEmptyName", err)
+	}
+}
+
+func TestPortfolioServiceUpdateInvalidRisk(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	f.port.RiskProfile = "BAD"
+	err := f.svc.Update(f.ctx, f.port)
+	if !errors.Is(err, portfolio.ErrInvalidRisk) {
+		t.Errorf("Update() error = %v, want ErrInvalidRisk", err)
+	}
+}
+
+func TestPortfolioServiceUpdateModeImmutable(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	updated := *f.port
+	updated.Mode = portfolio.ModeDividend
+	err := f.svc.Update(f.ctx, &updated)
+	if !errors.Is(err, ErrModeImmutable) {
+		t.Errorf("Update() error = %v, want ErrModeImmutable", err)
+	}
+}
+
+func TestPortfolioServiceUpdateNotFound(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	p := &portfolio.Portfolio{
+		ID: "nonexistent", Name: "X",
+		Mode: portfolio.ModeValue, RiskProfile: portfolio.RiskProfileModerate,
+	}
+	err := f.svc.Update(f.ctx, p)
+	if !errors.Is(err, shared.ErrNotFound) {
+		t.Errorf("Update() error = %v, want ErrNotFound", err)
+	}
+}
+
+func TestPortfolioServiceDeleteHappy(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	err := f.svc.Delete(f.ctx, f.port.ID)
+	if err != nil {
+		t.Fatalf("Delete() error = %v", err)
+	}
+
+	_, err = f.portfolioRepo.GetByID(f.ctx, f.port.ID)
+	if !errors.Is(err, shared.ErrNotFound) {
+		t.Errorf("portfolio should be deleted, got error = %v", err)
+	}
+}
+
+func TestPortfolioServiceDeleteEmptyID(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	err := f.svc.Delete(f.ctx, "")
+	if !errors.Is(err, ErrEmptyID) {
+		t.Errorf("Delete() error = %v, want ErrEmptyID", err)
+	}
+}
+
+func TestPortfolioServiceDeleteHasHoldings(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	_, err := f.svc.AddHolding(f.ctx, f.port.ID, "BBCA", 8500, 10, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("AddHolding() error = %v", err)
+	}
+
+	err = f.svc.Delete(f.ctx, f.port.ID)
+	if !errors.Is(err, ErrHasHoldings) {
+		t.Errorf("Delete() error = %v, want ErrHasHoldings", err)
+	}
+}
+
+func TestPortfolioServiceCreateDuplicateMode(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	// f.port is already VALUE; try creating another VALUE under same brokerage.
+	dup := &portfolio.Portfolio{
+		ID:                 shared.NewID(),
+		BrokerageAccountID: f.acct.ID,
+		Name:               "Duplicate",
+		Mode:               portfolio.ModeValue,
+		RiskProfile:        portfolio.RiskProfileModerate,
+		Universe:           []string{},
+		CreatedAt:          time.Now().UTC(),
+		UpdatedAt:          time.Now().UTC(),
+	}
+	err := f.svc.Create(f.ctx, dup)
+	if !errors.Is(err, ErrDuplicateMode) {
+		t.Errorf("Create() error = %v, want ErrDuplicateMode", err)
+	}
+}
+
+func TestPortfolioServiceCreateDifferentModeOK(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	// f.port is VALUE; creating DIVIDEND should succeed.
+	p := &portfolio.Portfolio{
+		ID:                 shared.NewID(),
+		BrokerageAccountID: f.acct.ID,
+		Name:               "Dividend Portfolio",
+		Mode:               portfolio.ModeDividend,
+		RiskProfile:        portfolio.RiskProfileConservative,
+		Universe:           []string{},
+		CreatedAt:          time.Now().UTC(),
+		UpdatedAt:          time.Now().UTC(),
+	}
+	if err := f.svc.Create(f.ctx, p); err != nil {
+		t.Fatalf("Create() error = %v", err)
+	}
+}
+
+func TestPortfolioServiceAddHoldingDuplicateAcrossSibling(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	// Create a sibling DIVIDEND portfolio under same brokerage.
+	sib := &portfolio.Portfolio{
+		ID:                 shared.NewID(),
+		BrokerageAccountID: f.acct.ID,
+		Name:               "Dividend Portfolio",
+		Mode:               portfolio.ModeDividend,
+		RiskProfile:        portfolio.RiskProfileModerate,
+		Universe:           []string{},
+		CreatedAt:          time.Now().UTC(),
+		UpdatedAt:          time.Now().UTC(),
+	}
+	if err := f.svc.Create(f.ctx, sib); err != nil {
+		t.Fatalf("Create sibling: %v", err)
+	}
+
+	// Add BBCA to the first portfolio.
+	_, err := f.svc.AddHolding(f.ctx, f.port.ID, "BBCA", 8500, 10, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("AddHolding() to first portfolio: %v", err)
+	}
+
+	// Adding BBCA to the sibling should fail.
+	_, err = f.svc.AddHolding(f.ctx, sib.ID, "BBCA", 8500, 5, time.Now().UTC())
+	if !errors.Is(err, ErrDuplicateHolding) {
+		t.Errorf("AddHolding() to sibling error = %v, want ErrDuplicateHolding", err)
+	}
+}

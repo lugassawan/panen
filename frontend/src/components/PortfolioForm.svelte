@@ -1,16 +1,59 @@
 <script lang="ts">
-import { CreatePortfolio } from "../../wailsjs/go/backend/App";
-import type { RiskProfile } from "../lib/types";
+import { CreatePortfolio, UpdatePortfolio } from "../../wailsjs/go/backend/App";
+import Button from "../lib/components/Button.svelte";
+import type { Mode, PortfolioResponse, RiskProfile } from "../lib/types";
 
-let { brokerageAcctId, onCreated }: { brokerageAcctId: string; onCreated: () => void } = $props();
+let {
+  brokerageAcctId = "",
+  existingPortfolio = null,
+  onSaved,
+  onCancel,
+}: {
+  brokerageAcctId?: string;
+  existingPortfolio?: PortfolioResponse | null;
+  onSaved: () => void;
+  onCancel?: () => void;
+} = $props();
 
-let name = $state("");
-let riskProfile = $state<RiskProfile>("MODERATE");
-let capital = $state(0);
-let monthlyAddition = $state(0);
-let maxStocks = $state(10);
+const isEdit = existingPortfolio != null;
+const initialName = existingPortfolio?.name ?? "";
+const initialMode: Mode = existingPortfolio?.mode ?? "VALUE";
+const initialRiskProfile: RiskProfile = existingPortfolio?.riskProfile ?? "MODERATE";
+const initialCapital = existingPortfolio?.capital ?? 0;
+const initialMonthlyAddition = existingPortfolio?.monthlyAddition ?? 0;
+const initialMaxStocks = existingPortfolio?.maxStocks ?? 10;
+
+let name = $state(initialName);
+let mode = $state<Mode>(initialMode);
+let riskProfile = $state<RiskProfile>(initialRiskProfile);
+let capital = $state(initialCapital);
+let monthlyAddition = $state(initialMonthlyAddition);
+let maxStocks = $state(initialMaxStocks);
 let loading = $state(false);
 let error = $state<string | null>(null);
+
+const modeOptions: {
+  value: Mode;
+  label: string;
+  description: string;
+  selectedClass: string;
+  accentClass: string;
+}[] = [
+  {
+    value: "VALUE",
+    label: "Value",
+    description: "Focus on undervalued stocks with margin of safety.",
+    selectedClass: "border-green-700/50 bg-green-50 dark:bg-green-900/20",
+    accentClass: "accent-green-700",
+  },
+  {
+    value: "DIVIDEND",
+    label: "Dividend",
+    description: "Focus on consistent dividend-paying stocks.",
+    selectedClass: "border-gold-500/50 bg-gold-50 dark:bg-gold-500/10",
+    accentClass: "accent-gold-500",
+  },
+];
 
 const riskOptions: {
   value: RiskProfile;
@@ -34,6 +77,15 @@ const riskOptions: {
   },
 ];
 
+let riskSelectedClass = $derived(
+  mode === "VALUE"
+    ? "border-green-700/50 bg-green-50 dark:bg-green-900/20"
+    : "border-gold-500/50 bg-gold-50 dark:bg-gold-500/10",
+);
+
+let riskAccentClass = $derived(mode === "VALUE" ? "accent-green-700" : "accent-gold-500");
+let buttonVariant = $derived<"primary" | "gold">(mode === "VALUE" ? "primary" : "gold");
+
 async function submit() {
   error = null;
   if (!name.trim()) {
@@ -43,16 +95,27 @@ async function submit() {
 
   loading = true;
   try {
-    await CreatePortfolio(
-      brokerageAcctId,
-      name.trim(),
-      "VALUE",
-      riskProfile,
-      capital,
-      monthlyAddition,
-      maxStocks,
-    );
-    onCreated();
+    if (isEdit && existingPortfolio) {
+      await UpdatePortfolio(
+        existingPortfolio.id,
+        name.trim(),
+        riskProfile,
+        capital,
+        monthlyAddition,
+        maxStocks,
+      );
+    } else {
+      await CreatePortfolio(
+        brokerageAcctId,
+        name.trim(),
+        mode,
+        riskProfile,
+        capital,
+        monthlyAddition,
+        maxStocks,
+      );
+    }
+    onSaved();
   } catch (e: unknown) {
     error = e instanceof Error ? e.message : String(e);
   } finally {
@@ -84,20 +147,51 @@ async function submit() {
 	</div>
 
 	<fieldset>
+		<legend class="mb-2 text-sm text-text-secondary">Mode</legend>
+		<div class="grid grid-cols-2 gap-3">
+			{#each modeOptions as option}
+				<label
+					class="flex cursor-pointer items-start gap-3 rounded border px-3 py-2 transition-colors {mode ===
+					option.value
+						? option.selectedClass
+						: 'border-border-default hover:border-border-strong'} {isEdit ? 'opacity-60 cursor-not-allowed' : ''}"
+				>
+					<input
+						type="radio"
+						bind:group={mode}
+						value={option.value}
+						disabled={isEdit}
+						class="mt-0.5 {option.accentClass}"
+					/>
+					<div>
+						<span class="text-sm font-medium">{option.label}</span>
+						<p class="text-xs text-text-muted">
+							{option.description}
+						</p>
+					</div>
+				</label>
+			{/each}
+		</div>
+		{#if isEdit}
+			<p class="mt-1 text-xs text-text-muted">Mode cannot be changed after creation.</p>
+		{/if}
+	</fieldset>
+
+	<fieldset>
 		<legend class="mb-2 text-sm text-text-secondary">Risk Profile</legend>
 		<div class="space-y-2">
 			{#each riskOptions as option}
 				<label
 					class="flex cursor-pointer items-start gap-3 rounded border px-3 py-2 transition-colors {riskProfile ===
 					option.value
-						? 'border-green-700/50 bg-green-50 dark:bg-green-900/20'
+						? riskSelectedClass
 						: 'border-border-default hover:border-border-strong'}"
 				>
 					<input
 						type="radio"
 						bind:group={riskProfile}
 						value={option.value}
-						class="mt-0.5 accent-green-700"
+						class="mt-0.5 {riskAccentClass}"
 					/>
 					<div>
 						<span class="text-sm font-medium">{option.label}</span>
@@ -167,11 +261,16 @@ async function submit() {
 		</div>
 	{/if}
 
-	<button
-		type="submit"
-		disabled={loading}
-		class="rounded bg-green-700 px-5 py-2 text-sm font-medium text-text-inverse hover:bg-green-800 disabled:opacity-50 focus-ring transition-fast"
-	>
-		{loading ? "Creating…" : "Create Portfolio"}
-	</button>
+	<div class="flex gap-3">
+		{#if onCancel}
+			<Button variant="secondary" onclick={onCancel}>Cancel</Button>
+		{/if}
+		<Button variant={buttonVariant} type="submit" loading={loading}>
+			{#if loading}
+				{isEdit ? "Saving…" : "Creating…"}
+			{:else}
+				{isEdit ? "Save Changes" : "Create Portfolio"}
+			{/if}
+		</Button>
+	</div>
 </form>

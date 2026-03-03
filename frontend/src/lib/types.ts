@@ -51,12 +51,14 @@ export interface BrokerConfigResponse {
   notes: string;
 }
 
+export type Mode = "VALUE" | "DIVIDEND";
+
 export interface PortfolioResponse {
   id: string;
   brokerageAcctId: string;
   name: string;
-  mode: string;
-  riskProfile: string;
+  mode: Mode;
+  riskProfile: RiskProfile;
   capital: number;
   monthlyAddition: number;
   maxStocks: number;

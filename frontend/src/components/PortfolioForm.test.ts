@@ -1,22 +1,42 @@
 import { render, screen } from "@testing-library/svelte";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { PortfolioResponse } from "../lib/types";
 import PortfolioForm from "./PortfolioForm.svelte";
 
 const mockCreatePortfolio = vi.fn();
+const mockUpdatePortfolio = vi.fn();
 vi.mock("../../wailsjs/go/backend/App", () => ({
   CreatePortfolio: (...args: unknown[]) => mockCreatePortfolio(...args),
+  UpdatePortfolio: (...args: unknown[]) => mockUpdatePortfolio(...args),
 }));
+
+function makePortfolio(overrides: Partial<PortfolioResponse> = {}): PortfolioResponse {
+  return {
+    id: "p1",
+    brokerageAcctId: "b1",
+    name: "Value Portfolio",
+    mode: "VALUE",
+    riskProfile: "MODERATE",
+    capital: 10000000,
+    monthlyAddition: 1000000,
+    maxStocks: 10,
+    createdAt: "2025-01-01T00:00:00Z",
+    updatedAt: "2025-01-01T00:00:00Z",
+    ...overrides,
+  };
+}
 
 describe("PortfolioForm", () => {
   const defaultProps = {
     brokerageAcctId: "b1",
-    onCreated: vi.fn(),
+    onSaved: vi.fn(),
   };
 
   beforeEach(() => {
     mockCreatePortfolio.mockReset();
-    defaultProps.onCreated.mockReset();
+    mockUpdatePortfolio.mockReset();
+    defaultProps.onSaved.mockReset();
   });
 
   it("renders all form fields with defaults", () => {
@@ -46,6 +66,20 @@ describe("PortfolioForm", () => {
     expect(screen.getByText(/lower margin of safety threshold/i)).toBeInTheDocument();
   });
 
+  it("renders mode selector with VALUE and DIVIDEND options", () => {
+    render(PortfolioForm, { props: defaultProps });
+
+    expect(screen.getByLabelText(/value/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/dividend/i)).toBeInTheDocument();
+  });
+
+  it("defaults mode to VALUE", () => {
+    render(PortfolioForm, { props: defaultProps });
+
+    const value = screen.getByLabelText(/value/i) as HTMLInputElement;
+    expect(value.checked).toBe(true);
+  });
+
   it("submits valid form data with VALUE mode", async () => {
     mockCreatePortfolio.mockResolvedValueOnce({
       id: "p1",
@@ -73,7 +107,28 @@ describe("PortfolioForm", () => {
       1000000,
       10,
     );
-    expect(defaultProps.onCreated).toHaveBeenCalled();
+    expect(defaultProps.onSaved).toHaveBeenCalled();
+  });
+
+  it("submits with selected DIVIDEND mode", async () => {
+    mockCreatePortfolio.mockResolvedValueOnce({ id: "p1" });
+
+    render(PortfolioForm, { props: defaultProps });
+    const user = userEvent.setup();
+
+    await user.click(screen.getByLabelText(/dividend/i));
+    await user.type(screen.getByLabelText(/portfolio name/i), "Div Portfolio");
+    await user.click(screen.getByRole("button", { name: /create/i }));
+
+    expect(mockCreatePortfolio).toHaveBeenCalledWith(
+      "b1",
+      "Div Portfolio",
+      "DIVIDEND",
+      "MODERATE",
+      0,
+      0,
+      10,
+    );
   });
 
   it("shows error when name is empty", async () => {
@@ -96,5 +151,70 @@ describe("PortfolioForm", () => {
     await user.click(screen.getByRole("button", { name: /create/i }));
 
     expect(screen.getByRole("alert")).toHaveTextContent(/db error/i);
+  });
+
+  describe("edit mode", () => {
+    it("prefills fields from existing portfolio", () => {
+      const existing = makePortfolio({
+        name: "Edited Portfolio",
+        riskProfile: "AGGRESSIVE",
+        capital: 50000000,
+        monthlyAddition: 2000000,
+        maxStocks: 5,
+      });
+      render(PortfolioForm, {
+        props: { ...defaultProps, existingPortfolio: existing },
+      });
+
+      expect(screen.getByLabelText(/portfolio name/i)).toHaveValue("Edited Portfolio");
+      const aggressive = screen.getByLabelText(/aggressive/i) as HTMLInputElement;
+      expect(aggressive.checked).toBe(true);
+      expect(screen.getByLabelText("Capital")).toHaveValue(50000000);
+      expect(screen.getByLabelText(/monthly addition/i)).toHaveValue(2000000);
+      expect(screen.getByLabelText(/max stocks/i)).toHaveValue(5);
+    });
+
+    it("disables mode selector when editing", () => {
+      const existing = makePortfolio();
+      render(PortfolioForm, {
+        props: { ...defaultProps, existingPortfolio: existing },
+      });
+
+      const value = screen.getByLabelText(/value/i) as HTMLInputElement;
+      expect(value.disabled).toBe(true);
+      expect(screen.getByText(/mode cannot be changed/i)).toBeInTheDocument();
+    });
+
+    it("calls UpdatePortfolio on submit", async () => {
+      mockUpdatePortfolio.mockResolvedValueOnce({ id: "p1" });
+      const existing = makePortfolio();
+      render(PortfolioForm, {
+        props: { ...defaultProps, existingPortfolio: existing },
+      });
+      const user = userEvent.setup();
+
+      await user.clear(screen.getByLabelText(/portfolio name/i));
+      await user.type(screen.getByLabelText(/portfolio name/i), "Updated Name");
+      await user.click(screen.getByRole("button", { name: /save/i }));
+
+      expect(mockUpdatePortfolio).toHaveBeenCalledWith(
+        "p1",
+        "Updated Name",
+        "MODERATE",
+        10000000,
+        1000000,
+        10,
+      );
+      expect(defaultProps.onSaved).toHaveBeenCalled();
+    });
+
+    it("shows cancel button when onCancel provided", () => {
+      const existing = makePortfolio();
+      render(PortfolioForm, {
+        props: { ...defaultProps, existingPortfolio: existing, onCancel: vi.fn() },
+      });
+
+      expect(screen.getByRole("button", { name: /cancel/i })).toBeInTheDocument();
+    });
   });
 });

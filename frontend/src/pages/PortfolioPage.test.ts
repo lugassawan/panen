@@ -16,6 +16,8 @@ const mockGetPortfolio = vi.fn();
 const mockCreateBrokerageAccount = vi.fn();
 const mockCreatePortfolio = vi.fn();
 const mockAddHolding = vi.fn();
+const mockDeletePortfolio = vi.fn();
+const mockUpdatePortfolio = vi.fn();
 
 vi.mock("../../wailsjs/go/backend/App", () => ({
   ListBrokerageAccounts: (...args: unknown[]) => mockListBrokerageAccounts(...args),
@@ -25,6 +27,8 @@ vi.mock("../../wailsjs/go/backend/App", () => ({
   CreateBrokerageAccount: (...args: unknown[]) => mockCreateBrokerageAccount(...args),
   CreatePortfolio: (...args: unknown[]) => mockCreatePortfolio(...args),
   AddHolding: (...args: unknown[]) => mockAddHolding(...args),
+  DeletePortfolio: (...args: unknown[]) => mockDeletePortfolio(...args),
+  UpdatePortfolio: (...args: unknown[]) => mockUpdatePortfolio(...args),
 }));
 
 function makeBrokerage(
@@ -89,6 +93,8 @@ describe("PortfolioPage", () => {
     mockCreateBrokerageAccount.mockReset();
     mockCreatePortfolio.mockReset();
     mockAddHolding.mockReset();
+    mockDeletePortfolio.mockReset();
+    mockUpdatePortfolio.mockReset();
 
     mockListBrokerConfigs.mockResolvedValue([]);
   });
@@ -140,7 +146,143 @@ describe("PortfolioPage", () => {
     });
   });
 
-  describe("State C: Portfolio view (portfolio exists)", () => {
+  describe("State C: Portfolio list (portfolios exist)", () => {
+    beforeEach(() => {
+      mockListBrokerageAccounts.mockResolvedValue([makeBrokerage()]);
+    });
+
+    it("shows portfolio list when portfolios exist", async () => {
+      mockListPortfolios.mockResolvedValue([makePortfolio()]);
+      render(PortfolioPage);
+
+      expect(await screen.findByText("Value Portfolio")).toBeInTheDocument();
+      expect(screen.getByTestId("portfolio-card")).toBeInTheDocument();
+    });
+
+    it("shows mode badge on portfolio cards", async () => {
+      mockListPortfolios.mockResolvedValue([
+        makePortfolio({ mode: "VALUE" }),
+        makePortfolio({ id: "p2", name: "Div Portfolio", mode: "DIVIDEND" }),
+      ]);
+      render(PortfolioPage);
+
+      await screen.findByText("Value Portfolio");
+      const badges = screen.getAllByTestId("mode-badge");
+      expect(badges[0]).toHaveTextContent("Value");
+      expect(badges[1]).toHaveTextContent("Dividend");
+    });
+
+    it("shows New Portfolio button when < 2 portfolios", async () => {
+      mockListPortfolios.mockResolvedValue([makePortfolio()]);
+      render(PortfolioPage);
+
+      await screen.findByText("Value Portfolio");
+      expect(screen.getByRole("button", { name: /new portfolio/i })).toBeInTheDocument();
+    });
+
+    it("hides New Portfolio button when 2 portfolios exist", async () => {
+      mockListPortfolios.mockResolvedValue([
+        makePortfolio(),
+        makePortfolio({ id: "p2", name: "Div Portfolio", mode: "DIVIDEND" }),
+      ]);
+      render(PortfolioPage);
+
+      await screen.findByText("Value Portfolio");
+      expect(screen.queryByRole("button", { name: /new portfolio/i })).not.toBeInTheDocument();
+    });
+
+    it("navigates to edit form on Edit click", async () => {
+      mockListPortfolios.mockResolvedValue([makePortfolio()]);
+      render(PortfolioPage);
+      const user = userEvent.setup();
+
+      await screen.findByText("Value Portfolio");
+      await user.click(screen.getByRole("button", { name: /edit/i }));
+
+      expect(screen.getByText(/edit portfolio/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/portfolio name/i)).toHaveValue("Value Portfolio");
+    });
+
+    it("shows confirm dialog on Delete click", async () => {
+      mockListPortfolios.mockResolvedValue([makePortfolio()]);
+      render(PortfolioPage);
+      const user = userEvent.setup();
+
+      await screen.findByText("Value Portfolio");
+      await user.click(screen.getByRole("button", { name: /delete/i }));
+
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+      expect(screen.getByText(/are you sure you want to delete/i)).toBeInTheDocument();
+    });
+
+    it("calls DeletePortfolio on confirm", async () => {
+      mockDeletePortfolio.mockResolvedValueOnce(undefined);
+      mockListPortfolios.mockResolvedValueOnce([makePortfolio()]).mockResolvedValueOnce([]);
+      render(PortfolioPage);
+      const user = userEvent.setup();
+
+      await screen.findByText("Value Portfolio");
+      await user.click(screen.getByRole("button", { name: /delete/i }));
+
+      const dialog = screen.getByRole("dialog");
+      await user.click(within(dialog).getByRole("button", { name: /delete/i }));
+
+      expect(mockDeletePortfolio).toHaveBeenCalledWith("p1");
+    });
+
+    it("shows delete error in dialog", async () => {
+      mockDeletePortfolio.mockRejectedValueOnce(
+        new Error("portfolio has holdings: 1 holding(s) linked"),
+      );
+      mockListPortfolios.mockResolvedValue([makePortfolio()]);
+      render(PortfolioPage);
+      const user = userEvent.setup();
+
+      await screen.findByText("Value Portfolio");
+      await user.click(screen.getByRole("button", { name: /delete/i }));
+
+      const dialog = screen.getByRole("dialog");
+      await user.click(within(dialog).getByRole("button", { name: /delete/i }));
+
+      expect(await within(dialog).findByRole("alert")).toHaveTextContent(/portfolio has holdings/i);
+    });
+
+    it("navigates to detail view on portfolio card click", async () => {
+      mockListPortfolios.mockResolvedValue([makePortfolio()]);
+      mockGetPortfolio.mockResolvedValue(
+        makePortfolioDetail({
+          holdings: [makeHolding({ currentPrice: 9500, verdict: "UNDERVALUED" })],
+        }),
+      );
+      render(PortfolioPage);
+      const user = userEvent.setup();
+
+      await screen.findByText("Value Portfolio");
+      const card = screen.getByTestId("portfolio-card");
+      await user.click(within(card).getByRole("button", { name: /value portfolio/i }));
+
+      expect(await screen.findByText("BBCA")).toBeInTheDocument();
+      expect(screen.getByRole("table")).toBeInTheDocument();
+    });
+
+    it("back button returns to list from detail view", async () => {
+      mockListPortfolios.mockResolvedValue([makePortfolio()]);
+      mockGetPortfolio.mockResolvedValue(makePortfolioDetail());
+      render(PortfolioPage);
+      const user = userEvent.setup();
+
+      await screen.findByText("Value Portfolio");
+      const card = screen.getByTestId("portfolio-card");
+      await user.click(within(card).getByRole("button", { name: /value portfolio/i }));
+
+      await screen.findByText("BBCA");
+      await user.click(screen.getByLabelText(/back to list/i));
+
+      expect(await screen.findByTestId("portfolio-card")).toBeInTheDocument();
+    });
+  });
+
+  describe("State D: Portfolio view (detail)", () => {
     beforeEach(() => {
       mockListBrokerageAccounts.mockResolvedValue([makeBrokerage()]);
       mockListPortfolios.mockResolvedValue([makePortfolio()]);
@@ -152,7 +294,12 @@ describe("PortfolioPage", () => {
           holdings: [makeHolding({ currentPrice: 9500, verdict: "UNDERVALUED" })],
         }),
       );
+      // Navigate to detail
       render(PortfolioPage);
+      const user = userEvent.setup();
+      await screen.findByText("Value Portfolio");
+      const card = screen.getByTestId("portfolio-card");
+      await user.click(within(card).getByRole("button", { name: /value portfolio/i }));
 
       expect(await screen.findByText("BBCA")).toBeInTheDocument();
       const table = screen.getByRole("table");
@@ -172,9 +319,12 @@ describe("PortfolioPage", () => {
         }),
       );
       render(PortfolioPage);
+      const user = userEvent.setup();
+      await screen.findByText("Value Portfolio");
+      const card = screen.getByTestId("portfolio-card");
+      await user.click(within(card).getByRole("button", { name: /value portfolio/i }));
 
       await screen.findByText("BBCA");
-      // P/L = (9500 - 8500) / 8500 * 100 = 11.76%
       const plCell = screen.getByTestId("pl-BBCA");
       expect(plCell.textContent).toMatch(/11[.,]76/);
       expect(plCell.className).toMatch(/text-profit/);
@@ -193,6 +343,10 @@ describe("PortfolioPage", () => {
         }),
       );
       render(PortfolioPage);
+      const user = userEvent.setup();
+      await screen.findByText("Value Portfolio");
+      const card = screen.getByTestId("portfolio-card");
+      await user.click(within(card).getByRole("button", { name: /value portfolio/i }));
 
       await screen.findByText("BBCA");
       const plCell = screen.getByTestId("pl-BBCA");
@@ -207,6 +361,10 @@ describe("PortfolioPage", () => {
         }),
       );
       render(PortfolioPage);
+      const user = userEvent.setup();
+      await screen.findByText("Value Portfolio");
+      const card = screen.getByTestId("portfolio-card");
+      await user.click(within(card).getByRole("button", { name: /value portfolio/i }));
 
       expect(await screen.findByText("Undervalued")).toBeInTheDocument();
     });
@@ -224,6 +382,10 @@ describe("PortfolioPage", () => {
         }),
       );
       render(PortfolioPage);
+      const user = userEvent.setup();
+      await screen.findByText("Value Portfolio");
+      const card = screen.getByTestId("portfolio-card");
+      await user.click(within(card).getByRole("button", { name: /value portfolio/i }));
 
       expect(await screen.findByText("Consider Selling")).toBeInTheDocument();
     });
@@ -235,6 +397,10 @@ describe("PortfolioPage", () => {
         }),
       );
       render(PortfolioPage);
+      const user = userEvent.setup();
+      await screen.findByText("Value Portfolio");
+      const card = screen.getByTestId("portfolio-card");
+      await user.click(within(card).getByRole("button", { name: /value portfolio/i }));
 
       expect(await screen.findByText("Hold / Add")).toBeInTheDocument();
     });
@@ -246,6 +412,10 @@ describe("PortfolioPage", () => {
         }),
       );
       render(PortfolioPage);
+      const user = userEvent.setup();
+      await screen.findByText("Value Portfolio");
+      const card = screen.getByTestId("portfolio-card");
+      await user.click(within(card).getByRole("button", { name: /value portfolio/i }));
 
       expect(await screen.findByText("Hold")).toBeInTheDocument();
     });
@@ -257,6 +427,10 @@ describe("PortfolioPage", () => {
         }),
       );
       render(PortfolioPage);
+      const user = userEvent.setup();
+      await screen.findByText("Value Portfolio");
+      const card = screen.getByTestId("portfolio-card");
+      await user.click(within(card).getByRole("button", { name: /value portfolio/i }));
 
       await screen.findByText("BBCA");
       const table = screen.getByRole("table");
@@ -277,8 +451,11 @@ describe("PortfolioPage", () => {
         }),
       );
       render(PortfolioPage);
+      const user = userEvent.setup();
+      await screen.findByText("Value Portfolio");
+      const card = screen.getByTestId("portfolio-card");
+      await user.click(within(card).getByRole("button", { name: /value portfolio/i }));
 
-      // Total Invested = 8500 * 10 * 100 = 8,500,000
       await screen.findByText("BBCA");
       expect(screen.getByTestId("total-invested")).toBeInTheDocument();
       expect(screen.getByTestId("current-value")).toBeInTheDocument();
@@ -288,6 +465,10 @@ describe("PortfolioPage", () => {
     it("shows add holding form", async () => {
       mockGetPortfolio.mockResolvedValue(makePortfolioDetail());
       render(PortfolioPage);
+      const user = userEvent.setup();
+      await screen.findByText("Value Portfolio");
+      const card = screen.getByTestId("portfolio-card");
+      await user.click(within(card).getByRole("button", { name: /value portfolio/i }));
 
       await screen.findByText("BBCA");
       expect(screen.getByLabelText(/ticker/i)).toBeInTheDocument();
