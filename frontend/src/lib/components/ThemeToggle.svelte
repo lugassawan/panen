@@ -1,5 +1,4 @@
 <script lang="ts">
-// biome-ignore lint/correctness/noUnusedImports: components used in Svelte template
 import { Monitor, Moon, Sun } from "lucide-svelte";
 import { theme } from "../stores/theme.svelte";
 </script>

@@ -1,5 +1,4 @@
 <script lang="ts">
-// biome-ignore lint/correctness/noUnusedImports: component used in Svelte template
 import { LoaderCircle } from "lucide-svelte";
 import type { Snippet } from "svelte";
 
