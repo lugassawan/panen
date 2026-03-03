@@ -1,12 +1,18 @@
-<div class="mx-auto max-w-lg px-4 py-8">
-  <h2 class="mb-6 text-xl font-semibold text-neutral-200">Settings</h2>
+<script lang="ts">
+import ThemeToggle from "../lib/components/ThemeToggle.svelte";
+import { theme } from "../lib/stores/theme.svelte";
+</script>
 
-  <fieldset disabled class="space-y-6 opacity-60">
+<div class="mx-auto max-w-lg px-4 py-8">
+  <h2 class="mb-6 text-xl font-semibold text-text-primary">Settings</h2>
+
+  <div class="space-y-6">
     <div>
-      <label class="mb-1 block text-sm text-neutral-400" for="language">Language</label>
+      <label class="mb-1 block text-sm text-text-secondary" for="language">Language</label>
       <select
         id="language"
-        class="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-300"
+        disabled
+        class="w-full rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary opacity-60"
       >
         <option>English</option>
         <option>Bahasa Indonesia</option>
@@ -14,24 +20,20 @@
     </div>
 
     <div>
-      <label class="mb-1 block text-sm text-neutral-400" for="theme">Theme</label>
-      <select
-        id="theme"
-        class="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-300"
-      >
-        <option>Dark</option>
-        <option>Light</option>
-        <option>System</option>
-      </select>
+      <p class="mb-1 text-sm text-text-secondary">Theme</p>
+      <div class="flex items-center gap-3">
+        <ThemeToggle />
+        <span class="text-sm text-text-tertiary capitalize">{theme.preference}</span>
+      </div>
     </div>
 
     <div>
-      <p class="mb-1 text-sm text-neutral-400">Data Refresh</p>
-      <p class="text-sm text-neutral-500">
+      <p class="mb-1 text-sm text-text-secondary">Data Refresh</p>
+      <p class="text-sm text-text-tertiary">
         Stock data is fetched on demand from Yahoo Finance. Automatic refresh is not yet available.
       </p>
     </div>
-  </fieldset>
+  </div>
 
-  <p class="mt-6 text-xs text-neutral-600">Coming in a future update</p>
+  <p class="mt-6 text-xs text-text-muted">Language selection coming in a future update</p>
 </div>

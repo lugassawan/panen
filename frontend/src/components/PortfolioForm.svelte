@@ -71,7 +71,7 @@ async function submit() {
 	<div>
 		<label
 			for="portfolio-name"
-			class="mb-1 block text-sm text-neutral-400"
+			class="mb-1 block text-sm text-text-secondary"
 		>
 			Portfolio Name
 		</label>
@@ -79,29 +79,29 @@ async function submit() {
 			id="portfolio-name"
 			bind:value={name}
 			placeholder="e.g. Value Portfolio"
-			class="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm placeholder:text-neutral-500 outline-none focus:border-amber-500"
+			class="w-full rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-green-700 focus-ring"
 		/>
 	</div>
 
 	<fieldset>
-		<legend class="mb-2 text-sm text-neutral-400">Risk Profile</legend>
+		<legend class="mb-2 text-sm text-text-secondary">Risk Profile</legend>
 		<div class="space-y-2">
 			{#each riskOptions as option}
 				<label
 					class="flex cursor-pointer items-start gap-3 rounded border px-3 py-2 transition-colors {riskProfile ===
 					option.value
-						? 'border-amber-500/50 bg-amber-500/5'
-						: 'border-neutral-700 hover:border-neutral-600'}"
+						? 'border-green-700/50 bg-green-50 dark:bg-green-900/20'
+						: 'border-border-default hover:border-border-strong'}"
 				>
 					<input
 						type="radio"
 						bind:group={riskProfile}
 						value={option.value}
-						class="mt-0.5 accent-amber-500"
+						class="mt-0.5 accent-green-700"
 					/>
 					<div>
 						<span class="text-sm font-medium">{option.label}</span>
-						<p class="text-xs text-neutral-500">
+						<p class="text-xs text-text-muted">
 							{option.description}
 						</p>
 					</div>
@@ -114,7 +114,7 @@ async function submit() {
 		<div>
 			<label
 				for="capital"
-				class="mb-1 block text-sm text-neutral-400"
+				class="mb-1 block text-sm text-text-secondary"
 			>
 				Capital
 			</label>
@@ -123,13 +123,13 @@ async function submit() {
 				type="number"
 				bind:value={capital}
 				min="0"
-				class="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm outline-none focus:border-amber-500"
+				class="w-full rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary outline-none focus:border-green-700 focus-ring"
 			/>
 		</div>
 		<div>
 			<label
 				for="monthly-addition"
-				class="mb-1 block text-sm text-neutral-400"
+				class="mb-1 block text-sm text-text-secondary"
 			>
 				Monthly Addition
 			</label>
@@ -138,13 +138,13 @@ async function submit() {
 				type="number"
 				bind:value={monthlyAddition}
 				min="0"
-				class="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm outline-none focus:border-amber-500"
+				class="w-full rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary outline-none focus:border-green-700 focus-ring"
 			/>
 		</div>
 		<div>
 			<label
 				for="max-stocks"
-				class="mb-1 block text-sm text-neutral-400"
+				class="mb-1 block text-sm text-text-secondary"
 			>
 				Max Stocks
 			</label>
@@ -153,14 +153,14 @@ async function submit() {
 				type="number"
 				bind:value={maxStocks}
 				min="1"
-				class="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm outline-none focus:border-amber-500"
+				class="w-full rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary outline-none focus:border-green-700 focus-ring"
 			/>
 		</div>
 	</div>
 
 	{#if error}
 		<div
-			class="rounded border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400"
+			class="rounded border border-negative/20 bg-negative-bg px-4 py-3 text-sm text-negative"
 			role="alert"
 		>
 			{error}
@@ -170,7 +170,7 @@ async function submit() {
 	<button
 		type="submit"
 		disabled={loading}
-		class="rounded bg-amber-600 px-5 py-2 text-sm font-medium hover:bg-amber-500 disabled:opacity-50"
+		class="rounded bg-green-700 px-5 py-2 text-sm font-medium text-text-inverse hover:bg-green-800 disabled:opacity-50 focus-ring transition-fast"
 	>
 		{loading ? "Creating…" : "Create Portfolio"}
 	</button>

@@ -1,1 +1,354 @@
+/* ================================================================
+   PANEN DESIGN SYSTEM — app.css
+   Tailwind CSS v4 · CSS-first configuration
+
+   This is the single source of truth for all design tokens.
+   No tailwind.config.js needed — everything lives here.
+   ================================================================ */
+
+/* ----------------------------------------------------------------
+   § GOOGLE FONTS — must precede @import "tailwindcss" per CSS spec
+   Plus Jakarta Sans — display (headings, brand)
+   DM Sans          — body (UI, labels, descriptions)
+   DM Mono          — monospace (prices, percentages, tickers)
+   ---------------------------------------------------------------- */
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap");
+
 @import "tailwindcss";
+
+/* ----------------------------------------------------------------
+   § CUSTOM VARIANT: Dark Mode
+   Toggle by adding class="dark" to <html> or <body>.
+   Usage: dark:bg-surface, dark:text-primary, etc.
+   ---------------------------------------------------------------- */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ================================================================
+   § THEME — Design Tokens → Tailwind Utilities
+
+   Everything inside @theme generates utility classes.
+   e.g. --color-green-700 → bg-green-700, text-green-700, etc.
+        --font-display     → font-display
+        --shadow-md        → shadow-md
+        --radius-lg        → rounded-lg
+   ================================================================ */
+@theme {
+  /* --------------------------------
+     COLORS — Brand: Green
+     Primary axis. Trust, growth, IDX.
+     Default accent: green-700
+     -------------------------------- */
+  --color-green-50: #f2faf5;
+  --color-green-100: #e6f5ec;
+  --color-green-200: #c2e8d4;
+  --color-green-300: #8fd4b2;
+  --color-green-400: #5db88c;
+  --color-green-500: #2fa06b;
+  --color-green-600: #228b5b;
+  --color-green-700: #1b6b4a;
+  --color-green-800: #0f4a32;
+  --color-green-900: #0a3524;
+
+  /* --------------------------------
+     COLORS — Brand: Gold
+     Harvest, yield, dividends.
+     Default accent: gold-500
+     -------------------------------- */
+  --color-gold-50: #fdf9ee;
+  --color-gold-100: #fbf4dc;
+  --color-gold-200: #f7ecba;
+  --color-gold-300: #f0d87e;
+  --color-gold-400: #e8c456;
+  --color-gold-500: #d4a12a;
+  --color-gold-600: #b8891a;
+  --color-gold-700: #9e7614;
+
+  /* --------------------------------
+     COLORS — Semantic (light defaults)
+     These reference CSS variables set
+     in :root / .dark below.
+     -------------------------------- */
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-bg-tertiary: var(--bg-tertiary);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-bg-sunken: var(--bg-sunken);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-text-muted: var(--text-muted);
+  --color-text-inverse: var(--text-inverse);
+
+  --color-border-default: var(--border-default);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+
+  --color-positive: var(--feedback-positive);
+  --color-positive-bg: var(--feedback-positive-bg);
+  --color-negative: var(--feedback-negative);
+  --color-negative-bg: var(--feedback-negative-bg);
+  --color-warning: var(--feedback-warning);
+  --color-warning-bg: var(--feedback-warning-bg);
+  --color-info: var(--feedback-info);
+  --color-info-bg: var(--feedback-info-bg);
+
+  --color-profit: var(--fin-profit);
+  --color-loss: var(--fin-loss);
+
+  /* --------------------------------
+     TYPOGRAPHY — Font Families
+     → font-display, font-body, font-mono
+     -------------------------------- */
+  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "DM Mono", ui-monospace, "SF Mono", "Fira Code", monospace;
+
+  /* --------------------------------
+     TYPOGRAPHY — Font Sizes
+     → text-xs through text-4xl
+     -------------------------------- */
+  --text-xs: 0.6875rem; /* 11px */
+  --text-sm: 0.8125rem; /* 13px */
+  --text-base: 0.875rem; /* 14px — default body */
+  --text-md: 0.9375rem; /* 15px */
+  --text-lg: 1.0625rem; /* 17px */
+  --text-xl: 1.25rem; /* 20px */
+  --text-2xl: 1.5rem; /* 24px */
+  --text-3xl: 1.875rem; /* 30px */
+  --text-4xl: 2.25rem; /* 36px */
+
+  /* --------------------------------
+     SPACING — 4px base unit
+     → p-1 = 4px, p-2 = 8px, etc.
+     -------------------------------- */
+  --spacing-0: 0px;
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-10: 40px;
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+  --spacing-20: 80px;
+  --spacing-24: 96px;
+
+  /* --------------------------------
+     BORDER RADIUS
+     → rounded-sm, rounded-md, etc.
+     -------------------------------- */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* --------------------------------
+     SHADOWS — Warm-tinted
+     → shadow-xs through shadow-lg
+     -------------------------------- */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+  --shadow-focus: 0 0 0 3px rgba(27, 107, 74, 0.2);
+
+  /* --------------------------------
+     TRANSITIONS — Easing & Duration
+     → ease-default, duration-fast, etc.
+     -------------------------------- */
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* --------------------------------
+     SIDEBAR WIDTH
+     → w-sidebar
+     -------------------------------- */
+  --width-sidebar: 220px;
+}
+
+/* ================================================================
+   § SEMANTIC VARIABLES — Light Theme (default)
+
+   These are plain CSS variables (NOT in @theme) so they don't
+   generate extra utility classes. They're referenced by the
+   semantic colors in @theme above via var().
+   ================================================================ */
+:root {
+  /* Backgrounds */
+  --bg-primary: #fefcf7;
+  --bg-secondary: #f5f1eb;
+  --bg-tertiary: #ede8df;
+  --bg-elevated: #ffffff;
+  --bg-sunken: #f0ebe3;
+
+  /* Text */
+  --text-primary: #1a1a1a;
+  --text-secondary: #4b5060;
+  --text-tertiary: #6b7280;
+  --text-muted: #9ca3af;
+  --text-inverse: #fefcf7;
+
+  /* Borders */
+  --border-default: #e0dbd2;
+  --border-subtle: #ede8df;
+  --border-strong: #c8c2b8;
+
+  /* Feedback */
+  --feedback-positive: #1b7d4e;
+  --feedback-positive-bg: #e6f5ec;
+  --feedback-negative: #c4342d;
+  --feedback-negative-bg: #fde8e8;
+  --feedback-warning: #c48a15;
+  --feedback-warning-bg: #fdf4dc;
+  --feedback-info: #2563eb;
+  --feedback-info-bg: #eff6ff;
+
+  /* Financial */
+  --fin-profit: #1b7d4e;
+  --fin-loss: #c4342d;
+
+  /* Transition durations (plain vars, not in @theme) */
+  --duration-fast: 120ms;
+  --duration-normal: 200ms;
+  --duration-slow: 320ms;
+}
+
+/* ================================================================
+   § SEMANTIC VARIABLES — Dark Theme
+   Applied when <html class="dark"> or <body class="dark">
+   ================================================================ */
+.dark {
+  --bg-primary: #111112;
+  --bg-secondary: #1a1a1c;
+  --bg-tertiary: #232326;
+  --bg-elevated: #1e1e21;
+  --bg-sunken: #0d0d0e;
+
+  --text-primary: #eeecea;
+  --text-secondary: #a8a5a0;
+  --text-tertiary: #7a7670;
+  --text-muted: #5a5652;
+  --text-inverse: #1a1a1a;
+
+  --border-default: #2e2e32;
+  --border-subtle: #252528;
+  --border-strong: #3c3c42;
+
+  --feedback-positive: #4ade80;
+  --feedback-positive-bg: rgba(74, 222, 128, 0.1);
+  --feedback-negative: #f87171;
+  --feedback-negative-bg: rgba(248, 113, 113, 0.1);
+  --feedback-warning: #fbbf24;
+  --feedback-warning-bg: rgba(251, 191, 36, 0.08);
+  --feedback-info: #60a5fa;
+  --feedback-info-bg: rgba(96, 165, 250, 0.1);
+
+  --fin-profit: #4ade80;
+  --fin-loss: #f87171;
+}
+
+/* ================================================================
+   § BASE STYLES
+   ================================================================ */
+@layer base {
+  html {
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: 1.5;
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Scrollbar styling (WebKit) */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: var(--radius-full);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+  }
+}
+
+/* ================================================================
+   § CUSTOM UTILITIES
+   Panen-specific utilities that aren't standard Tailwind.
+   ================================================================ */
+
+/* Mode accent colors — apply to parent container */
+@utility mode-value {
+  --mode-accent: var(--color-green-700);
+  --mode-accent-light: var(--color-green-100);
+  --mode-accent-bg: var(--color-green-50);
+}
+@utility mode-dividend {
+  --mode-accent: var(--color-gold-500);
+  --mode-accent-light: var(--color-gold-100);
+  --mode-accent-bg: var(--color-gold-50);
+}
+
+/* Financial text color helpers */
+@utility text-profit {
+  color: var(--fin-profit);
+}
+@utility text-loss {
+  color: var(--fin-loss);
+}
+
+/* Focus ring — consistent across all interactive elements */
+@utility focus-ring {
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-focus);
+  }
+}
+
+/* Skeleton loading animation */
+@utility skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-tertiary) 25%,
+    var(--bg-secondary) 50%,
+    var(--bg-tertiary) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-pulse 1.5s ease infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes skeleton-pulse {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Transition presets */
+@utility transition-fast {
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-default);
+}
+@utility transition-normal {
+  transition-duration: var(--duration-normal);
+  transition-timing-function: var(--ease-default);
+}
+@utility transition-slow {
+  transition-duration: var(--duration-slow);
+  transition-timing-function: var(--ease-default);
+}

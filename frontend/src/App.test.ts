@@ -13,6 +13,16 @@ vi.mock("../wailsjs/go/backend/App", () => ({
   AddHolding: vi.fn(() => Promise.resolve({})),
 }));
 
+vi.mock("./lib/stores/theme.svelte", () => ({
+  theme: {
+    current: "light",
+    preference: "system",
+    isDark: false,
+    set: vi.fn(),
+    toggle: vi.fn(),
+  },
+}));
+
 describe("App navigation", () => {
   it("renders sidebar with 3 nav items", () => {
     render(App);
@@ -56,8 +66,8 @@ describe("App navigation", () => {
     await user.click(within(nav).getByText("Settings"));
 
     expect(screen.getByLabelText("Language")).toBeInTheDocument();
-    expect(screen.getByLabelText("Theme")).toBeInTheDocument();
-    expect(screen.getByText("Coming in a future update")).toBeInTheDocument();
+    expect(screen.getByText("Theme")).toBeInTheDocument();
+    expect(screen.getByText("Language selection coming in a future update")).toBeInTheDocument();
   });
 
   it("returns to Stock Lookup when clicking Lookup nav from another page", async () => {
