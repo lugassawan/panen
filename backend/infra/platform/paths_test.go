@@ -7,25 +7,35 @@ import (
 	"testing"
 )
 
+func TestLogDir(t *testing.T) {
+	testDirFunc(t, "LogDir", LogDir, "logs")
+}
+
 func TestDataDir(t *testing.T) {
+	testDirFunc(t, "DataDir", DataDir, "data")
+}
+
+func testDirFunc(t *testing.T, name string, fn func() (string, error), suffix string) {
+	t.Helper()
+
 	t.Run("returns non-empty path", func(t *testing.T) {
-		dir, err := DataDir()
+		dir, err := fn()
 		if err != nil {
-			t.Fatalf("DataDir() error = %v", err)
+			t.Fatalf("%s() error = %v", name, err)
 		}
 		if dir == "" {
-			t.Fatal("DataDir() returned empty string")
+			t.Fatalf("%s() returned empty string", name)
 		}
 	})
 
-	t.Run("ends with appName/data", func(t *testing.T) {
-		dir, err := DataDir()
+	t.Run("ends with appName/"+suffix, func(t *testing.T) {
+		dir, err := fn()
 		if err != nil {
-			t.Fatalf("DataDir() error = %v", err)
+			t.Fatalf("%s() error = %v", name, err)
 		}
-		want := filepath.Join(appName, "data")
+		want := filepath.Join(appName, suffix)
 		if !strings.HasSuffix(dir, want) {
-			t.Errorf("DataDir() = %q, want suffix %q", dir, want)
+			t.Errorf("%s() = %q, want suffix %q", name, dir, want)
 		}
 	})
 
@@ -34,12 +44,12 @@ func TestDataDir(t *testing.T) {
 		if err != nil {
 			t.Fatalf("os.UserConfigDir() error = %v", err)
 		}
-		dir, err := DataDir()
+		dir, err := fn()
 		if err != nil {
-			t.Fatalf("DataDir() error = %v", err)
+			t.Fatalf("%s() error = %v", name, err)
 		}
 		if !strings.HasPrefix(dir, configDir) {
-			t.Errorf("DataDir() = %q, want prefix %q", dir, configDir)
+			t.Errorf("%s() = %q, want prefix %q", name, dir, configDir)
 		}
 	})
 }
