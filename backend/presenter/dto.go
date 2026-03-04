@@ -129,3 +129,37 @@ type RefreshSettingsResponse struct {
 	IntervalMinutes    int    `json:"intervalMinutes"`
 	LastRefreshedAt    string `json:"lastRefreshedAt"`
 }
+
+// CheckResultResponse is the frontend-facing response for a single check result.
+type CheckResultResponse struct {
+	Key    string `json:"key"`
+	Label  string `json:"label"`
+	Type   string `json:"type"`
+	Status string `json:"status"`
+	Detail string `json:"detail"`
+}
+
+// SuggestionResponse is the frontend-facing response for a trade suggestion.
+type SuggestionResponse struct {
+	Action          string  `json:"action"`
+	Ticker          string  `json:"ticker"`
+	Lots            int     `json:"lots"`
+	PricePerShare   float64 `json:"pricePerShare"`
+	GrossCost       float64 `json:"grossCost"`
+	Fee             float64 `json:"fee"`
+	Tax             float64 `json:"tax"`
+	NetCost         float64 `json:"netCost"`
+	NewAvgBuyPrice  float64 `json:"newAvgBuyPrice"`
+	NewPositionLots int     `json:"newPositionLots"`
+	NewPositionPct  float64 `json:"newPositionPct"`
+	CapitalGainPct  float64 `json:"capitalGainPct"`
+}
+
+// ChecklistEvaluationResponse is the frontend-facing response for a checklist evaluation.
+type ChecklistEvaluationResponse struct {
+	Action     string                `json:"action"`
+	Ticker     string                `json:"ticker"`
+	Checks     []CheckResultResponse `json:"checks"`
+	AllPassed  bool                  `json:"allPassed"`
+	Suggestion *SuggestionResponse   `json:"suggestion,omitempty"`
+}

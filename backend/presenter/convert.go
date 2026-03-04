@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/lugassawan/panen/backend/domain/brokerage"
+	"github.com/lugassawan/panen/backend/domain/checklist"
 	"github.com/lugassawan/panen/backend/domain/portfolio"
 	"github.com/lugassawan/panen/backend/domain/stock"
 	"github.com/lugassawan/panen/backend/domain/valuation"
@@ -154,6 +155,50 @@ func newWatchlistItemResponse(item *usecase.WatchlistItemWithData) *WatchlistIte
 		resp.Verdict = &verdict
 	}
 	return resp
+}
+
+func newCheckResultResponse(cr checklist.CheckResult) CheckResultResponse {
+	return CheckResultResponse{
+		Key:    cr.Key,
+		Label:  cr.Label,
+		Type:   string(cr.Type),
+		Status: string(cr.Status),
+		Detail: cr.Detail,
+	}
+}
+
+func newSuggestionResponse(s *checklist.Suggestion) *SuggestionResponse {
+	if s == nil {
+		return nil
+	}
+	return &SuggestionResponse{
+		Action:          string(s.Action),
+		Ticker:          s.Ticker,
+		Lots:            s.Lots,
+		PricePerShare:   s.PricePerShare,
+		GrossCost:       s.GrossCost,
+		Fee:             s.Fee,
+		Tax:             s.Tax,
+		NetCost:         s.NetCost,
+		NewAvgBuyPrice:  s.NewAvgBuyPrice,
+		NewPositionLots: s.NewPositionLots,
+		NewPositionPct:  s.NewPositionPct,
+		CapitalGainPct:  s.CapitalGainPct,
+	}
+}
+
+func newChecklistEvaluationResponse(eval *usecase.ChecklistEvaluation) *ChecklistEvaluationResponse {
+	checks := make([]CheckResultResponse, len(eval.Checks))
+	for i, cr := range eval.Checks {
+		checks[i] = newCheckResultResponse(cr)
+	}
+	return &ChecklistEvaluationResponse{
+		Action:     string(eval.Action),
+		Ticker:     eval.Ticker,
+		Checks:     checks,
+		AllPassed:  eval.AllPassed,
+		Suggestion: newSuggestionResponse(eval.Suggestion),
+	}
 }
 
 func formatDTO(t time.Time) string {

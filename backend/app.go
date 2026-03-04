@@ -25,6 +25,7 @@ type App struct {
 	*presenter.BrokerConfigHandler
 	*presenter.WatchlistHandler
 	*presenter.RefreshHandler
+	*presenter.ChecklistHandler
 	db      *database.DB
 	refresh *usecase.RefreshService
 }
@@ -101,6 +102,10 @@ func (a *App) Startup(ctx context.Context) {
 	a.BrokerConfigHandler = presenter.NewBrokerConfigHandler(brokerConfigs)
 	a.WatchlistHandler = presenter.NewWatchlistHandler(ctx, profileID, watchlistSvc)
 	a.RefreshHandler = presenter.NewRefreshHandler(ctx, refreshSvc, settingsRepo)
+
+	checklistRepo := database.NewChecklistResultRepo(conn)
+	checklistSvc := usecase.NewChecklistService(checklistRepo, portfolioRepo, holdingRepo, brokerageRepo, stockRepo)
+	a.ChecklistHandler = presenter.NewChecklistHandler(ctx, checklistSvc)
 
 	refreshSvc.Start(ctx)
 }

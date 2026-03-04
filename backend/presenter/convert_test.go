@@ -5,8 +5,10 @@ import (
 	"time"
 
 	"github.com/lugassawan/panen/backend/domain/brokerage"
+	"github.com/lugassawan/panen/backend/domain/checklist"
 	"github.com/lugassawan/panen/backend/domain/stock"
 	"github.com/lugassawan/panen/backend/domain/valuation"
+	"github.com/lugassawan/panen/backend/usecase"
 )
 
 func TestNewStockValuationResponseWithBands(t *testing.T) {
@@ -156,5 +158,202 @@ func TestNewBrokerageAccountResponse(t *testing.T) {
 	}
 	if resp.CreatedAt != "2025-06-15T10:30:00Z" {
 		t.Errorf("CreatedAt = %q, want 2025-06-15T10:30:00Z", resp.CreatedAt)
+	}
+}
+
+func TestNewCheckResultResponse(t *testing.T) {
+	cr := checklist.CheckResult{
+		Key:    "roe_above_min",
+		Label:  "ROE above minimum",
+		Type:   checklist.CheckTypeAuto,
+		Status: checklist.CheckStatusPass,
+		Detail: "ROE: 15.00% (min: 10.00%)",
+	}
+
+	resp := newCheckResultResponse(cr)
+
+	if resp.Key != "roe_above_min" {
+		t.Errorf("Key = %q, want roe_above_min", resp.Key)
+	}
+	if resp.Label != "ROE above minimum" {
+		t.Errorf("Label = %q, want ROE above minimum", resp.Label)
+	}
+	if resp.Type != "AUTO" {
+		t.Errorf("Type = %q, want AUTO", resp.Type)
+	}
+	if resp.Status != "PASS" {
+		t.Errorf("Status = %q, want PASS", resp.Status)
+	}
+	if resp.Detail != "ROE: 15.00% (min: 10.00%)" {
+		t.Errorf("Detail = %q, want ROE: 15.00%% (min: 10.00%%)", resp.Detail)
+	}
+}
+
+func TestNewSuggestionResponse(t *testing.T) {
+	t.Run("non-nil input", func(t *testing.T) {
+		s := &checklist.Suggestion{
+			Action:          checklist.ActionBuy,
+			Ticker:          "BBCA",
+			Lots:            5,
+			PricePerShare:   9000,
+			GrossCost:       4500000,
+			Fee:             6750,
+			Tax:             0,
+			NetCost:         4506750,
+			NewAvgBuyPrice:  9000,
+			NewPositionLots: 5,
+			NewPositionPct:  20.5,
+			CapitalGainPct:  0,
+		}
+
+		resp := newSuggestionResponse(s)
+
+		if resp == nil {
+			t.Fatal("expected non-nil response")
+		}
+		if resp.Action != "BUY" {
+			t.Errorf("Action = %q, want BUY", resp.Action)
+		}
+		if resp.Ticker != "BBCA" {
+			t.Errorf("Ticker = %q, want BBCA", resp.Ticker)
+		}
+		if resp.Lots != 5 {
+			t.Errorf("Lots = %d, want 5", resp.Lots)
+		}
+		if resp.PricePerShare != 9000 {
+			t.Errorf("PricePerShare = %v, want 9000", resp.PricePerShare)
+		}
+		if resp.GrossCost != 4500000 {
+			t.Errorf("GrossCost = %v, want 4500000", resp.GrossCost)
+		}
+		if resp.Fee != 6750 {
+			t.Errorf("Fee = %v, want 6750", resp.Fee)
+		}
+		if resp.Tax != 0 {
+			t.Errorf("Tax = %v, want 0", resp.Tax)
+		}
+		if resp.NetCost != 4506750 {
+			t.Errorf("NetCost = %v, want 4506750", resp.NetCost)
+		}
+		if resp.NewAvgBuyPrice != 9000 {
+			t.Errorf("NewAvgBuyPrice = %v, want 9000", resp.NewAvgBuyPrice)
+		}
+		if resp.NewPositionLots != 5 {
+			t.Errorf("NewPositionLots = %d, want 5", resp.NewPositionLots)
+		}
+		if resp.NewPositionPct != 20.5 {
+			t.Errorf("NewPositionPct = %v, want 20.5", resp.NewPositionPct)
+		}
+		if resp.CapitalGainPct != 0 {
+			t.Errorf("CapitalGainPct = %v, want 0", resp.CapitalGainPct)
+		}
+	})
+
+	t.Run("nil input", func(t *testing.T) {
+		resp := newSuggestionResponse(nil)
+		if resp != nil {
+			t.Errorf("expected nil response, got %+v", resp)
+		}
+	})
+}
+
+func TestNewChecklistEvaluationResponseWithSuggestion(t *testing.T) {
+	eval := &usecase.ChecklistEvaluation{
+		Action: checklist.ActionBuy,
+		Ticker: "BBCA",
+		Checks: []checklist.CheckResult{
+			{
+				Key:    "roe_above_min",
+				Label:  "ROE above minimum",
+				Type:   checklist.CheckTypeAuto,
+				Status: checklist.CheckStatusPass,
+				Detail: "ROE: 15.00%",
+			},
+			{
+				Key:    "confirm_research",
+				Label:  "Research confirmed",
+				Type:   checklist.CheckTypeManual,
+				Status: checklist.CheckStatusPass,
+			},
+		},
+		AllPassed: true,
+		Suggestion: &checklist.Suggestion{
+			Action:        checklist.ActionBuy,
+			Ticker:        "BBCA",
+			Lots:          3,
+			PricePerShare: 9000,
+			GrossCost:     2700000,
+			Fee:           4050,
+			NetCost:       2704050,
+		},
+	}
+
+	resp := newChecklistEvaluationResponse(eval)
+
+	if resp.Action != "BUY" {
+		t.Errorf("Action = %q, want BUY", resp.Action)
+	}
+	if resp.Ticker != "BBCA" {
+		t.Errorf("Ticker = %q, want BBCA", resp.Ticker)
+	}
+	if len(resp.Checks) != 2 {
+		t.Fatalf("len(Checks) = %d, want 2", len(resp.Checks))
+	}
+	if resp.Checks[0].Key != "roe_above_min" {
+		t.Errorf("Checks[0].Key = %q, want roe_above_min", resp.Checks[0].Key)
+	}
+	if resp.Checks[0].Type != "AUTO" {
+		t.Errorf("Checks[0].Type = %q, want AUTO", resp.Checks[0].Type)
+	}
+	if resp.Checks[1].Key != "confirm_research" {
+		t.Errorf("Checks[1].Key = %q, want confirm_research", resp.Checks[1].Key)
+	}
+	if resp.Checks[1].Type != "MANUAL" {
+		t.Errorf("Checks[1].Type = %q, want MANUAL", resp.Checks[1].Type)
+	}
+	if !resp.AllPassed {
+		t.Error("AllPassed = false, want true")
+	}
+	if resp.Suggestion == nil {
+		t.Fatal("expected non-nil Suggestion")
+	}
+	if resp.Suggestion.Lots != 3 {
+		t.Errorf("Suggestion.Lots = %d, want 3", resp.Suggestion.Lots)
+	}
+}
+
+func TestNewChecklistEvaluationResponseWithoutSuggestion(t *testing.T) {
+	eval := &usecase.ChecklistEvaluation{
+		Action: checklist.ActionHold,
+		Ticker: "BBRI",
+		Checks: []checklist.CheckResult{
+			{
+				Key:    "fundamentals_stable",
+				Label:  "Fundamentals stable",
+				Type:   checklist.CheckTypeAuto,
+				Status: checklist.CheckStatusFail,
+				Detail: "ROE: 8.00% (fail)",
+			},
+		},
+		AllPassed:  false,
+		Suggestion: nil,
+	}
+
+	resp := newChecklistEvaluationResponse(eval)
+
+	if resp.Action != "HOLD" {
+		t.Errorf("Action = %q, want HOLD", resp.Action)
+	}
+	if resp.AllPassed {
+		t.Error("AllPassed = true, want false")
+	}
+	if resp.Suggestion != nil {
+		t.Errorf("expected nil Suggestion, got %+v", resp.Suggestion)
+	}
+	if len(resp.Checks) != 1 {
+		t.Fatalf("len(Checks) = %d, want 1", len(resp.Checks))
+	}
+	if resp.Checks[0].Status != "FAIL" {
+		t.Errorf("Checks[0].Status = %q, want FAIL", resp.Checks[0].Status)
 	}
 }
