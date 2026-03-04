@@ -64,9 +64,11 @@ make release-check     # Validate VERSION against wails.json productVersion
 
 ## Custom Linter (panenlint)
 
-`tools/lint/` contains three analyzers built as a golangci-lint v2 module plugin:
+`tools/lint/` contains five analyzers built as a golangci-lint v2 module plugin:
 
+- **funcname**: forbids underscores in function names
 - **maxparams**: forbids functions with >7 parameters
+- **nolateconst**: forbids package-level const/var declarations after function declarations
 - **nolocalstruct**: forbids named struct declarations inside function bodies
 - **nolateexport**: forbids exported standalone functions after unexported ones
 

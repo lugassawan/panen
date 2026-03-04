@@ -7,6 +7,7 @@ import (
 
 	"github.com/lugassawan/panen/tools/lint/funcname"
 	"github.com/lugassawan/panen/tools/lint/maxparams"
+	"github.com/lugassawan/panen/tools/lint/nolateconst"
 	"github.com/lugassawan/panen/tools/lint/nolateexport"
 	"github.com/lugassawan/panen/tools/lint/nolocalstruct"
 )
@@ -25,6 +26,7 @@ func (p *plugin) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 	return []*analysis.Analyzer{
 		funcname.Analyzer,
 		maxparams.Analyzer,
+		nolateconst.Analyzer,
 		nolocalstruct.Analyzer,
 		nolateexport.Analyzer,
 	}, nil
