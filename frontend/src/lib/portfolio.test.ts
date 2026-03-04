@@ -47,9 +47,7 @@ describe("totalInvested", () => {
 
 describe("currentValue", () => {
   it("uses currentPrice when available", () => {
-    const holdings = [
-      holding({ avgBuyPrice: 1000, lots: 10, currentPrice: 1200 }),
-    ];
+    const holdings = [holding({ avgBuyPrice: 1000, lots: 10, currentPrice: 1200 })];
     // 1200*10*100 = 1_200_000
     expect(currentValue(holdings)).toBe(1_200_000);
   });
@@ -66,18 +64,14 @@ describe("overallPL", () => {
   });
 
   it("calculates overall percentage", () => {
-    const holdings = [
-      holding({ avgBuyPrice: 1000, lots: 10, currentPrice: 1200 }),
-    ];
+    const holdings = [holding({ avgBuyPrice: 1000, lots: 10, currentPrice: 1200 })];
     // invested: 1_000_000, current: 1_200_000
     // PL: (1_200_000 - 1_000_000) / 1_000_000 * 100 = 20
     expect(overallPL(holdings)).toBeCloseTo(20);
   });
 
   it("handles negative overall PL", () => {
-    const holdings = [
-      holding({ avgBuyPrice: 1000, lots: 10, currentPrice: 800 }),
-    ];
+    const holdings = [holding({ avgBuyPrice: 1000, lots: 10, currentPrice: 800 })];
     expect(overallPL(holdings)).toBeCloseTo(-20);
   });
 });

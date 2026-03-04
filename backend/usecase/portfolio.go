@@ -176,7 +176,7 @@ func (s *PortfolioService) AddHolding(
 	var holding *portfolio.Holding
 	if existing != nil {
 		existing.AvgBuyPrice = existing.ComputeAvgBuyPrice(price, lots)
-		existing.Lots = existing.Lots + lots
+		existing.Lots += lots
 		existing.UpdatedAt = time.Now().UTC()
 		if err := s.holdings.Update(ctx, existing); err != nil {
 			return nil, err

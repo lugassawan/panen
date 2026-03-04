@@ -1,6 +1,10 @@
 <script lang="ts">
 import { Check, LoaderCircle, X } from "lucide-svelte";
-import { EvaluateChecklist, ResetChecklist, ToggleManualCheck } from "../../../wailsjs/go/backend/App";
+import {
+  EvaluateChecklist,
+  ResetChecklist,
+  ToggleManualCheck,
+} from "../../../wailsjs/go/backend/App";
 import Button from "../../lib/components/Button.svelte";
 import type { ActionType, ChecklistEvaluationResponse, CheckResultResponse } from "../../lib/types";
 import SuggestionCard from "./SuggestionCard.svelte";

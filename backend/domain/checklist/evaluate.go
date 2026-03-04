@@ -34,17 +34,25 @@ type CheckResult struct {
 type checkFunc func(EvaluateInput) CheckResult
 
 var checkRegistry = map[string]checkFunc{
-	"roe_above_min":       func(in EvaluateInput) CheckResult { return checkROE(in.StockData, in.Thresholds) },
-	"der_below_max":       func(in EvaluateInput) CheckResult { return checkDER(in.StockData, in.Thresholds) },
-	"price_below_entry":   func(in EvaluateInput) CheckResult { return checkPriceBelowEntry(in.StockData, in.Valuation) },
-	"position_weight":     func(in EvaluateInput) CheckResult { return checkPositionWeight(in.StockData, in.AllHoldings, in.Thresholds) },
-	"current_loss":        func(in EvaluateInput) CheckResult { return checkCurrentLoss(in.StockData, in.Holding) },
-	"new_avg_price":       func(in EvaluateInput) CheckResult { return checkNewAvgPrice(in.StockData, in.Holding) },
-	"dy_above_min":        func(in EvaluateInput) CheckResult { return checkDYAboveMin(in.StockData, in.Thresholds) },
-	"payout_sustainable":  func(in EvaluateInput) CheckResult { return checkPayoutSustainable(in.StockData, in.Thresholds) },
-	"price_above_exit":    func(in EvaluateInput) CheckResult { return checkPriceAboveExit(in.StockData, in.Valuation) },
-	"capital_gain":        func(in EvaluateInput) CheckResult { return checkCapitalGain(in.StockData, in.Holding, in.BuyFeePct, in.SellFeePct, in.SellTaxPct) },
-	"fundamentals_stable": func(in EvaluateInput) CheckResult { return checkFundamentalsStable(in.StockData, in.Thresholds) },
+	"roe_above_min":     func(in EvaluateInput) CheckResult { return checkROE(in.StockData, in.Thresholds) },
+	"der_below_max":     func(in EvaluateInput) CheckResult { return checkDER(in.StockData, in.Thresholds) },
+	"price_below_entry": func(in EvaluateInput) CheckResult { return checkPriceBelowEntry(in.StockData, in.Valuation) },
+	"position_weight": func(in EvaluateInput) CheckResult {
+		return checkPositionWeight(in.StockData, in.AllHoldings, in.Thresholds)
+	},
+	"current_loss":  func(in EvaluateInput) CheckResult { return checkCurrentLoss(in.StockData, in.Holding) },
+	"new_avg_price": func(in EvaluateInput) CheckResult { return checkNewAvgPrice(in.StockData, in.Holding) },
+	"dy_above_min":  func(in EvaluateInput) CheckResult { return checkDYAboveMin(in.StockData, in.Thresholds) },
+	"payout_sustainable": func(in EvaluateInput) CheckResult {
+		return checkPayoutSustainable(in.StockData, in.Thresholds)
+	},
+	"price_above_exit": func(in EvaluateInput) CheckResult { return checkPriceAboveExit(in.StockData, in.Valuation) },
+	"capital_gain": func(in EvaluateInput) CheckResult {
+		return checkCapitalGain(in.StockData, in.Holding, in.BuyFeePct, in.SellFeePct, in.SellTaxPct)
+	},
+	"fundamentals_stable": func(in EvaluateInput) CheckResult {
+		return checkFundamentalsStable(in.StockData, in.Thresholds)
+	},
 	"dividend_maintained": func(in EvaluateInput) CheckResult { return checkDividendMaintained(in.StockData) },
 }
 

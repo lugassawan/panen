@@ -12,9 +12,9 @@ import ConfirmDialog from "../../components/ConfirmDialog.svelte";
 import Button from "../../lib/components/Button.svelte";
 import { formatPercent, formatRupiah } from "../../lib/format";
 import {
-  calcPL,
   currentValue as calcCurrentValue,
   overallPL as calcOverallPL,
+  calcPL,
   totalInvested as calcTotalInvested,
 } from "../../lib/portfolio";
 import type {

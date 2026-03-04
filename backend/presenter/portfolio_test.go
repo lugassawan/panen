@@ -47,7 +47,10 @@ func (m *mockPortfolioRepo) GetByID(_ context.Context, id string) (*portfolio.Po
 	return p, nil
 }
 
-func (m *mockPortfolioRepo) ListByBrokerageAccountID(_ context.Context, brokerageAccountID string) ([]*portfolio.Portfolio, error) {
+func (m *mockPortfolioRepo) ListByBrokerageAccountID(
+	_ context.Context,
+	brokerageAccountID string,
+) ([]*portfolio.Portfolio, error) {
 	return m.byAccount[brokerageAccountID], nil
 }
 
@@ -96,7 +99,10 @@ func (m *mockHoldingRepo) GetByID(_ context.Context, id string) (*portfolio.Hold
 	return h, nil
 }
 
-func (m *mockHoldingRepo) GetByPortfolioAndTicker(_ context.Context, portfolioID, ticker string) (*portfolio.Holding, error) {
+func (m *mockHoldingRepo) GetByPortfolioAndTicker(
+	_ context.Context,
+	portfolioID, ticker string,
+) (*portfolio.Holding, error) {
 	h, ok := m.byKey[portfolioID+":"+ticker]
 	if !ok {
 		return nil, shared.ErrNotFound
@@ -212,7 +218,9 @@ func (m *mockStockRepo) ListAllTickers(_ context.Context) ([]string, error) {
 
 // --- helper to build a portfolio handler with mocks ---
 
-func newTestPortfolioHandler() (*PortfolioHandler, *mockPortfolioRepo, *mockHoldingRepo, *mockBrokerageRepo, *mockStockRepo) {
+func newTestPortfolioHandler() (
+	*PortfolioHandler, *mockPortfolioRepo, *mockHoldingRepo, *mockBrokerageRepo, *mockStockRepo,
+) {
 	portfolioRepo := newMockPortfolioRepo()
 	holdingRepo := newMockHoldingRepo()
 	buyTxnRepo := &mockBuyTxnRepo{}
@@ -224,6 +232,15 @@ func newTestPortfolioHandler() (*PortfolioHandler, *mockPortfolioRepo, *mockHold
 	handler := NewPortfolioHandler(ctx, svc)
 
 	return handler, portfolioRepo, holdingRepo, brokerageRepo, stockRepo
+}
+
+// --- test helpers ---
+
+func assertEqual(t *testing.T, field string, got, want any) {
+	t.Helper()
+	if got != want {
+		t.Errorf("%s = %v, want %v", field, got, want)
+	}
 }
 
 // --- tests ---
@@ -280,21 +297,11 @@ func TestListPortfolios(t *testing.T) {
 		if len(result) != 2 {
 			t.Fatalf("len = %d, want 2", len(result))
 		}
-		if result[0].ID != "p1" {
-			t.Errorf("result[0].ID = %q, want p1", result[0].ID)
-		}
-		if result[0].Name != "Value" {
-			t.Errorf("result[0].Name = %q, want Value", result[0].Name)
-		}
-		if result[0].Mode != "VALUE" {
-			t.Errorf("result[0].Mode = %q, want VALUE", result[0].Mode)
-		}
-		if result[1].ID != "p2" {
-			t.Errorf("result[1].ID = %q, want p2", result[1].ID)
-		}
-		if result[1].Mode != "DIVIDEND" {
-			t.Errorf("result[1].Mode = %q, want DIVIDEND", result[1].Mode)
-		}
+		assertEqual(t, "result[0].ID", result[0].ID, "p1")
+		assertEqual(t, "result[0].Name", result[0].Name, "Value")
+		assertEqual(t, "result[0].Mode", result[0].Mode, "VALUE")
+		assertEqual(t, "result[1].ID", result[1].ID, "p2")
+		assertEqual(t, "result[1].Mode", result[1].Mode, "DIVIDEND")
 	})
 }
 
@@ -306,27 +313,13 @@ func TestCreatePortfolio(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if resp.Name != "My Value" {
-			t.Errorf("Name = %q, want My Value", resp.Name)
-		}
-		if resp.Mode != "VALUE" {
-			t.Errorf("Mode = %q, want VALUE", resp.Mode)
-		}
-		if resp.RiskProfile != "MODERATE" {
-			t.Errorf("RiskProfile = %q, want MODERATE", resp.RiskProfile)
-		}
-		if resp.Capital != 10000000 {
-			t.Errorf("Capital = %v, want 10000000", resp.Capital)
-		}
-		if resp.MonthlyAddition != 1000000 {
-			t.Errorf("MonthlyAddition = %v, want 1000000", resp.MonthlyAddition)
-		}
-		if resp.MaxStocks != 5 {
-			t.Errorf("MaxStocks = %d, want 5", resp.MaxStocks)
-		}
-		if resp.BrokerageAcctID != "acct-1" {
-			t.Errorf("BrokerageAcctID = %q, want acct-1", resp.BrokerageAcctID)
-		}
+		assertEqual(t, "Name", resp.Name, "My Value")
+		assertEqual(t, "Mode", resp.Mode, "VALUE")
+		assertEqual(t, "RiskProfile", resp.RiskProfile, "MODERATE")
+		assertEqual(t, "Capital", resp.Capital, 10000000.0)
+		assertEqual(t, "MonthlyAddition", resp.MonthlyAddition, 1000000.0)
+		assertEqual(t, "MaxStocks", resp.MaxStocks, 5)
+		assertEqual(t, "BrokerageAcctID", resp.BrokerageAcctID, "acct-1")
 		if resp.ID == "" {
 			t.Error("ID should not be empty")
 		}
@@ -410,24 +403,14 @@ func TestGetPortfolio(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if resp.Portfolio.ID != "p1" {
-			t.Errorf("Portfolio.ID = %q, want p1", resp.Portfolio.ID)
-		}
-		if resp.Portfolio.Name != "Value" {
-			t.Errorf("Portfolio.Name = %q, want Value", resp.Portfolio.Name)
-		}
+		assertEqual(t, "Portfolio.ID", resp.Portfolio.ID, "p1")
+		assertEqual(t, "Portfolio.Name", resp.Portfolio.Name, "Value")
 		if len(resp.Holdings) != 1 {
 			t.Fatalf("len(Holdings) = %d, want 1", len(resp.Holdings))
 		}
-		if resp.Holdings[0].Ticker != "BBCA" {
-			t.Errorf("Holdings[0].Ticker = %q, want BBCA", resp.Holdings[0].Ticker)
-		}
-		if resp.Holdings[0].AvgBuyPrice != 9000 {
-			t.Errorf("Holdings[0].AvgBuyPrice = %v, want 9000", resp.Holdings[0].AvgBuyPrice)
-		}
-		if resp.Holdings[0].Lots != 10 {
-			t.Errorf("Holdings[0].Lots = %d, want 10", resp.Holdings[0].Lots)
-		}
+		assertEqual(t, "Holdings[0].Ticker", resp.Holdings[0].Ticker, "BBCA")
+		assertEqual(t, "Holdings[0].AvgBuyPrice", resp.Holdings[0].AvgBuyPrice, 9000.0)
+		assertEqual(t, "Holdings[0].Lots", resp.Holdings[0].Lots, 10)
 		// No stock data loaded, so valuation fields should be nil
 		if resp.Holdings[0].CurrentPrice != nil {
 			t.Errorf("Holdings[0].CurrentPrice should be nil")
@@ -483,17 +466,15 @@ func TestGetPortfolio(t *testing.T) {
 		if len(resp.Holdings) != 1 {
 			t.Fatalf("len(Holdings) = %d, want 1", len(resp.Holdings))
 		}
-		if resp.Holdings[0].CurrentPrice == nil {
+		h0 := resp.Holdings[0]
+		if h0.CurrentPrice == nil {
 			t.Fatal("Holdings[0].CurrentPrice should not be nil")
 		}
-		if *resp.Holdings[0].CurrentPrice != 9500 {
-			t.Errorf("Holdings[0].CurrentPrice = %v, want 9500", *resp.Holdings[0].CurrentPrice)
-		}
-		// Valuation should be populated since stock data has positive EPS and BVPS
-		if resp.Holdings[0].GrahamNumber == nil {
+		assertEqual(t, "Holdings[0].CurrentPrice", *h0.CurrentPrice, 9500.0)
+		if h0.GrahamNumber == nil {
 			t.Fatal("Holdings[0].GrahamNumber should not be nil")
 		}
-		if resp.Holdings[0].Verdict == nil {
+		if h0.Verdict == nil {
 			t.Fatal("Holdings[0].Verdict should not be nil")
 		}
 	})
@@ -596,25 +577,13 @@ func TestUpdatePortfolio(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if resp.Name != "New Name" {
-			t.Errorf("Name = %q, want New Name", resp.Name)
-		}
-		if resp.RiskProfile != "AGGRESSIVE" {
-			t.Errorf("RiskProfile = %q, want AGGRESSIVE", resp.RiskProfile)
-		}
-		if resp.Capital != 20000000 {
-			t.Errorf("Capital = %v, want 20000000", resp.Capital)
-		}
-		if resp.MonthlyAddition != 2000000 {
-			t.Errorf("MonthlyAddition = %v, want 2000000", resp.MonthlyAddition)
-		}
-		if resp.MaxStocks != 10 {
-			t.Errorf("MaxStocks = %d, want 10", resp.MaxStocks)
-		}
+		assertEqual(t, "Name", resp.Name, "New Name")
+		assertEqual(t, "RiskProfile", resp.RiskProfile, "AGGRESSIVE")
+		assertEqual(t, "Capital", resp.Capital, 20000000.0)
+		assertEqual(t, "MonthlyAddition", resp.MonthlyAddition, 2000000.0)
+		assertEqual(t, "MaxStocks", resp.MaxStocks, 10)
 		// Mode should remain unchanged
-		if resp.Mode != "VALUE" {
-			t.Errorf("Mode = %q, want VALUE (mode is immutable)", resp.Mode)
-		}
+		assertEqual(t, "Mode", resp.Mode, "VALUE")
 	})
 
 	t.Run("invalid risk profile", func(t *testing.T) {

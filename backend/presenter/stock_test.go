@@ -11,12 +11,18 @@ import (
 	"github.com/lugassawan/panen/backend/usecase"
 )
 
+// Compile-time interface checks.
+var (
+	_ stock.Repository   = (*mockStockRepo)(nil)
+	_ stock.DataProvider = (*mockDataProvider)(nil)
+)
+
 // --- mock stock data provider ---
 
 type mockDataProvider struct {
-	source     string
-	priceFunc  func(ctx context.Context, ticker string) (*stock.PriceResult, error)
-	finFunc    func(ctx context.Context, ticker string) (*stock.FinancialResult, error)
+	source    string
+	priceFunc func(ctx context.Context, ticker string) (*stock.PriceResult, error)
+	finFunc   func(ctx context.Context, ticker string) (*stock.FinancialResult, error)
 }
 
 func (m *mockDataProvider) Source() string { return m.source }
@@ -43,6 +49,22 @@ func newTestStockHandler(provider *mockDataProvider) (*StockHandler, *mockStockR
 	ctx := context.Background()
 	handler := NewStockHandler(ctx, svc)
 	return handler, stockRepo
+}
+
+// --- test helpers ---
+
+func checkField(t *testing.T, field string, got, want any) {
+	t.Helper()
+	if got != want {
+		t.Errorf("%s = %v, want %v", field, got, want)
+	}
+}
+
+func checkNonZero(t *testing.T, field string, got any) {
+	t.Helper()
+	if got == "" || got == 0 || got == 0.0 {
+		t.Errorf("%s should not be zero/empty", field)
+	}
 }
 
 // --- tests ---
@@ -77,57 +99,23 @@ func TestLookupStock(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if resp.Ticker != "BBCA" {
-			t.Errorf("Ticker = %q, want BBCA", resp.Ticker)
-		}
-		if resp.Price != 9500 {
-			t.Errorf("Price = %v, want 9500", resp.Price)
-		}
-		if resp.High52Week != 10000 {
-			t.Errorf("High52Week = %v, want 10000", resp.High52Week)
-		}
-		if resp.Low52Week != 8000 {
-			t.Errorf("Low52Week = %v, want 8000", resp.Low52Week)
-		}
-		if resp.EPS != 500 {
-			t.Errorf("EPS = %v, want 500", resp.EPS)
-		}
-		if resp.BVPS != 4000 {
-			t.Errorf("BVPS = %v, want 4000", resp.BVPS)
-		}
-		if resp.ROE != 12.5 {
-			t.Errorf("ROE = %v, want 12.5", resp.ROE)
-		}
-		if resp.DER != 0.8 {
-			t.Errorf("DER = %v, want 0.8", resp.DER)
-		}
-		if resp.PBV != 2.375 {
-			t.Errorf("PBV = %v, want 2.375", resp.PBV)
-		}
-		if resp.PER != 19 {
-			t.Errorf("PER = %v, want 19", resp.PER)
-		}
-		if resp.DividendYield != 2.5 {
-			t.Errorf("DividendYield = %v, want 2.5", resp.DividendYield)
-		}
-		if resp.PayoutRatio != 40 {
-			t.Errorf("PayoutRatio = %v, want 40", resp.PayoutRatio)
-		}
-		if resp.RiskProfile != "MODERATE" {
-			t.Errorf("RiskProfile = %q, want MODERATE", resp.RiskProfile)
-		}
-		if resp.Source != "test" {
-			t.Errorf("Source = %q, want test", resp.Source)
-		}
-		if resp.GrahamNumber == 0 {
-			t.Error("GrahamNumber should not be zero for positive EPS and BVPS")
-		}
-		if resp.Verdict == "" {
-			t.Error("Verdict should not be empty")
-		}
-		if resp.FetchedAt == "" {
-			t.Error("FetchedAt should not be empty")
-		}
+		checkField(t, "Ticker", resp.Ticker, "BBCA")
+		checkField(t, "Price", resp.Price, 9500.0)
+		checkField(t, "High52Week", resp.High52Week, 10000.0)
+		checkField(t, "Low52Week", resp.Low52Week, 8000.0)
+		checkField(t, "EPS", resp.EPS, 500.0)
+		checkField(t, "BVPS", resp.BVPS, 4000.0)
+		checkField(t, "ROE", resp.ROE, 12.5)
+		checkField(t, "DER", resp.DER, 0.8)
+		checkField(t, "PBV", resp.PBV, 2.375)
+		checkField(t, "PER", resp.PER, 19.0)
+		checkField(t, "DividendYield", resp.DividendYield, 2.5)
+		checkField(t, "PayoutRatio", resp.PayoutRatio, 40.0)
+		checkField(t, "RiskProfile", resp.RiskProfile, "MODERATE")
+		checkField(t, "Source", resp.Source, "test")
+		checkNonZero(t, "GrahamNumber", resp.GrahamNumber)
+		checkNonZero(t, "Verdict", resp.Verdict)
+		checkNonZero(t, "FetchedAt", resp.FetchedAt)
 	})
 
 	t.Run("uses cache when fresh", func(t *testing.T) {
@@ -207,21 +195,11 @@ func TestGetStockValuation(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if resp.Ticker != "BBCA" {
-			t.Errorf("Ticker = %q, want BBCA", resp.Ticker)
-		}
-		if resp.Price != 9500 {
-			t.Errorf("Price = %v, want 9500", resp.Price)
-		}
-		if resp.RiskProfile != "CONSERVATIVE" {
-			t.Errorf("RiskProfile = %q, want CONSERVATIVE", resp.RiskProfile)
-		}
-		if resp.GrahamNumber == 0 {
-			t.Error("GrahamNumber should not be zero")
-		}
-		if resp.Verdict == "" {
-			t.Error("Verdict should not be empty")
-		}
+		checkField(t, "Ticker", resp.Ticker, "BBCA")
+		checkField(t, "Price", resp.Price, 9500.0)
+		checkField(t, "RiskProfile", resp.RiskProfile, "CONSERVATIVE")
+		checkNonZero(t, "GrahamNumber", resp.GrahamNumber)
+		checkNonZero(t, "Verdict", resp.Verdict)
 	})
 
 	t.Run("no cached data", func(t *testing.T) {
@@ -277,27 +255,13 @@ func TestGetStockValuation(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if resp.High52Week != 5500 {
-			t.Errorf("High52Week = %v, want 5500", resp.High52Week)
-		}
-		if resp.Low52Week != 4000 {
-			t.Errorf("Low52Week = %v, want 4000", resp.Low52Week)
-		}
-		if resp.DividendYield != 3.0 {
-			t.Errorf("DividendYield = %v, want 3.0", resp.DividendYield)
-		}
-		if resp.PayoutRatio != 50 {
-			t.Errorf("PayoutRatio = %v, want 50", resp.PayoutRatio)
-		}
-		if resp.FetchedAt != "2025-07-15T14:30:00Z" {
-			t.Errorf("FetchedAt = %q, want 2025-07-15T14:30:00Z", resp.FetchedAt)
-		}
-		if resp.Source != "test" {
-			t.Errorf("Source = %q, want test", resp.Source)
-		}
-		if resp.RiskProfile != "MODERATE" {
-			t.Errorf("RiskProfile = %q, want MODERATE", resp.RiskProfile)
-		}
+		checkField(t, "High52Week", resp.High52Week, 5500.0)
+		checkField(t, "Low52Week", resp.Low52Week, 4000.0)
+		checkField(t, "DividendYield", resp.DividendYield, 3.0)
+		checkField(t, "PayoutRatio", resp.PayoutRatio, 50.0)
+		checkField(t, "FetchedAt", resp.FetchedAt, "2025-07-15T14:30:00Z")
+		checkField(t, "Source", resp.Source, "test")
+		checkField(t, "RiskProfile", resp.RiskProfile, "MODERATE")
 	})
 }
 
@@ -356,8 +320,3 @@ func TestGetStockValuationTickerNotCached(t *testing.T) {
 		t.Errorf("error = %v, want ErrNoStockData", err)
 	}
 }
-
-// Verify that the mock repositories used in portfolio_test.go also implement
-// the stock.Repository interface correctly (compile-time check).
-var _ stock.Repository = (*mockStockRepo)(nil)
-var _ stock.DataProvider = (*mockDataProvider)(nil)
