@@ -18,6 +18,10 @@ const mockCreatePortfolio = vi.fn();
 const mockAddHolding = vi.fn();
 const mockDeletePortfolio = vi.fn();
 const mockUpdatePortfolio = vi.fn();
+const mockAvailableActions = vi.fn();
+const mockEvaluateChecklist = vi.fn();
+const mockToggleManualCheck = vi.fn();
+const mockResetChecklist = vi.fn();
 
 vi.mock("../../wailsjs/go/backend/App", () => ({
   ListBrokerageAccounts: (...args: unknown[]) => mockListBrokerageAccounts(...args),
@@ -29,6 +33,10 @@ vi.mock("../../wailsjs/go/backend/App", () => ({
   AddHolding: (...args: unknown[]) => mockAddHolding(...args),
   DeletePortfolio: (...args: unknown[]) => mockDeletePortfolio(...args),
   UpdatePortfolio: (...args: unknown[]) => mockUpdatePortfolio(...args),
+  AvailableActions: (...args: unknown[]) => mockAvailableActions(...args),
+  EvaluateChecklist: (...args: unknown[]) => mockEvaluateChecklist(...args),
+  ToggleManualCheck: (...args: unknown[]) => mockToggleManualCheck(...args),
+  ResetChecklist: (...args: unknown[]) => mockResetChecklist(...args),
 }));
 
 function makeBrokerage(
@@ -369,28 +377,7 @@ describe("PortfolioPage", () => {
       expect(await screen.findByText("Undervalued")).toBeInTheDocument();
     });
 
-    it("shows 'Consider Selling' signal for overvalued above exit target", async () => {
-      mockGetPortfolio.mockResolvedValue(
-        makePortfolioDetail({
-          holdings: [
-            makeHolding({
-              verdict: "OVERVALUED",
-              currentPrice: 12000,
-              exitTarget: 10000,
-            }),
-          ],
-        }),
-      );
-      render(PortfolioPage);
-      const user = userEvent.setup();
-      await screen.findByText("Value Portfolio");
-      const card = screen.getByTestId("portfolio-card");
-      await user.click(within(card).getByRole("button", { name: /value portfolio/i }));
-
-      expect(await screen.findByText("Consider Selling")).toBeInTheDocument();
-    });
-
-    it("shows 'Hold / Add' signal for undervalued", async () => {
+    it("shows Checklist button for each holding", async () => {
       mockGetPortfolio.mockResolvedValue(
         makePortfolioDetail({
           holdings: [makeHolding({ verdict: "UNDERVALUED", currentPrice: 8000 })],
@@ -402,22 +389,7 @@ describe("PortfolioPage", () => {
       const card = screen.getByTestId("portfolio-card");
       await user.click(within(card).getByRole("button", { name: /value portfolio/i }));
 
-      expect(await screen.findByText("Hold / Add")).toBeInTheDocument();
-    });
-
-    it("shows 'Hold' signal for fair value", async () => {
-      mockGetPortfolio.mockResolvedValue(
-        makePortfolioDetail({
-          holdings: [makeHolding({ verdict: "FAIR", currentPrice: 9000 })],
-        }),
-      );
-      render(PortfolioPage);
-      const user = userEvent.setup();
-      await screen.findByText("Value Portfolio");
-      const card = screen.getByTestId("portfolio-card");
-      await user.click(within(card).getByRole("button", { name: /value portfolio/i }));
-
-      expect(await screen.findByText("Hold")).toBeInTheDocument();
+      expect(await screen.findByRole("button", { name: /checklist/i })).toBeInTheDocument();
     });
 
     it("shows dash when no current price", async () => {

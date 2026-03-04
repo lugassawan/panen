@@ -140,3 +140,36 @@ export interface RefreshSettingsResponse {
   intervalMinutes: number;
   lastRefreshedAt: string;
 }
+
+export type ActionType = "BUY" | "AVERAGE_DOWN" | "AVERAGE_UP" | "SELL_EXIT" | "SELL_STOP" | "HOLD";
+
+export interface CheckResultResponse {
+  key: string;
+  label: string;
+  type: "AUTO" | "MANUAL";
+  status: "PASS" | "FAIL" | "PENDING";
+  detail: string;
+}
+
+export interface SuggestionResponse {
+  action: string;
+  ticker: string;
+  lots: number;
+  pricePerShare: number;
+  grossCost: number;
+  fee: number;
+  tax: number;
+  netCost: number;
+  newAvgBuyPrice: number;
+  newPositionLots: number;
+  newPositionPct: number;
+  capitalGainPct: number;
+}
+
+export interface ChecklistEvaluationResponse {
+  action: string;
+  ticker: string;
+  checks: CheckResultResponse[];
+  allPassed: boolean;
+  suggestion?: SuggestionResponse;
+}

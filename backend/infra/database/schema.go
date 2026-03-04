@@ -6,6 +6,7 @@ var migrations = []string{
 	migrationV2,
 	migrationV3,
 	migrationV4,
+	migrationV5,
 }
 
 const migrationV1 = `
@@ -113,4 +114,17 @@ CREATE TABLE app_settings (
 INSERT INTO app_settings (key, value) VALUES ('auto_refresh_enabled', '1');
 INSERT INTO app_settings (key, value) VALUES ('refresh_interval_minutes', '720');
 INSERT INTO app_settings (key, value) VALUES ('last_refreshed_at', '');
+`
+
+const migrationV5 = `
+CREATE TABLE checklist_results (
+	id            TEXT PRIMARY KEY,
+	portfolio_id  TEXT NOT NULL REFERENCES portfolios(id) ON DELETE CASCADE,
+	ticker        TEXT NOT NULL,
+	action        TEXT NOT NULL CHECK(action IN ('BUY','AVERAGE_DOWN','AVERAGE_UP','SELL_EXIT','SELL_STOP','HOLD')),
+	manual_checks TEXT NOT NULL DEFAULT '{}',
+	created_at    TEXT NOT NULL,
+	updated_at    TEXT NOT NULL,
+	UNIQUE(portfolio_id, ticker, action)
+);
 `

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/lugassawan/panen/backend/domain/brokerage"
+	"github.com/lugassawan/panen/backend/domain/checklist"
 	"github.com/lugassawan/panen/backend/domain/portfolio"
 	"github.com/lugassawan/panen/backend/domain/settings"
 	"github.com/lugassawan/panen/backend/domain/shared"
@@ -428,4 +429,71 @@ func (e *mockEventEmitter) eventsByName(name string) []emittedEvent {
 		}
 	}
 	return result
+}
+
+// mockChecklistResultRepo is an in-memory checklist.Repository for testing.
+type mockChecklistResultRepo struct {
+	mu    sync.Mutex
+	items map[string]*checklist.ChecklistResult // keyed by "portfolioID:ticker:action"
+	byID  map[string]*checklist.ChecklistResult // keyed by ID
+}
+
+func newMockChecklistResultRepo() *mockChecklistResultRepo {
+	return &mockChecklistResultRepo{
+		items: make(map[string]*checklist.ChecklistResult),
+		byID:  make(map[string]*checklist.ChecklistResult),
+	}
+}
+
+func checklistKey(portfolioID, ticker string, action checklist.ActionType) string {
+	return portfolioID + ":" + ticker + ":" + string(action)
+}
+
+func (r *mockChecklistResultRepo) Upsert(_ context.Context, cr *checklist.ChecklistResult) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	key := checklistKey(cr.PortfolioID, cr.Ticker, cr.Action)
+	r.items[key] = cr
+	r.byID[cr.ID] = cr
+	return nil
+}
+
+func (r *mockChecklistResultRepo) Get(
+	_ context.Context,
+	portfolioID, ticker string,
+	action checklist.ActionType,
+) (*checklist.ChecklistResult, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	key := checklistKey(portfolioID, ticker, action)
+	cr, ok := r.items[key]
+	if !ok {
+		return nil, shared.ErrNotFound
+	}
+	return cr, nil
+}
+
+func (r *mockChecklistResultRepo) Delete(_ context.Context, id string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	cr, ok := r.byID[id]
+	if !ok {
+		return shared.ErrNotFound
+	}
+	key := checklistKey(cr.PortfolioID, cr.Ticker, cr.Action)
+	delete(r.items, key)
+	delete(r.byID, id)
+	return nil
+}
+
+func (r *mockChecklistResultRepo) DeleteByPortfolioID(_ context.Context, portfolioID string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	for key, cr := range r.items {
+		if cr.PortfolioID == portfolioID {
+			delete(r.items, key)
+			delete(r.byID, cr.ID)
+		}
+	}
+	return nil
 }
