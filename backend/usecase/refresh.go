@@ -49,8 +49,9 @@ type RefreshStatus struct {
 }
 
 const (
-	maxRetries    = 3
-	retryBaseWait = 1 * time.Second
+	maxRetries      = 3
+	retryBaseWait   = 1 * time.Second
+	defaultInterval = 720 * time.Minute
 )
 
 // RefreshService manages background auto-refresh of stock data.
@@ -116,8 +117,6 @@ func (r *RefreshService) GetStatus() RefreshStatus {
 	defer r.mu.Unlock()
 	return r.status
 }
-
-const defaultInterval = 720 * time.Minute
 
 func (r *RefreshService) readInterval() time.Duration {
 	cfg, err := r.settings.GetRefreshSettings(context.Background())

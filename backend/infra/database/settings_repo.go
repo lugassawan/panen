@@ -45,29 +45,6 @@ func (r *SettingsRepo) GetRefreshSettings(ctx context.Context) (*settings.Refres
 	return s, rows.Err()
 }
 
-func applySettingsKey(s *settings.RefreshSettings, key, value string) error {
-	switch key {
-	case "auto_refresh_enabled":
-		s.AutoRefreshEnabled = value == "1"
-	case "refresh_interval_minutes":
-		n, err := strconv.Atoi(value)
-		if err != nil {
-			return err
-		}
-		s.IntervalMinutes = n
-	case "last_refreshed_at":
-		if value == "" {
-			return nil
-		}
-		t, err := parseTime(value)
-		if err != nil {
-			return err
-		}
-		s.LastRefreshedAt = t
-	}
-	return nil
-}
-
 func (r *SettingsRepo) SaveRefreshSettings(ctx context.Context, s *settings.RefreshSettings) error {
 	autoRefresh := "0"
 	if s.AutoRefreshEnabled {
@@ -97,4 +74,27 @@ func (r *SettingsRepo) SaveRefreshSettings(ctx context.Context, s *settings.Refr
 		}
 	}
 	return tx.Commit()
+}
+
+func applySettingsKey(s *settings.RefreshSettings, key, value string) error {
+	switch key {
+	case "auto_refresh_enabled":
+		s.AutoRefreshEnabled = value == "1"
+	case "refresh_interval_minutes":
+		n, err := strconv.Atoi(value)
+		if err != nil {
+			return err
+		}
+		s.IntervalMinutes = n
+	case "last_refreshed_at":
+		if value == "" {
+			return nil
+		}
+		t, err := parseTime(value)
+		if err != nil {
+			return err
+		}
+		s.LastRefreshedAt = t
+	}
+	return nil
 }
