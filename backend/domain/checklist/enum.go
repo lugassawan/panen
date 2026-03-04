@@ -1,9 +1,6 @@
 package checklist
 
-import (
-	"errors"
-	"fmt"
-)
+import "fmt"
 
 // ActionType defines the trading action for a checklist evaluation.
 type ActionType string
@@ -33,8 +30,6 @@ const (
 	CheckStatusFail    CheckStatus = "FAIL"
 	CheckStatusPending CheckStatus = "PENDING"
 )
-
-var ErrInvalidAction = errors.New("invalid action type")
 
 // ParseActionType converts a string to an ActionType enum value.
 func ParseActionType(s string) (ActionType, error) {
