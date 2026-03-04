@@ -149,8 +149,7 @@ func TestCheckPositionWeight(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			data := &stock.Data{Ticker: tt.ticker, Price: tt.price}
-			p := &portfolio.Portfolio{}
-			got := checkPositionWeight(data, p, tt.allHoldings, th)
+			got := checkPositionWeight(data, tt.allHoldings, th)
 			if got.Status != tt.wantStatus {
 				t.Errorf("checkPositionWeight(%s) status = %q, want %q", tt.name, got.Status, tt.wantStatus)
 			}

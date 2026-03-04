@@ -46,7 +46,7 @@ func EvaluateAutoChecks(input EvaluateInput) []CheckResult {
 		case "price_below_entry":
 			cr = checkPriceBelowEntry(input.StockData, input.Valuation)
 		case "position_weight":
-			cr = checkPositionWeight(input.StockData, input.Portfolio, input.AllHoldings, input.Thresholds)
+			cr = checkPositionWeight(input.StockData, input.AllHoldings, input.Thresholds)
 		case "current_loss":
 			cr = checkCurrentLoss(input.StockData, input.Holding)
 		case "new_avg_price":
@@ -108,7 +108,6 @@ func checkPriceBelowEntry(data *stock.Data, val *valuation.ValuationResult) Chec
 
 func checkPositionWeight(
 	data *stock.Data,
-	_ *portfolio.Portfolio,
 	allHoldings []*portfolio.Holding,
 	th Thresholds,
 ) CheckResult {
