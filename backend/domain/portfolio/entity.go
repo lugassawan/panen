@@ -81,6 +81,18 @@ type BuyTransaction struct {
 	CreatedAt time.Time
 }
 
+// ComputeAvgBuyPrice recalculates the weighted average after adding lots.
+func (h *Holding) ComputeAvgBuyPrice(newPrice float64, newLots int) float64 {
+	totalCost := h.AvgBuyPrice*float64(h.Lots) + newPrice*float64(newLots)
+	return totalCost / float64(h.Lots+newLots)
+}
+
+// ComputeBuyFee calculates the transaction fee for a purchase.
+func ComputeBuyFee(price float64, lots int, buyFeePct float64) float64 {
+	shares := float64(lots) * 100
+	return price * shares * buyFeePct / 100
+}
+
 // NewBuyTransaction creates a new BuyTransaction with generated ID and timestamp.
 func NewBuyTransaction(holdingID string, date time.Time, price float64, lots int, fee float64) *BuyTransaction {
 	return &BuyTransaction{
