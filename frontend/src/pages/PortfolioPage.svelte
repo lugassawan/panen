@@ -7,13 +7,16 @@ import {
   ListBrokerConfigs,
   ListPortfolios,
 } from "../../wailsjs/go/backend/App";
+import ActionSelector from "../components/ActionSelector.svelte";
 import AddHoldingForm from "../components/AddHoldingForm.svelte";
 import BrokerageAccountForm from "../components/BrokerageAccountForm.svelte";
+import ChecklistPanel from "../components/ChecklistPanel.svelte";
 import ConfirmDialog from "../components/ConfirmDialog.svelte";
 import PortfolioForm from "../components/PortfolioForm.svelte";
 import Button from "../lib/components/Button.svelte";
 import { formatPercent, formatRupiah } from "../lib/format";
 import type {
+  ActionType,
   BrokerageAccountResponse,
   BrokerConfigResponse,
   HoldingDetailResponse,
@@ -29,6 +32,7 @@ type PageState =
   | "list"
   | "view"
   | "edit-portfolio"
+  | "checklist"
   | "error";
 
 let state = $state<PageState>("loading");
@@ -42,6 +46,8 @@ let editingPortfolio = $state<PortfolioResponse | null>(null);
 let deletingPortfolio = $state<PortfolioResponse | null>(null);
 let deleteLoading = $state(false);
 let deleteError = $state<string | null>(null);
+let checklistTicker = $state<string | null>(null);
+let checklistAction = $state<ActionType | null>(null);
 
 const MODE_BADGE: Record<string, string> = {
   VALUE: "bg-green-100 text-green-700",
@@ -116,21 +122,6 @@ async function confirmDelete() {
 function cancelDelete() {
   deletingPortfolio = null;
   deleteError = null;
-}
-
-function getSignal(h: HoldingDetailResponse): string {
-  if (
-    h.verdict === "OVERVALUED" &&
-    h.currentPrice != null &&
-    h.exitTarget != null &&
-    h.currentPrice > h.exitTarget
-  ) {
-    return "Consider Selling";
-  }
-  if (h.verdict === "UNDERVALUED") {
-    return "Hold / Add";
-  }
-  return "Hold";
 }
 
 function calcPL(h: HoldingDetailResponse): number | null {
@@ -306,7 +297,7 @@ load();
             <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-text-muted">Current Price</th>
             <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-text-muted">P/L %</th>
             <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-text-muted">Verdict</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-text-muted">Signal</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-text-muted">Action</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-border-default">
@@ -340,12 +331,18 @@ load();
                   <span class="text-text-muted">&mdash;</span>
                 {/if}
               </td>
-              <td class="px-4 py-3 text-sm">
-                {#if holding.verdict}
-                  {getSignal(holding)}
-                {:else}
-                  <span class="text-text-muted">&mdash;</span>
-                {/if}
+              <td class="px-4 py-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onclick={() => {
+                    checklistTicker = holding.ticker;
+                    checklistAction = null;
+                    state = "checklist";
+                  }}
+                >
+                  Checklist
+                </Button>
               </td>
             </tr>
           {/each}
@@ -357,6 +354,40 @@ load();
     <div class="rounded border border-border-default bg-bg-elevated p-4">
       <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">Add Holding</h3>
       <AddHoldingForm portfolioId={detail.portfolio.id} onAdded={() => viewPortfolio(detail!.portfolio)} />
+    </div>
+  {:else if state === "checklist" && detail && checklistTicker}
+    <div class="mb-6 flex items-center gap-3">
+      <button
+        type="button"
+        class="rounded p-1 text-text-secondary hover:bg-bg-tertiary hover:text-text-primary focus-ring transition-fast"
+        onclick={() => {
+          checklistTicker = null;
+          checklistAction = null;
+          state = "view";
+        }}
+        aria-label="Back to portfolio"
+      >
+        <ArrowLeft size={20} strokeWidth={2} />
+      </button>
+      <h2 class="text-xl font-semibold text-text-primary">
+        {checklistTicker} Checklist
+      </h2>
+    </div>
+
+    <div class="space-y-6">
+      <ActionSelector
+        portfolioId={detail.portfolio.id}
+        ticker={checklistTicker}
+        onselect={(action) => { checklistAction = action; }}
+      />
+
+      {#if checklistAction}
+        <ChecklistPanel
+          portfolioId={detail.portfolio.id}
+          ticker={checklistTicker}
+          action={checklistAction}
+        />
+      {/if}
     </div>
   {/if}
 </div>
