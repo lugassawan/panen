@@ -19,7 +19,15 @@ const (
 		FROM watchlists WHERE profile_id = ? ORDER BY name`
 	watchlistUpdate = `UPDATE watchlists SET name = ?, updated_at = ?
 		WHERE id = ?`
-	watchlistDelete = `DELETE FROM watchlists WHERE id = ?`
+	watchlistDelete  = `DELETE FROM watchlists WHERE id = ?`
+	watchlistItemAdd = `INSERT INTO watchlist_items
+		(id, watchlist_id, ticker, created_at)
+		VALUES (?, ?, ?, ?)`
+	watchlistItemRemove            = `DELETE FROM watchlist_items WHERE watchlist_id = ? AND ticker = ?`
+	watchlistItemListByWatchlistID = `SELECT id, watchlist_id, ticker, created_at
+		FROM watchlist_items WHERE watchlist_id = ? ORDER BY ticker`
+	watchlistItemExists = `SELECT COUNT(*) FROM watchlist_items
+		WHERE watchlist_id = ? AND ticker = ?`
 )
 
 // WatchlistRepo implements watchlist.Repository.
@@ -102,17 +110,6 @@ func (r *WatchlistRepo) Delete(ctx context.Context, id string) error {
 	}
 	return checkRowsAffected(res)
 }
-
-const (
-	watchlistItemAdd = `INSERT INTO watchlist_items
-		(id, watchlist_id, ticker, created_at)
-		VALUES (?, ?, ?, ?)`
-	watchlistItemRemove            = `DELETE FROM watchlist_items WHERE watchlist_id = ? AND ticker = ?`
-	watchlistItemListByWatchlistID = `SELECT id, watchlist_id, ticker, created_at
-		FROM watchlist_items WHERE watchlist_id = ? ORDER BY ticker`
-	watchlistItemExists = `SELECT COUNT(*) FROM watchlist_items
-		WHERE watchlist_id = ? AND ticker = ?`
-)
 
 // WatchlistItemRepo implements watchlist.ItemRepository.
 type WatchlistItemRepo struct {

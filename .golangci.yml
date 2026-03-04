@@ -40,7 +40,7 @@ linters:
     custom:
       panenlint:
         type: "module"
-        description: "Panen custom lint rules (funcname, maxparams, nolocalstruct, nolateexport)"
+        description: "Panen custom lint rules (funcname, maxparams, nolateconst, nolocalstruct, nolateexport)"
     decorder:
       dec-order:
         - type

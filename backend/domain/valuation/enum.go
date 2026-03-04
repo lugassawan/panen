@@ -11,6 +11,15 @@ const (
 	RiskAggressive   RiskProfile = "AGGRESSIVE"
 )
 
+// Verdict indicates whether a stock is undervalued, fair, or overvalued.
+type Verdict string
+
+const (
+	VerdictUndervalued Verdict = "UNDERVALUED"
+	VerdictFair        Verdict = "FAIR"
+	VerdictOvervalued  Verdict = "OVERVALUED"
+)
+
 // ParseRiskProfile converts a string to a RiskProfile enum value.
 func ParseRiskProfile(s string) (RiskProfile, error) {
 	switch s {
@@ -24,12 +33,3 @@ func ParseRiskProfile(s string) (RiskProfile, error) {
 		return "", fmt.Errorf("%w: %s", ErrInvalidRisk, s)
 	}
 }
-
-// Verdict indicates whether a stock is undervalued, fair, or overvalued.
-type Verdict string
-
-const (
-	VerdictUndervalued Verdict = "UNDERVALUED"
-	VerdictFair        Verdict = "FAIR"
-	VerdictOvervalued  Verdict = "OVERVALUED"
-)
