@@ -139,9 +139,9 @@ No scopes or breaking change markers. Direct commits to `main` are blocked.
 ## Project Structure
 
 ```
-backend/app/       Go application logic (Wails-bound methods)
-frontend/src/      Svelte 5 components and TypeScript
-tools/lint/        Custom golangci-lint analyzers
-build/             Build assets
-docs/plans/        Design documents
+backend/              Go backend (presenter, domain, usecase, infra layers)
+frontend/src/         Svelte 5 app (pages/, lib/components/, stores, utils)
+tools/lint/           Custom golangci-lint analyzers
+build/                Build assets
+docs/plans/           Design documents
 ```
