@@ -226,7 +226,7 @@ func (r *RefreshService) refresh(ctx context.Context) error {
 	if err == nil {
 		cfg.LastRefreshedAt = now
 		if saveErr := r.settings.SaveRefreshSettings(ctx, cfg); saveErr != nil {
-			r.emitter.Emit("refresh:error", saveErr.Error())
+			r.emitter.Emit(eventRefreshError, saveErr.Error())
 		}
 	}
 
