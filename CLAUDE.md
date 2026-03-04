@@ -96,6 +96,13 @@ make release-check     # Validate VERSION against wails.json productVersion
 - Chromium only, auto-starts Vite dev server
 - Requires `make playwright-install` before first run
 
+### Manual Testing
+
+- Start the app with `make dev` — this launches the native Wails window and the Vite dev server at `http://localhost:5173`
+- Use **Claude Chrome extension** tools (`mcp__claude-in-chrome__*`) for visual/UI verification; fall back to **Playwright MCP** tools (`mcp__plugin_playwright_playwright__*`) if the Chrome extension is unavailable
+- Wails runtime bindings are unavailable in browser — backend-dependent features (stock lookup, portfolio actions) won't work; use for layout, navigation, theming, and interaction verification
+- Include manual verification steps in PR test plans when changes affect UI
+
 ### Wails Mock Pattern
 
 Auto-generated `wailsjs/` bindings are gitignored and unavailable in tests. Mock them inline:
