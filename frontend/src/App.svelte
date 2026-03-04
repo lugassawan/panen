@@ -2,11 +2,11 @@
 import Sidebar from "./components/Sidebar.svelte";
 import { theme } from "./lib/stores/theme.svelte";
 import type { Page } from "./lib/types";
-import BrokeragePage from "./pages/BrokeragePage.svelte";
-import PortfolioPage from "./pages/PortfolioPage.svelte";
-import SettingsPage from "./pages/SettingsPage.svelte";
-import StockLookupPage from "./pages/StockLookupPage.svelte";
-import WatchlistPage from "./pages/WatchlistPage.svelte";
+import BrokeragePage from "./pages/brokerage/BrokeragePage.svelte";
+import PortfolioPage from "./pages/portfolio/PortfolioPage.svelte";
+import SettingsPage from "./pages/settings/SettingsPage.svelte";
+import StockLookupPage from "./pages/stock/StockLookupPage.svelte";
+import WatchlistPage from "./pages/watchlist/WatchlistPage.svelte";
 
 let currentPage = $state<Page>("lookup");
 </script>

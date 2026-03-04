@@ -14,7 +14,7 @@ const mockListIndexNames = vi.fn();
 const mockListWatchlistSectors = vi.fn();
 const mockRenameWatchlist = vi.fn();
 
-vi.mock("../../wailsjs/go/backend/App", () => ({
+vi.mock("../../../wailsjs/go/backend/App", () => ({
   ListWatchlists: (...args: unknown[]) => mockListWatchlists(...args),
   CreateWatchlist: (...args: unknown[]) => mockCreateWatchlist(...args),
   DeleteWatchlist: (...args: unknown[]) => mockDeleteWatchlist(...args),

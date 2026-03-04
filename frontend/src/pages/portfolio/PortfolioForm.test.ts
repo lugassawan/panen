@@ -1,12 +1,12 @@
 import { render, screen } from "@testing-library/svelte";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { PortfolioResponse } from "../lib/types";
+import type { PortfolioResponse } from "../../lib/types";
 import PortfolioForm from "./PortfolioForm.svelte";
 
 const mockCreatePortfolio = vi.fn();
 const mockUpdatePortfolio = vi.fn();
-vi.mock("../../wailsjs/go/backend/App", () => ({
+vi.mock("../../../wailsjs/go/backend/App", () => ({
   CreatePortfolio: (...args: unknown[]) => mockCreatePortfolio(...args),
   UpdatePortfolio: (...args: unknown[]) => mockUpdatePortfolio(...args),
 }));

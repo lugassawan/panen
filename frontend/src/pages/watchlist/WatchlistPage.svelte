@@ -1,22 +1,20 @@
 <script lang="ts">
 import { LoaderCircle, Plus, Trash2, X } from "lucide-svelte";
 import {
-  AddToWatchlist,
-  CreateWatchlist,
-  DeleteWatchlist,
   GetPresetItems,
   GetWatchlistItems,
   ListIndexNames,
   ListWatchlistSectors,
   ListWatchlists,
   RemoveFromWatchlist,
-} from "../../wailsjs/go/backend/App";
-import ConfirmDialog from "../components/ConfirmDialog.svelte";
-import Badge from "../lib/components/Badge.svelte";
-import Button from "../lib/components/Button.svelte";
-import { formatPercent, formatRupiah } from "../lib/format";
-import type { WatchlistItemResponse, WatchlistResponse } from "../lib/types";
-import { getVerdictDisplay } from "../lib/verdict";
+} from "../../../wailsjs/go/backend/App";
+import Badge from "../../lib/components/Badge.svelte";
+import { formatPercent, formatRupiah } from "../../lib/format";
+import type { WatchlistItemResponse, WatchlistResponse } from "../../lib/types";
+import { getVerdictDisplay } from "../../lib/verdict";
+import WatchlistAddTicker from "./WatchlistAddTicker.svelte";
+import WatchlistCreateForm from "./WatchlistCreateForm.svelte";
+import WatchlistDeleteDialog from "./WatchlistDeleteDialog.svelte";
 
 type PageState = "loading" | "list" | "error";
 type ItemsState = "idle" | "loading" | "loaded" | "error";
@@ -44,19 +42,9 @@ let activeSector = $state<string>("");
 
 // Create watchlist inline form
 let showCreateForm = $state(false);
-let newWatchlistName = $state("");
-let createLoading = $state(false);
-let createError = $state<string | null>(null);
 
 // Delete watchlist confirm
 let deletingWatchlist = $state<WatchlistResponse | null>(null);
-let deleteLoading = $state(false);
-let deleteError = $state<string | null>(null);
-
-// Add ticker form
-let addTickerInput = $state("");
-let addTickerLoading = $state(false);
-let addTickerError = $state<string | null>(null);
 
 // Remove ticker
 let removingTicker = $state<string | null>(null);
@@ -121,70 +109,20 @@ function selectSector(sector: string) {
   activeSector = sector;
 }
 
-async function submitCreateWatchlist(e: Event) {
-  e.preventDefault();
-  const name = newWatchlistName.trim();
-  if (!name) return;
-  createLoading = true;
-  createError = null;
-  try {
-    await CreateWatchlist(name);
-    newWatchlistName = "";
-    showCreateForm = false;
-    await load();
-  } catch (err: unknown) {
-    createError = err instanceof Error ? err.message : String(err);
-  } finally {
-    createLoading = false;
+function handleWatchlistCreated() {
+  showCreateForm = false;
+  load();
+}
+
+function handleWatchlistDeleted() {
+  if (activeWatchlist?.id === deletingWatchlist?.id) {
+    activeWatchlist = null;
+    activeType = null;
+    items = [];
+    itemsState = "idle";
   }
-}
-
-function startDeleteWatchlist(wl: WatchlistResponse) {
-  deletingWatchlist = wl;
-  deleteError = null;
-}
-
-async function confirmDeleteWatchlist() {
-  if (!deletingWatchlist) return;
-  deleteLoading = true;
-  deleteError = null;
-  try {
-    await DeleteWatchlist(deletingWatchlist.id);
-    if (activeWatchlist?.id === deletingWatchlist.id) {
-      activeWatchlist = null;
-      activeType = null;
-      items = [];
-      itemsState = "idle";
-    }
-    deletingWatchlist = null;
-    await load();
-  } catch (e: unknown) {
-    deleteError = e instanceof Error ? e.message : String(e);
-  } finally {
-    deleteLoading = false;
-  }
-}
-
-function cancelDeleteWatchlist() {
   deletingWatchlist = null;
-  deleteError = null;
-}
-
-async function submitAddTicker(e: Event) {
-  e.preventDefault();
-  const ticker = addTickerInput.trim().toUpperCase();
-  if (!ticker || !activeWatchlist) return;
-  addTickerLoading = true;
-  addTickerError = null;
-  try {
-    await AddToWatchlist(activeWatchlist.id, ticker);
-    addTickerInput = "";
-    await loadItems();
-  } catch (err: unknown) {
-    addTickerError = err instanceof Error ? err.message : String(err);
-  } finally {
-    addTickerLoading = false;
-  }
+  load();
 }
 
 async function removeTicker(ticker: string) {
@@ -262,7 +200,7 @@ load();
           <button
             type="button"
             class="rounded p-0.5 text-text-muted transition-fast focus-ring hover:bg-bg-tertiary hover:text-text-primary"
-            onclick={() => { showCreateForm = true; newWatchlistName = ""; createError = null; }}
+            onclick={() => { showCreateForm = true; }}
             aria-label="New Watchlist"
           >
             <Plus size={14} strokeWidth={2} />
@@ -271,38 +209,10 @@ load();
       </div>
 
       {#if showCreateForm}
-        <form
-          onsubmit={submitCreateWatchlist}
-          class="mb-2 rounded border border-border-default bg-bg-elevated px-2 py-2"
-        >
-          <input
-            bind:value={newWatchlistName}
-            placeholder="Watchlist name"
-            aria-label="New watchlist name"
-            class="mb-1.5 w-full rounded border border-border-default bg-bg-primary px-2 py-1 text-xs text-text-primary placeholder:text-text-muted outline-none focus:border-green-700 focus-ring"
-            disabled={createLoading}
-          />
-          {#if createError}
-            <p class="mb-1.5 text-xs text-negative">{createError}</p>
-          {/if}
-          <div class="flex gap-1.5">
-            <button
-              type="submit"
-              disabled={createLoading || !newWatchlistName.trim()}
-              class="flex-1 rounded bg-green-700 px-2 py-1 text-xs font-medium text-text-inverse transition-fast focus-ring hover:bg-green-800 disabled:pointer-events-none disabled:opacity-50"
-            >
-              {createLoading ? "Adding…" : "Add"}
-            </button>
-            <button
-              type="button"
-              class="rounded px-2 py-1 text-xs text-text-secondary transition-fast focus-ring hover:bg-bg-tertiary"
-              onclick={() => { showCreateForm = false; createError = null; }}
-              disabled={createLoading}
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
+        <WatchlistCreateForm
+          onCreated={handleWatchlistCreated}
+          onCancel={() => { showCreateForm = false; }}
+        />
       {/if}
 
       {#if state === "loading" && !showCreateForm}
@@ -328,7 +238,7 @@ load();
               <button
                 type="button"
                 class="shrink-0 rounded p-0.5 text-text-muted opacity-0 transition-fast focus-ring group-hover:opacity-100 hover:bg-bg-tertiary hover:text-negative"
-                onclick={(e) => { e.stopPropagation(); startDeleteWatchlist(wl); }}
+                onclick={(e) => { e.stopPropagation(); deletingWatchlist = wl; }}
                 aria-label="Delete {wl.name}"
               >
                 <Trash2 size={13} strokeWidth={2} />
@@ -360,24 +270,7 @@ load();
 
       <!-- Add Ticker (custom watchlists only) -->
       {#if activeType === "watchlist" && activeWatchlist}
-        <div class="border-b border-border-default px-6 py-3">
-          <form onsubmit={submitAddTicker} class="flex items-center gap-2">
-            <input
-              bind:value={addTickerInput}
-              placeholder="Add ticker (e.g. BBCA)"
-              aria-label="Add ticker to watchlist"
-              class="w-48 rounded border border-border-default bg-bg-elevated px-3 py-1.5 text-sm uppercase text-text-primary placeholder:normal-case placeholder:text-text-muted outline-none focus:border-green-700 focus-ring transition-fast"
-              disabled={addTickerLoading}
-            />
-            <Button type="submit" size="sm" disabled={addTickerLoading || !addTickerInput.trim()} loading={addTickerLoading}>
-              <Plus size={14} strokeWidth={2} />
-              Add
-            </Button>
-            {#if addTickerError}
-              <p class="text-sm text-negative">{addTickerError}</p>
-            {/if}
-          </form>
-        </div>
+        <WatchlistAddTicker watchlistId={activeWatchlist.id} onAdded={loadItems} />
       {/if}
 
       <!-- Items Content -->
@@ -513,20 +406,9 @@ load();
 </div>
 
 {#if deletingWatchlist}
-  <ConfirmDialog
-    title="Delete Watchlist"
-    confirmLabel="Delete"
-    confirmVariant="danger"
-    loading={deleteLoading}
-    onConfirm={confirmDeleteWatchlist}
-    onCancel={cancelDeleteWatchlist}
-  >
-    <p>Are you sure you want to delete <strong>{deletingWatchlist.name}</strong>?</p>
-    <p class="mt-1">This action cannot be undone.</p>
-    {#if deleteError}
-      <div class="mt-3 rounded border border-negative/20 bg-negative-bg px-3 py-2 text-sm text-negative" role="alert">
-        {deleteError}
-      </div>
-    {/if}
-  </ConfirmDialog>
+  <WatchlistDeleteDialog
+    watchlist={deletingWatchlist}
+    onDeleted={handleWatchlistDeleted}
+    onCancel={() => { deletingWatchlist = null; }}
+  />
 {/if}

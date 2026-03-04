@@ -4,12 +4,12 @@ import {
   DeleteBrokerageAccount,
   ListBrokerageAccounts,
   ListBrokerConfigs,
-} from "../../wailsjs/go/backend/App";
-import BrokerageAccountForm from "../components/BrokerageAccountForm.svelte";
-import ConfirmDialog from "../components/ConfirmDialog.svelte";
-import Button from "../lib/components/Button.svelte";
-import { formatPercent } from "../lib/format";
-import type { BrokerageAccountResponse, BrokerConfigResponse } from "../lib/types";
+} from "../../../wailsjs/go/backend/App";
+import BrokerageAccountForm from "../../components/BrokerageAccountForm.svelte";
+import ConfirmDialog from "../../components/ConfirmDialog.svelte";
+import Button from "../../lib/components/Button.svelte";
+import { formatPercent } from "../../lib/format";
+import type { BrokerageAccountResponse, BrokerConfigResponse } from "../../lib/types";
 
 type PageState = "loading" | "list" | "create" | "edit" | "error";
 

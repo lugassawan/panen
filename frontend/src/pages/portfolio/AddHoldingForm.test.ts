@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import AddHoldingForm from "./AddHoldingForm.svelte";
 
 const mockAddHolding = vi.fn();
-vi.mock("../../wailsjs/go/backend/App", () => ({
+vi.mock("../../../wailsjs/go/backend/App", () => ({
   AddHolding: (...args: unknown[]) => mockAddHolding(...args),
 }));
 

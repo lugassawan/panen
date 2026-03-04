@@ -6,15 +6,11 @@ import {
   ListBrokerageAccounts,
   ListBrokerConfigs,
   ListPortfolios,
-} from "../../wailsjs/go/backend/App";
-import ActionSelector from "../components/ActionSelector.svelte";
-import AddHoldingForm from "../components/AddHoldingForm.svelte";
-import BrokerageAccountForm from "../components/BrokerageAccountForm.svelte";
-import ChecklistPanel from "../components/ChecklistPanel.svelte";
-import ConfirmDialog from "../components/ConfirmDialog.svelte";
-import PortfolioForm from "../components/PortfolioForm.svelte";
-import Button from "../lib/components/Button.svelte";
-import { formatPercent, formatRupiah } from "../lib/format";
+} from "../../../wailsjs/go/backend/App";
+import BrokerageAccountForm from "../../components/BrokerageAccountForm.svelte";
+import ConfirmDialog from "../../components/ConfirmDialog.svelte";
+import Button from "../../lib/components/Button.svelte";
+import { formatPercent, formatRupiah } from "../../lib/format";
 import type {
   ActionType,
   BrokerageAccountResponse,
@@ -22,8 +18,12 @@ import type {
   HoldingDetailResponse,
   PortfolioDetailResponse,
   PortfolioResponse,
-} from "../lib/types";
-import { getVerdictDisplay } from "../lib/verdict";
+} from "../../lib/types";
+import { getVerdictDisplay } from "../../lib/verdict";
+import ActionSelector from "./ActionSelector.svelte";
+import AddHoldingForm from "./AddHoldingForm.svelte";
+import ChecklistPanel from "./ChecklistPanel.svelte";
+import PortfolioForm from "./PortfolioForm.svelte";
 
 type PageState =
   | "loading"

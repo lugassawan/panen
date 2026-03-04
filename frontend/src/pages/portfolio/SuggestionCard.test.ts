@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/svelte";
 import { describe, expect, it } from "vitest";
-import type { SuggestionResponse } from "../lib/types";
+import type { SuggestionResponse } from "../../lib/types";
 import SuggestionCard from "./SuggestionCard.svelte";
 
 function makeBuySuggestion(overrides: Partial<SuggestionResponse> = {}): SuggestionResponse {

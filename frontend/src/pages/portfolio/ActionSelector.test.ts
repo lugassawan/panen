@@ -5,7 +5,7 @@ import ActionSelector from "./ActionSelector.svelte";
 
 const mockAvailableActions = vi.fn();
 
-vi.mock("../../wailsjs/go/backend/App", () => ({
+vi.mock("../../../wailsjs/go/backend/App", () => ({
   AvailableActions: (...args: unknown[]) => mockAvailableActions(...args),
 }));
 

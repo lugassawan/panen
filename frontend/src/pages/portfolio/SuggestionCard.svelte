@@ -1,7 +1,7 @@
 <script lang="ts">
-import { ACTION_LABELS } from "../lib/action";
-import { formatPercent, formatRupiah } from "../lib/format";
-import type { ActionType, SuggestionResponse } from "../lib/types";
+import { ACTION_LABELS } from "../../lib/action";
+import { formatPercent, formatRupiah } from "../../lib/format";
+import type { ActionType, SuggestionResponse } from "../../lib/types";
 
 let {
   suggestion,

@@ -4,10 +4,10 @@ import {
   GetRefreshSettings,
   TriggerRefresh,
   UpdateRefreshSettings,
-} from "../../wailsjs/go/backend/App";
-import ThemeToggle from "../lib/components/ThemeToggle.svelte";
-import { sync } from "../lib/stores/sync.svelte";
-import { theme } from "../lib/stores/theme.svelte";
+} from "../../../wailsjs/go/backend/App";
+import ThemeToggle from "../../lib/components/ThemeToggle.svelte";
+import { sync } from "../../lib/stores/sync.svelte";
+import { theme } from "../../lib/stores/theme.svelte";
 
 let autoRefreshEnabled = $state(true);
 let intervalMinutes = $state(720);

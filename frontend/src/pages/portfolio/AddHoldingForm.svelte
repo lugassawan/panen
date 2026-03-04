@@ -1,5 +1,5 @@
 <script lang="ts">
-import { AddHolding } from "../../wailsjs/go/backend/App";
+import { AddHolding } from "../../../wailsjs/go/backend/App";
 
 let { portfolioId, onAdded }: { portfolioId: string; onAdded: () => void } = $props();
 

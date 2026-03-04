@@ -1,7 +1,7 @@
 <script lang="ts">
-import { AvailableActions } from "../../wailsjs/go/backend/App";
-import { ACTION_LABELS } from "../lib/action";
-import type { ActionType } from "../lib/types";
+import { AvailableActions } from "../../../wailsjs/go/backend/App";
+import { ACTION_LABELS } from "../../lib/action";
+import type { ActionType } from "../../lib/types";
 
 let {
   portfolioId,

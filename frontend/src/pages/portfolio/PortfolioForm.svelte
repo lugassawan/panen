@@ -1,7 +1,7 @@
 <script lang="ts">
-import { CreatePortfolio, UpdatePortfolio } from "../../wailsjs/go/backend/App";
-import Button from "../lib/components/Button.svelte";
-import type { Mode, PortfolioResponse, RiskProfile } from "../lib/types";
+import { CreatePortfolio, UpdatePortfolio } from "../../../wailsjs/go/backend/App";
+import Button from "../../lib/components/Button.svelte";
+import type { Mode, PortfolioResponse, RiskProfile } from "../../lib/types";
 
 let {
   brokerageAcctId = "",

@@ -1,9 +1,9 @@
 <script lang="ts">
 import { LoaderCircle } from "lucide-svelte";
-import { LookupStock } from "../../wailsjs/go/backend/App";
-import { formatDecimal, formatPercent, formatRupiah } from "../lib/format";
-import type { RiskProfile, StockValuationResponse } from "../lib/types";
-import { getVerdictDisplay } from "../lib/verdict";
+import { LookupStock } from "../../../wailsjs/go/backend/App";
+import { formatDecimal, formatPercent, formatRupiah } from "../../lib/format";
+import type { RiskProfile, StockValuationResponse } from "../../lib/types";
+import { getVerdictDisplay } from "../../lib/verdict";
 
 let ticker = $state("");
 let riskProfile = $state<RiskProfile>("MODERATE");
