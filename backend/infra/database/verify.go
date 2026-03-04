@@ -2,6 +2,7 @@ package database
 
 import (
 	"github.com/lugassawan/panen/backend/domain/brokerage"
+	"github.com/lugassawan/panen/backend/domain/checklist"
 	"github.com/lugassawan/panen/backend/domain/portfolio"
 	"github.com/lugassawan/panen/backend/domain/stock"
 	"github.com/lugassawan/panen/backend/domain/user"
@@ -18,4 +19,5 @@ var (
 	_ stock.Repository                   = (*StockDataRepo)(nil)
 	_ watchlist.Repository               = (*WatchlistRepo)(nil)
 	_ watchlist.ItemRepository           = (*WatchlistItemRepo)(nil)
+	_ checklist.Repository               = (*ChecklistResultRepo)(nil)
 )
