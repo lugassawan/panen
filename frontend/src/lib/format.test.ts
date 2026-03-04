@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { formatDecimal, formatPercent, formatRupiah } from "./format";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { formatDecimal, formatPercent, formatRelativeTime, formatRupiah } from "./format";
 
 describe("formatRupiah", () => {
   it("formats a typical stock price", () => {
@@ -52,5 +52,36 @@ describe("formatPercent", () => {
 
   it("formats negative percentages", () => {
     expect(formatPercent(-12.5)).toBe("-12,50%");
+  });
+});
+
+describe("formatRelativeTime", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2025-06-15T12:00:00Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("returns 'Not synced yet' for empty string", () => {
+    expect(formatRelativeTime("")).toBe("Not synced yet");
+  });
+
+  it("returns 'just now' for less than 1 minute ago", () => {
+    expect(formatRelativeTime("2025-06-15T11:59:30Z")).toBe("just now");
+  });
+
+  it("returns minutes ago for less than 1 hour", () => {
+    expect(formatRelativeTime("2025-06-15T11:45:00Z")).toBe("15m ago");
+  });
+
+  it("returns hours ago for less than 24 hours", () => {
+    expect(formatRelativeTime("2025-06-15T06:00:00Z")).toBe("6h ago");
+  });
+
+  it("returns days ago for 24+ hours", () => {
+    expect(formatRelativeTime("2025-06-13T12:00:00Z")).toBe("2d ago");
   });
 });
