@@ -111,21 +111,27 @@ chore/update-dependencies
 
 ### Commits
 
-Conventional Commits format, strictly `type: description`:
+Conventional Commits format, strictly `type: description`. The commit-msg hook enforces these types:
 
-```
-feat: add portfolio summary page
-fix: correct dividend yield calculation
-chore: update Go dependencies
-docs: add API design document
-refactor: extract price service
-test: add screener filter tests
-```
+| Type | When to use | Example |
+|------|-------------|---------|
+| `feat` | New user-facing feature or capability | `feat: add portfolio summary page` |
+| `fix` | Bug correction | `fix: correct dividend yield calculation` |
+| `chore` | Maintenance, dependency updates, config tweaks | `chore: update Go dependencies` |
+| `docs` | Documentation only (README, CLAUDE.md, comments) | `docs: add API design document` |
+| `refactor` | Code restructuring with no behavior change | `refactor: extract price service` |
+| `test` | Adding or updating tests only | `test: add screener filter tests` |
+| `style` | Formatting, whitespace, semicolons (no logic change) | `style: fix indentation in app.css` |
+| `perf` | Performance improvement | `perf: cache stock price lookups` |
+| `build` | Build system or tooling changes (Wails, Vite, Makefile) | `build: upgrade Vite to v8` |
+| `ci` | CI/CD pipeline changes (GitHub Actions, workflows) | `ci: add release workflow` |
+| `revert` | Reverting a previous commit | `revert: revert portfolio page changes` |
 
 No scopes or breaking change markers. Direct commits to `main` are blocked.
 
 ### Pull Requests
 
+- Title uses `type: description` format (same types as commits above)
 - One logical change per PR
 - Ensure `make lint` and `make test` pass before opening
 - Fill in the PR template (issue link, summary, test plan)

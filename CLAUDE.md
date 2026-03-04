@@ -53,14 +53,14 @@ make release-check     # Validate VERSION against wails.json productVersion
 
 ## Conventions
 
-- **Commits**: `type: description` only — no scopes, no `!` (enforced by `.githooks/commit-msg`)
+- **Commits**: `type: description` — valid types: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `style`, `perf`, `build`, `ci`, `revert` (enforced by `.githooks/commit-msg`; no scopes, no `!`)
 - **Direct commits to main/master are blocked** by the pre-commit hook
 - **Go**: Standard library style, `gofmt` formatting, tab indentation
 - **Frontend**: 2-space indentation, double quotes, semicolons (Biome enforced)
 - **Branches**: `feat/`, `fix/`, `chore/` prefixes
 - **Worktrees**: Only use git worktrees when running parallel agents on independent tasks — never for single sequential work or when targeting main/master (pre-commit hook blocks direct commits)
 - **Code review**: Prefer running code review before creating PRs (e.g., via available code-review skills or agents)
-- **PRs**: Title uses `type: description` (same as commits); body follows `.github/pull_request_template.md`
+- **PRs**: Title uses `type: description` (same types as commits); body follows `.github/pull_request_template.md`
 
 ## Custom Linter (panenlint)
 
