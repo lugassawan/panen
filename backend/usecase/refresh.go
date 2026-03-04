@@ -13,6 +13,8 @@ import (
 	"github.com/lugassawan/panen/backend/domain/stock"
 )
 
+const eventRefreshError = "refresh:error"
+
 // EventEmitter abstracts event emission (implemented by Wails runtime wrapper in presenter).
 type EventEmitter interface {
 	Emit(eventName string, data any)
@@ -132,7 +134,9 @@ func (r *RefreshService) readInterval() time.Duration {
 func (r *RefreshService) loop(ctx context.Context) {
 	defer close(r.done)
 
-	_ = r.refresh(ctx)
+	if err := r.refresh(ctx); err != nil {
+		r.emitter.Emit(eventRefreshError, err.Error())
+	}
 
 	interval := r.readInterval()
 	ticker := time.NewTicker(interval)
@@ -154,7 +158,9 @@ func (r *RefreshService) loop(ctx context.Context) {
 				ticker.Reset(interval)
 			}
 
-			_ = r.refresh(ctx)
+			if err := r.refresh(ctx); err != nil {
+				r.emitter.Emit(eventRefreshError, err.Error())
+			}
 		}
 	}
 }
@@ -219,7 +225,9 @@ func (r *RefreshService) refresh(ctx context.Context) error {
 	cfg, err := r.settings.GetRefreshSettings(ctx)
 	if err == nil {
 		cfg.LastRefreshedAt = now
-		_ = r.settings.SaveRefreshSettings(ctx, cfg)
+		if saveErr := r.settings.SaveRefreshSettings(ctx, cfg); saveErr != nil {
+			r.emitter.Emit(eventRefreshError, saveErr.Error())
+		}
 	}
 
 	finalState := "idle"

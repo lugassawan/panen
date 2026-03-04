@@ -1,21 +1,8 @@
 <script lang="ts">
 import { AlertTriangle, Check, LoaderCircle } from "lucide-svelte";
 import { TriggerRefresh } from "../../../wailsjs/go/backend/App";
+import { formatRelativeTime } from "../format";
 import { sync } from "../stores/sync.svelte";
-
-function formatRelativeTime(isoString: string): string {
-  if (!isoString) return "Not synced yet";
-  const date = new Date(isoString);
-  const now = Date.now();
-  const diffMs = now - date.getTime();
-  const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return "just now";
-  if (diffMin < 60) return `${diffMin}m ago`;
-  const diffHrs = Math.floor(diffMin / 60);
-  if (diffHrs < 24) return `${diffHrs}h ago`;
-  const diffDays = Math.floor(diffHrs / 24);
-  return `${diffDays}d ago`;
-}
 
 let retrying = $state(false);
 

@@ -1,11 +1,11 @@
 import { render, screen } from "@testing-library/svelte";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { StockValuationResponse } from "../lib/types";
+import type { StockValuationResponse } from "../../lib/types";
 import StockLookupPage from "./StockLookupPage.svelte";
 
 const mockLookupStock = vi.fn();
-vi.mock("../../wailsjs/go/backend/App", () => ({
+vi.mock("../../../wailsjs/go/backend/App", () => ({
   LookupStock: (...args: unknown[]) => mockLookupStock(...args),
 }));
 

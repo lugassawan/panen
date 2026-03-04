@@ -166,8 +166,7 @@ func (s *PortfolioService) AddHolding(
 		return nil, err
 	}
 
-	shares := float64(lots) * 100 // 1 lot = 100 shares on IDX
-	fee := price * shares * acct.BuyFeePct / 100
+	fee := portfolio.ComputeBuyFee(price, lots, acct.BuyFeePct)
 
 	existing, err := s.holdings.GetByPortfolioAndTicker(ctx, portfolioID, ticker)
 	if err != nil && !errors.Is(err, shared.ErrNotFound) {
@@ -176,10 +175,8 @@ func (s *PortfolioService) AddHolding(
 
 	var holding *portfolio.Holding
 	if existing != nil {
-		totalLots := existing.Lots + lots
-		totalCost := existing.AvgBuyPrice*float64(existing.Lots) + price*float64(lots)
-		existing.AvgBuyPrice = totalCost / float64(totalLots)
-		existing.Lots = totalLots
+		existing.AvgBuyPrice = existing.ComputeAvgBuyPrice(price, lots)
+		existing.Lots += lots
 		existing.UpdatedAt = time.Now().UTC()
 		if err := s.holdings.Update(ctx, existing); err != nil {
 			return nil, err

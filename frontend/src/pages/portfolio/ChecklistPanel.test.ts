@@ -1,14 +1,14 @@
 import { render, screen } from "@testing-library/svelte";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ChecklistEvaluationResponse } from "../lib/types";
+import type { ChecklistEvaluationResponse } from "../../lib/types";
 import ChecklistPanel from "./ChecklistPanel.svelte";
 
 const mockEvaluateChecklist = vi.fn();
 const mockToggleManualCheck = vi.fn();
 const mockResetChecklist = vi.fn();
 
-vi.mock("../../wailsjs/go/backend/App", () => ({
+vi.mock("../../../wailsjs/go/backend/App", () => ({
   EvaluateChecklist: (...args: unknown[]) => mockEvaluateChecklist(...args),
   ToggleManualCheck: (...args: unknown[]) => mockToggleManualCheck(...args),
   ResetChecklist: (...args: unknown[]) => mockResetChecklist(...args),

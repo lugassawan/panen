@@ -31,39 +31,42 @@ type CheckResult struct {
 	Detail string
 }
 
+type checkFunc func(EvaluateInput) CheckResult
+
+var checkRegistry = map[string]checkFunc{
+	"roe_above_min":     func(in EvaluateInput) CheckResult { return checkROE(in.StockData, in.Thresholds) },
+	"der_below_max":     func(in EvaluateInput) CheckResult { return checkDER(in.StockData, in.Thresholds) },
+	"price_below_entry": func(in EvaluateInput) CheckResult { return checkPriceBelowEntry(in.StockData, in.Valuation) },
+	"position_weight": func(in EvaluateInput) CheckResult {
+		return checkPositionWeight(in.StockData, in.AllHoldings, in.Thresholds)
+	},
+	"current_loss":  func(in EvaluateInput) CheckResult { return checkCurrentLoss(in.StockData, in.Holding) },
+	"new_avg_price": func(in EvaluateInput) CheckResult { return checkNewAvgPrice(in.StockData, in.Holding) },
+	"dy_above_min":  func(in EvaluateInput) CheckResult { return checkDYAboveMin(in.StockData, in.Thresholds) },
+	"payout_sustainable": func(in EvaluateInput) CheckResult {
+		return checkPayoutSustainable(in.StockData, in.Thresholds)
+	},
+	"price_above_exit": func(in EvaluateInput) CheckResult { return checkPriceAboveExit(in.StockData, in.Valuation) },
+	"capital_gain": func(in EvaluateInput) CheckResult {
+		return checkCapitalGain(in.StockData, in.Holding, in.BuyFeePct, in.SellFeePct, in.SellTaxPct)
+	},
+	"fundamentals_stable": func(in EvaluateInput) CheckResult {
+		return checkFundamentalsStable(in.StockData, in.Thresholds)
+	},
+	"dividend_maintained": func(in EvaluateInput) CheckResult { return checkDividendMaintained(in.StockData) },
+}
+
 // EvaluateAutoChecks evaluates all auto-checks for the given input.
 func EvaluateAutoChecks(input EvaluateInput) []CheckResult {
 	defs := AutoCheckDefs(input.Action)
 	results := make([]CheckResult, 0, len(defs))
 
 	for _, def := range defs {
-		var cr CheckResult
-		switch def.Key {
-		case "roe_above_min":
-			cr = checkROE(input.StockData, input.Thresholds)
-		case "der_below_max":
-			cr = checkDER(input.StockData, input.Thresholds)
-		case "price_below_entry":
-			cr = checkPriceBelowEntry(input.StockData, input.Valuation)
-		case "position_weight":
-			cr = checkPositionWeight(input.StockData, input.AllHoldings, input.Thresholds)
-		case "current_loss":
-			cr = checkCurrentLoss(input.StockData, input.Holding)
-		case "new_avg_price":
-			cr = checkNewAvgPrice(input.StockData, input.Holding)
-		case "dy_above_min":
-			cr = checkDYAboveMin(input.StockData, input.Thresholds)
-		case "payout_sustainable":
-			cr = checkPayoutSustainable(input.StockData, input.Thresholds)
-		case "price_above_exit":
-			cr = checkPriceAboveExit(input.StockData, input.Valuation)
-		case "capital_gain":
-			cr = checkCapitalGain(input.StockData, input.Holding, input.BuyFeePct, input.SellFeePct, input.SellTaxPct)
-		case "fundamentals_stable":
-			cr = checkFundamentalsStable(input.StockData, input.Thresholds)
-		case "dividend_maintained":
-			cr = checkDividendMaintained(input.StockData)
+		fn, ok := checkRegistry[def.Key]
+		if !ok {
+			continue
 		}
+		cr := fn(input)
 		cr.Key = def.Key
 		cr.Label = def.Label
 		cr.Type = def.Type

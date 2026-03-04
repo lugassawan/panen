@@ -6,7 +6,7 @@ import type {
   HoldingDetailResponse,
   PortfolioDetailResponse,
   PortfolioResponse,
-} from "../lib/types";
+} from "../../lib/types";
 import PortfolioPage from "./PortfolioPage.svelte";
 
 const mockListBrokerageAccounts = vi.fn();
@@ -23,7 +23,7 @@ const mockEvaluateChecklist = vi.fn();
 const mockToggleManualCheck = vi.fn();
 const mockResetChecklist = vi.fn();
 
-vi.mock("../../wailsjs/go/backend/App", () => ({
+vi.mock("../../../wailsjs/go/backend/App", () => ({
   ListBrokerageAccounts: (...args: unknown[]) => mockListBrokerageAccounts(...args),
   ListBrokerConfigs: (...args: unknown[]) => mockListBrokerConfigs(...args),
   ListPortfolios: (...args: unknown[]) => mockListPortfolios(...args),

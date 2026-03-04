@@ -6,24 +6,29 @@ import {
   ListBrokerageAccounts,
   ListBrokerConfigs,
   ListPortfolios,
-} from "../../wailsjs/go/backend/App";
-import ActionSelector from "../components/ActionSelector.svelte";
-import AddHoldingForm from "../components/AddHoldingForm.svelte";
-import BrokerageAccountForm from "../components/BrokerageAccountForm.svelte";
-import ChecklistPanel from "../components/ChecklistPanel.svelte";
-import ConfirmDialog from "../components/ConfirmDialog.svelte";
-import PortfolioForm from "../components/PortfolioForm.svelte";
-import Button from "../lib/components/Button.svelte";
-import { formatPercent, formatRupiah } from "../lib/format";
+} from "../../../wailsjs/go/backend/App";
+import BrokerageAccountForm from "../../components/BrokerageAccountForm.svelte";
+import ConfirmDialog from "../../components/ConfirmDialog.svelte";
+import Button from "../../lib/components/Button.svelte";
+import { formatPercent, formatRupiah } from "../../lib/format";
+import {
+  currentValue as calcCurrentValue,
+  overallPL as calcOverallPL,
+  calcPL,
+  totalInvested as calcTotalInvested,
+} from "../../lib/portfolio";
 import type {
   ActionType,
   BrokerageAccountResponse,
   BrokerConfigResponse,
-  HoldingDetailResponse,
   PortfolioDetailResponse,
   PortfolioResponse,
-} from "../lib/types";
-import { getVerdictDisplay } from "../lib/verdict";
+} from "../../lib/types";
+import { getVerdictDisplay } from "../../lib/verdict";
+import ActionSelector from "./ActionSelector.svelte";
+import AddHoldingForm from "./AddHoldingForm.svelte";
+import ChecklistPanel from "./ChecklistPanel.svelte";
+import PortfolioForm from "./PortfolioForm.svelte";
 
 type PageState =
   | "loading"
@@ -124,24 +129,9 @@ function cancelDelete() {
   deleteError = null;
 }
 
-function calcPL(h: HoldingDetailResponse): number | null {
-  if (h.currentPrice == null) return null;
-  return ((h.currentPrice - h.avgBuyPrice) / h.avgBuyPrice) * 100;
-}
-
-let totalInvested = $derived(
-  detail ? detail.holdings.reduce((sum, h) => sum + h.avgBuyPrice * h.lots * 100, 0) : 0,
-);
-
-let currentValue = $derived(
-  detail
-    ? detail.holdings.reduce((sum, h) => sum + (h.currentPrice ?? h.avgBuyPrice) * h.lots * 100, 0)
-    : 0,
-);
-
-let overallPL = $derived(
-  totalInvested > 0 ? ((currentValue - totalInvested) / totalInvested) * 100 : 0,
-);
+let totalInvested = $derived(detail ? calcTotalInvested(detail.holdings) : 0);
+let currentValue = $derived(detail ? calcCurrentValue(detail.holdings) : 0);
+let overallPL = $derived(detail ? calcOverallPL(detail.holdings) : 0);
 
 load();
 </script>
@@ -302,7 +292,7 @@ load();
         </thead>
         <tbody class="divide-y divide-border-default">
           {#each detail.holdings as holding}
-            {@const pl = calcPL(holding)}
+            {@const pl = calcPL(holding.currentPrice, holding.avgBuyPrice)}
             {@const verdict = holding.verdict ? getVerdictDisplay(holding.verdict) : null}
             <tr class="hover:bg-bg-tertiary">
               <td class="px-4 py-3 font-medium">{holding.ticker}</td>

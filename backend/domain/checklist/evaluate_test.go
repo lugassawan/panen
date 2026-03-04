@@ -513,6 +513,33 @@ func TestEvaluateAutoChecks(t *testing.T) {
 	}
 }
 
+func TestCheckRegistryCoversAllAutoCheckDefs(t *testing.T) {
+	// Collect all unique keys referenced in AutoCheckDefs across all action types.
+	actions := []ActionType{
+		ActionBuy,
+		ActionAverageDown,
+		ActionAverageUp,
+		ActionSellExit,
+		ActionSellStop,
+		ActionHold,
+	}
+
+	seen := map[string]bool{}
+	for _, action := range actions {
+		for _, def := range AutoCheckDefs(action) {
+			seen[def.Key] = true
+		}
+	}
+
+	for key := range seen {
+		t.Run(key, func(t *testing.T) {
+			if _, ok := checkRegistry[key]; !ok {
+				t.Errorf("AutoCheckDefs key %q has no registered handler in checkRegistry", key)
+			}
+		})
+	}
+}
+
 func TestEvaluateAutoChecksDispatch(t *testing.T) {
 	// Verify BUY action dispatches to correct check functions by checking specific results
 	input := EvaluateInput{

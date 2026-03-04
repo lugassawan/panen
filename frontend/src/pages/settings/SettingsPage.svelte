@@ -4,14 +4,18 @@ import {
   GetRefreshSettings,
   TriggerRefresh,
   UpdateRefreshSettings,
-} from "../../wailsjs/go/backend/App";
-import ThemeToggle from "../lib/components/ThemeToggle.svelte";
-import { sync } from "../lib/stores/sync.svelte";
-import { theme } from "../lib/stores/theme.svelte";
+} from "../../../wailsjs/go/backend/App";
+import Alert from "../../lib/components/Alert.svelte";
+import Select from "../../lib/components/Select.svelte";
+import ThemeToggle from "../../lib/components/ThemeToggle.svelte";
+import { sync } from "../../lib/stores/sync.svelte";
+import { theme } from "../../lib/stores/theme.svelte";
 
 let autoRefreshEnabled = $state(true);
 let intervalMinutes = $state(720);
 let lastRefreshedAt = $state("");
+let loadError = $state<string | null>(null);
+let saveError = $state<string | null>(null);
 
 onMount(async () => {
   try {
@@ -19,16 +23,17 @@ onMount(async () => {
     autoRefreshEnabled = settings.autoRefreshEnabled;
     intervalMinutes = settings.intervalMinutes;
     lastRefreshedAt = settings.lastRefreshedAt;
-  } catch {
-    // silently use defaults
+  } catch (e: unknown) {
+    loadError = e instanceof Error ? e.message : String(e);
   }
 });
 
 async function saveSettings() {
+  saveError = null;
   try {
     await UpdateRefreshSettings(autoRefreshEnabled, intervalMinutes);
-  } catch {
-    // silently ignore save errors
+  } catch (e: unknown) {
+    saveError = e instanceof Error ? e.message : String(e);
   }
 }
 
@@ -44,17 +49,21 @@ async function triggerRefresh() {
 <div class="mx-auto max-w-lg px-4 py-8">
   <h2 class="mb-6 text-xl font-semibold text-text-primary">Settings</h2>
 
+  {#if loadError}
+    <Alert variant="negative" dismissible>Failed to load settings: {loadError}</Alert>
+  {/if}
+
+  {#if saveError}
+    <Alert variant="negative" dismissible>Failed to save settings: {saveError}</Alert>
+  {/if}
+
   <div class="space-y-6">
     <div>
       <label class="mb-1 block text-sm text-text-secondary" for="language">Language</label>
-      <select
-        id="language"
-        disabled
-        class="w-full rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary opacity-60"
-      >
+      <Select id="language" disabled class="opacity-60">
         <option>English</option>
         <option>Bahasa Indonesia</option>
-      </select>
+      </Select>
     </div>
 
     <div>
@@ -84,18 +93,17 @@ async function triggerRefresh() {
           <label class="mb-1 block text-sm text-text-tertiary" for="refresh-interval">
             Refresh Interval
           </label>
-          <select
+          <Select
             id="refresh-interval"
             bind:value={intervalMinutes}
-            onchange={saveSettings}
+            onchange={() => saveSettings()}
             disabled={!autoRefreshEnabled}
-            class="w-full rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary disabled:opacity-60 focus-ring"
           >
             <option value={180}>Every 3 hours</option>
             <option value={360}>Every 6 hours</option>
             <option value={720}>Every 12 hours</option>
             <option value={1440}>Every 24 hours</option>
-          </select>
+          </Select>
         </div>
 
         <!-- Last Refreshed -->
