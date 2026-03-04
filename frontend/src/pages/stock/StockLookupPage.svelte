@@ -1,6 +1,8 @@
 <script lang="ts">
 import { LoaderCircle } from "lucide-svelte";
 import { LookupStock } from "../../../wailsjs/go/backend/App";
+import Input from "../../lib/components/Input.svelte";
+import Select from "../../lib/components/Select.svelte";
 import { formatDecimal, formatPercent, formatRupiah } from "../../lib/format";
 import type { RiskProfile, StockValuationResponse } from "../../lib/types";
 import { getVerdictDisplay } from "../../lib/verdict";
@@ -40,21 +42,21 @@ function percentInRange(value: number, min: number, max: number): number {
     onsubmit={(e) => { e.preventDefault(); lookup(); }}
     class="mb-8 flex gap-2"
   >
-    <input
+    <Input
       bind:value={ticker}
       placeholder="Ticker (e.g. BBCA)"
       aria-label="Stock ticker"
-      class="flex-1 rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary uppercase placeholder:normal-case placeholder:text-text-muted outline-none focus:border-green-700 focus-ring"
+      class="flex-1 uppercase placeholder:normal-case placeholder:text-text-muted"
     />
-    <select
+    <Select
       bind:value={riskProfile}
       aria-label="Risk profile"
-      class="rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary outline-none focus:border-green-700 focus-ring"
+      class="!w-auto"
     >
       <option value="CONSERVATIVE">Conservative</option>
       <option value="MODERATE">Moderate</option>
       <option value="AGGRESSIVE">Aggressive</option>
-    </select>
+    </Select>
     <button
       type="submit"
       disabled={loading}

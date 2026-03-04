@@ -1,6 +1,7 @@
 <script lang="ts">
 import { CreatePortfolio, UpdatePortfolio } from "../../../wailsjs/go/backend/App";
 import Button from "../../lib/components/Button.svelte";
+import Input from "../../lib/components/Input.svelte";
 import type { Mode, PortfolioResponse, RiskProfile } from "../../lib/types";
 
 let {
@@ -138,11 +139,11 @@ async function submit() {
 		>
 			Portfolio Name
 		</label>
-		<input
+		<Input
 			id="portfolio-name"
 			bind:value={name}
 			placeholder="e.g. Value Portfolio"
-			class="w-full rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-green-700 focus-ring"
+			class="placeholder:text-text-muted"
 		/>
 	</div>
 
@@ -212,12 +213,11 @@ async function submit() {
 			>
 				Capital
 			</label>
-			<input
+			<Input
 				id="capital"
 				type="number"
 				bind:value={capital}
 				min="0"
-				class="w-full rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary outline-none focus:border-green-700 focus-ring"
 			/>
 		</div>
 		<div>
@@ -227,12 +227,11 @@ async function submit() {
 			>
 				Monthly Addition
 			</label>
-			<input
+			<Input
 				id="monthly-addition"
 				type="number"
 				bind:value={monthlyAddition}
 				min="0"
-				class="w-full rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary outline-none focus:border-green-700 focus-ring"
 			/>
 		</div>
 		<div>
@@ -242,12 +241,11 @@ async function submit() {
 			>
 				Max Stocks
 			</label>
-			<input
+			<Input
 				id="max-stocks"
 				type="number"
 				bind:value={maxStocks}
 				min="1"
-				class="w-full rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary outline-none focus:border-green-700 focus-ring"
 			/>
 		</div>
 	</div>

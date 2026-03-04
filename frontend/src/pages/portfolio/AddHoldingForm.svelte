@@ -1,5 +1,6 @@
 <script lang="ts">
 import { AddHolding } from "../../../wailsjs/go/backend/App";
+import Input from "../../lib/components/Input.svelte";
 
 let { portfolioId, onAdded }: { portfolioId: string; onAdded: () => void } = $props();
 
@@ -44,44 +45,42 @@ async function submit() {
 	}}
 	class="flex flex-wrap items-end gap-3"
 >
-	<div>
+	<div class="w-28">
 		<label for="holding-ticker" class="mb-1 block text-sm text-text-secondary">
 			Ticker
 		</label>
-		<input
+		<Input
 			id="holding-ticker"
 			bind:value={ticker}
 			placeholder="e.g. BBCA"
-			class="w-28 rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary uppercase placeholder:normal-case placeholder:text-text-muted outline-none focus:border-green-700 focus-ring"
+			class="uppercase placeholder:normal-case placeholder:text-text-muted"
 		/>
 	</div>
 
-	<div>
+	<div class="w-32">
 		<label
 			for="holding-buy-price"
 			class="mb-1 block text-sm text-text-secondary"
 		>
 			Buy Price
 		</label>
-		<input
+		<Input
 			id="holding-buy-price"
 			type="number"
 			bind:value={buyPrice}
 			min="0"
-			class="w-32 rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary outline-none focus:border-green-700 focus-ring"
 		/>
 	</div>
 
-	<div>
+	<div class="w-20">
 		<label for="holding-lots" class="mb-1 block text-sm text-text-secondary">
 			Lots
 		</label>
-		<input
+		<Input
 			id="holding-lots"
 			type="number"
 			bind:value={lots}
 			min="1"
-			class="w-20 rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary outline-none focus:border-green-700 focus-ring"
 		/>
 	</div>
 
@@ -89,11 +88,10 @@ async function submit() {
 		<label for="holding-date" class="mb-1 block text-sm text-text-secondary">
 			Date
 		</label>
-		<input
+		<Input
 			id="holding-date"
 			type="date"
 			bind:value={date}
-			class="rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary outline-none focus:border-green-700 focus-ring"
 		/>
 	</div>
 

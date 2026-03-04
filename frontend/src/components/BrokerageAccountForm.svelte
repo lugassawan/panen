@@ -1,6 +1,8 @@
 <script lang="ts">
 import { CreateBrokerageAccount, UpdateBrokerageAccount } from "../../wailsjs/go/backend/App";
 import Button from "../lib/components/Button.svelte";
+import Input from "../lib/components/Input.svelte";
+import Select from "../lib/components/Select.svelte";
 import type { BrokerageAccountResponse, BrokerConfigResponse } from "../lib/types";
 
 let {
@@ -107,67 +109,66 @@ async function submit() {
   {#if brokerConfigs.length > 0}
     <div>
       <label for="broker-select" class="mb-1 block text-sm text-text-secondary">Broker</label>
-      <select
+      <Select
         id="broker-select"
-        value={brokerCode}
+        bind:value={brokerCode}
         onchange={(e) => onBrokerSelect(e.currentTarget.value)}
-        class="w-full rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary outline-none focus:border-green-700 focus-ring"
       >
         <option value="">Select a broker…</option>
         {#each brokerConfigs as config}
           <option value={config.code}>{config.name} ({config.code})</option>
         {/each}
         <option value="OTHER">Other (manual)</option>
-      </select>
+      </Select>
     </div>
   {/if}
 
   <div>
     <label for="broker-name" class="mb-1 block text-sm text-text-secondary">Broker Name</label>
-    <input
+    <Input
       id="broker-name"
       bind:value={name}
       placeholder="e.g. Ajaib, Stockbit, IPOT"
       disabled={brokerCode !== "" && brokerCode !== "OTHER"}
-      class="w-full rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-green-700 focus-ring disabled:opacity-60"
+      class="placeholder:text-text-muted disabled:opacity-60"
     />
   </div>
 
   <div class="grid grid-cols-3 gap-4">
     <div>
       <label for="buy-fee" class="mb-1 block text-sm text-text-secondary">Buy Fee %</label>
-      <input
+      <Input
         id="buy-fee"
         type="number"
         bind:value={buyFee}
         step="0.01"
         min="0"
         disabled={feesDisabled}
-        class="w-full rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm font-mono text-text-primary outline-none focus:border-green-700 focus-ring disabled:opacity-60"
+        class="font-mono disabled:opacity-60"
       />
     </div>
     <div>
       <label for="sell-fee" class="mb-1 block text-sm text-text-secondary">Sell Fee %</label>
-      <input
+      <Input
         id="sell-fee"
         type="number"
         bind:value={sellFee}
         step="0.01"
         min="0"
         disabled={feesDisabled}
-        class="w-full rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm font-mono text-text-primary outline-none focus:border-green-700 focus-ring disabled:opacity-60"
+        class="font-mono disabled:opacity-60"
       />
     </div>
     <div>
       <label for="sell-tax" class="mb-1 block text-sm text-text-secondary">Sell Tax %</label>
-      <input
+      <Input
         id="sell-tax"
         type="number"
         bind:value={sellTax}
         step="0.01"
         min="0"
         disabled={feesDisabled}
-        class="w-full rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm font-mono text-text-primary outline-none focus:border-green-700 focus-ring disabled:opacity-60"
+        class="font-mono disabled:opacity-60"
       />
     </div>
   </div>
