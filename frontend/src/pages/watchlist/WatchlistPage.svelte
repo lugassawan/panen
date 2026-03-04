@@ -48,6 +48,7 @@ let deletingWatchlist = $state<WatchlistResponse | null>(null);
 
 // Remove ticker
 let removingTicker = $state<string | null>(null);
+let removeError = $state<string | null>(null);
 
 async function load() {
   state = "loading";
@@ -128,11 +129,12 @@ function handleWatchlistDeleted() {
 async function removeTicker(ticker: string) {
   if (!activeWatchlist) return;
   removingTicker = ticker;
+  removeError = null;
   try {
     await RemoveFromWatchlist(activeWatchlist.id, ticker);
     await loadItems();
-  } catch {
-    // silently fail — future: surface error inline
+  } catch (e: unknown) {
+    removeError = e instanceof Error ? e.message : String(e);
   } finally {
     removingTicker = null;
   }
@@ -310,6 +312,11 @@ load();
           </div>
         {/if}
 
+        {#if removeError}
+          <div class="mx-6 mt-4 rounded border border-negative/20 bg-negative-bg px-4 py-3 text-sm text-negative" role="alert">
+            Failed to remove ticker: {removeError}
+          </div>
+        {/if}
         {#if filteredItems.length === 0}
           <div class="flex flex-1 items-center justify-center py-16 text-center">
             <div>

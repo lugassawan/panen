@@ -1,5 +1,6 @@
 <script lang="ts">
 import { CreateWatchlist } from "../../../wailsjs/go/backend/App";
+import Input from "../../lib/components/Input.svelte";
 
 let {
   onCreated,
@@ -35,11 +36,11 @@ async function submit(e: Event) {
   onsubmit={submit}
   class="mb-2 rounded border border-border-default bg-bg-elevated px-2 py-2"
 >
-  <input
+  <Input
     bind:value={name}
     placeholder="Watchlist name"
     aria-label="New watchlist name"
-    class="mb-1.5 w-full rounded border border-border-default bg-bg-primary px-2 py-1 text-xs text-text-primary placeholder:text-text-muted outline-none focus:border-green-700 focus-ring"
+    class="mb-1.5 bg-bg-primary px-2 py-1 text-xs placeholder:text-text-muted"
     disabled={loading}
   />
   {#if error}

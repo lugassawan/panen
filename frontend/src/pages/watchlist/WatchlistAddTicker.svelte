@@ -2,6 +2,7 @@
 import { Plus } from "lucide-svelte";
 import { AddToWatchlist } from "../../../wailsjs/go/backend/App";
 import Button from "../../lib/components/Button.svelte";
+import Input from "../../lib/components/Input.svelte";
 
 let {
   watchlistId,
@@ -35,13 +36,15 @@ async function submit(e: Event) {
 
 <div class="border-b border-border-default px-6 py-3">
   <form onsubmit={submit} class="flex items-center gap-2">
-    <input
-      bind:value={ticker}
-      placeholder="Add ticker (e.g. BBCA)"
-      aria-label="Add ticker to watchlist"
-      class="w-48 rounded border border-border-default bg-bg-elevated px-3 py-1.5 text-sm uppercase text-text-primary placeholder:normal-case placeholder:text-text-muted outline-none focus:border-green-700 focus-ring transition-fast"
-      disabled={loading}
-    />
+    <div class="w-48">
+      <Input
+        bind:value={ticker}
+        placeholder="Add ticker (e.g. BBCA)"
+        aria-label="Add ticker to watchlist"
+        class="py-1.5 uppercase placeholder:normal-case placeholder:text-text-muted transition-fast"
+        disabled={loading}
+      />
+    </div>
     <Button type="submit" size="sm" disabled={loading || !ticker.trim()} {loading}>
       <Plus size={14} strokeWidth={2} />
       Add
