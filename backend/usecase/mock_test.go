@@ -7,6 +7,7 @@ import (
 
 	"github.com/lugassawan/panen/backend/domain/brokerage"
 	"github.com/lugassawan/panen/backend/domain/portfolio"
+	"github.com/lugassawan/panen/backend/domain/settings"
 	"github.com/lugassawan/panen/backend/domain/shared"
 	"github.com/lugassawan/panen/backend/domain/stock"
 )
@@ -51,6 +52,20 @@ func (r *mockStockRepo) GetByTickerAndSource(_ context.Context, ticker, source s
 
 func (r *mockStockRepo) DeleteOlderThan(_ context.Context, _ time.Time) (int64, error) {
 	return 0, nil
+}
+
+func (r *mockStockRepo) ListAllTickers(_ context.Context) ([]string, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	seen := make(map[string]bool)
+	var tickers []string
+	for _, d := range r.items {
+		if !seen[d.Ticker] {
+			seen[d.Ticker] = true
+			tickers = append(tickers, d.Ticker)
+		}
+	}
+	return tickers, nil
 }
 
 // mockProvider is an in-memory stock.DataProvider for testing.
@@ -331,4 +346,86 @@ func (r *mockBuyTxnRepo) Delete(_ context.Context, id string) error {
 	}
 	delete(r.items, id)
 	return nil
+}
+
+// mockSettingsRepo implements settings.Repository for testing.
+type mockSettingsRepo struct {
+	mu       sync.Mutex
+	settings *settings.RefreshSettings
+}
+
+func newMockSettingsRepo() *mockSettingsRepo {
+	return &mockSettingsRepo{
+		settings: settings.DefaultRefreshSettings(),
+	}
+}
+
+func (r *mockSettingsRepo) GetRefreshSettings(_ context.Context) (*settings.RefreshSettings, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	// Return a copy to avoid data races.
+	s := *r.settings
+	return &s, nil
+}
+
+func (r *mockSettingsRepo) SaveRefreshSettings(_ context.Context, s *settings.RefreshSettings) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.settings = s
+	return nil
+}
+
+// mockTickerCollector implements TickerCollector for testing.
+type mockTickerCollector struct {
+	mu      sync.Mutex
+	tickers []string
+	err     error
+}
+
+func newMockTickerCollector(tickers ...string) *mockTickerCollector {
+	return &mockTickerCollector{tickers: tickers}
+}
+
+func (c *mockTickerCollector) CollectAll(_ context.Context) ([]string, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.err != nil {
+		return nil, c.err
+	}
+	result := make([]string, len(c.tickers))
+	copy(result, c.tickers)
+	return result, nil
+}
+
+// mockEventEmitter implements EventEmitter for testing.
+type mockEventEmitter struct {
+	mu     sync.Mutex
+	events []emittedEvent
+}
+
+type emittedEvent struct {
+	name string
+	data any
+}
+
+func newMockEventEmitter() *mockEventEmitter {
+	return &mockEventEmitter{}
+}
+
+func (e *mockEventEmitter) Emit(eventName string, data any) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	e.events = append(e.events, emittedEvent{name: eventName, data: data})
+}
+
+func (e *mockEventEmitter) eventsByName(name string) []emittedEvent {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	var result []emittedEvent
+	for _, ev := range e.events {
+		if ev.name == name {
+			result = append(result, ev)
+		}
+	}
+	return result
 }

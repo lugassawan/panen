@@ -5,6 +5,7 @@ var migrations = []string{
 	migrationV1,
 	migrationV2,
 	migrationV3,
+	migrationV4,
 }
 
 const migrationV1 = `
@@ -102,4 +103,14 @@ CREATE TABLE watchlist_items (
 	created_at   TEXT NOT NULL,
 	UNIQUE(watchlist_id, ticker)
 );
+`
+
+const migrationV4 = `
+CREATE TABLE app_settings (
+	key   TEXT PRIMARY KEY,
+	value TEXT NOT NULL
+);
+INSERT INTO app_settings (key, value) VALUES ('auto_refresh_enabled', '1');
+INSERT INTO app_settings (key, value) VALUES ('refresh_interval_minutes', '720');
+INSERT INTO app_settings (key, value) VALUES ('last_refreshed_at', '');
 `

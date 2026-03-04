@@ -11,4 +11,5 @@ type Repository interface {
 	GetByTicker(ctx context.Context, ticker string) (*Data, error)
 	GetByTickerAndSource(ctx context.Context, ticker string, source string) (*Data, error)
 	DeleteOlderThan(ctx context.Context, before time.Time) (int64, error)
+	ListAllTickers(ctx context.Context) ([]string, error)
 }

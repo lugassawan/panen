@@ -24,7 +24,9 @@ type App struct {
 	*presenter.BrokerageHandler
 	*presenter.BrokerConfigHandler
 	*presenter.WatchlistHandler
-	db *database.DB
+	*presenter.RefreshHandler
+	db      *database.DB
+	refresh *usecase.RefreshService
 }
 
 // NewApp creates a new App instance.
@@ -86,15 +88,28 @@ func (a *App) Startup(ctx context.Context) {
 		sectorRegistry,
 	)
 
+	settingsRepo := database.NewSettingsRepo(conn)
+	tickerCollector := database.NewTickerCollector(conn)
+	wailsEmitter := presenter.NewWailsEmitter(ctx)
+
+	refreshSvc := usecase.NewRefreshService(stockRepo, yahoo, settingsRepo, tickerCollector, wailsEmitter)
+	a.refresh = refreshSvc
+
 	a.StockHandler = presenter.NewStockHandler(ctx, stocks)
 	a.PortfolioHandler = presenter.NewPortfolioHandler(ctx, portfolios)
 	a.BrokerageHandler = presenter.NewBrokerageHandler(ctx, profileID, brokerages)
 	a.BrokerConfigHandler = presenter.NewBrokerConfigHandler(brokerConfigs)
 	a.WatchlistHandler = presenter.NewWatchlistHandler(ctx, profileID, watchlistSvc)
+	a.RefreshHandler = presenter.NewRefreshHandler(ctx, refreshSvc, settingsRepo)
+
+	refreshSvc.Start(ctx)
 }
 
-// Shutdown closes the database connection.
+// Shutdown stops background services and closes the database connection.
 func (a *App) Shutdown(ctx context.Context) {
+	if a.refresh != nil {
+		a.refresh.Stop()
+	}
 	if a.db != nil {
 		if err := a.db.Close(); err != nil {
 			runtime.LogErrorf(ctx, "close database: %v", err)

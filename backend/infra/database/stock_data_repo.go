@@ -29,6 +29,7 @@ const (
 		eps, bvps, roe, der, pbv, per, dividend_yield, payout_ratio, fetched_at, source
 		FROM stock_data WHERE ticker = ? AND source = ? ORDER BY fetched_at DESC LIMIT 1`
 	stockDeleteOlderThan = `DELETE FROM stock_data WHERE fetched_at < ?`
+	stockListAllTickers  = `SELECT DISTINCT ticker FROM stock_data ORDER BY ticker`
 )
 
 // StockDataRepo implements stock.Repository.
@@ -63,6 +64,23 @@ func (r *StockDataRepo) DeleteOlderThan(ctx context.Context, before time.Time) (
 		return 0, err
 	}
 	return res.RowsAffected()
+}
+
+func (r *StockDataRepo) ListAllTickers(ctx context.Context) ([]string, error) {
+	rows, err := r.db.QueryContext(ctx, stockListAllTickers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var tickers []string
+	for rows.Next() {
+		var t string
+		if err := rows.Scan(&t); err != nil {
+			return nil, err
+		}
+		tickers = append(tickers, t)
+	}
+	return tickers, rows.Err()
 }
 
 func (r *StockDataRepo) scanStockRow(row *sql.Row) (*stock.Data, error) {
