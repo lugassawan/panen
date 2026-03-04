@@ -132,7 +132,9 @@ func (r *RefreshService) readInterval() time.Duration {
 func (r *RefreshService) loop(ctx context.Context) {
 	defer close(r.done)
 
-	_ = r.refresh(ctx)
+	if err := r.refresh(ctx); err != nil {
+		r.emitter.Emit("refresh:error", err.Error())
+	}
 
 	interval := r.readInterval()
 	ticker := time.NewTicker(interval)
@@ -154,7 +156,9 @@ func (r *RefreshService) loop(ctx context.Context) {
 				ticker.Reset(interval)
 			}
 
-			_ = r.refresh(ctx)
+			if err := r.refresh(ctx); err != nil {
+				r.emitter.Emit("refresh:error", err.Error())
+			}
 		}
 	}
 }
@@ -219,7 +223,9 @@ func (r *RefreshService) refresh(ctx context.Context) error {
 	cfg, err := r.settings.GetRefreshSettings(ctx)
 	if err == nil {
 		cfg.LastRefreshedAt = now
-		_ = r.settings.SaveRefreshSettings(ctx, cfg)
+		if saveErr := r.settings.SaveRefreshSettings(ctx, cfg); saveErr != nil {
+			r.emitter.Emit("refresh:error", saveErr.Error())
+		}
 	}
 
 	finalState := "idle"
