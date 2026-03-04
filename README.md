@@ -70,8 +70,11 @@ panen/
 │   ├── usecase/       # Application services (orchestration + validation)
 │   └── infra/         # Database, scraper, platform implementations
 ├── frontend/src/
-│   ├── assets/fonts/  # Self-hosted WOFF2 font files
-│   └── ...            # Svelte 5 components and TypeScript
+│   ├── lib/components/  # Reusable UI primitives (Button, Input, Select, etc.)
+│   ├── components/      # Shared domain components (ConfirmDialog, Sidebar)
+│   ├── pages/           # Page components organized by domain
+│   ├── assets/fonts/    # Self-hosted WOFF2 font files
+│   └── ...              # Stores, types, utilities
 ├── tools/lint/        # Custom golangci-lint plugin (panenlint)
 ├── build/assets/      # Brand SVG assets
 ├── main.go            # Wails entry point
