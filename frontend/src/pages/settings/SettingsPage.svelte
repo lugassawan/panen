@@ -5,6 +5,7 @@ import {
   TriggerRefresh,
   UpdateRefreshSettings,
 } from "../../../wailsjs/go/backend/App";
+import Alert from "../../lib/components/Alert.svelte";
 import ThemeToggle from "../../lib/components/ThemeToggle.svelte";
 import { sync } from "../../lib/stores/sync.svelte";
 import { theme } from "../../lib/stores/theme.svelte";
@@ -12,6 +13,8 @@ import { theme } from "../../lib/stores/theme.svelte";
 let autoRefreshEnabled = $state(true);
 let intervalMinutes = $state(720);
 let lastRefreshedAt = $state("");
+let loadError = $state<string | null>(null);
+let saveError = $state<string | null>(null);
 
 onMount(async () => {
   try {
@@ -19,16 +22,17 @@ onMount(async () => {
     autoRefreshEnabled = settings.autoRefreshEnabled;
     intervalMinutes = settings.intervalMinutes;
     lastRefreshedAt = settings.lastRefreshedAt;
-  } catch {
-    // silently use defaults
+  } catch (e: unknown) {
+    loadError = e instanceof Error ? e.message : String(e);
   }
 });
 
 async function saveSettings() {
+  saveError = null;
   try {
     await UpdateRefreshSettings(autoRefreshEnabled, intervalMinutes);
-  } catch {
-    // silently ignore save errors
+  } catch (e: unknown) {
+    saveError = e instanceof Error ? e.message : String(e);
   }
 }
 
@@ -43,6 +47,14 @@ async function triggerRefresh() {
 
 <div class="mx-auto max-w-lg px-4 py-8">
   <h2 class="mb-6 text-xl font-semibold text-text-primary">Settings</h2>
+
+  {#if loadError}
+    <Alert variant="negative" dismissible>Failed to load settings: {loadError}</Alert>
+  {/if}
+
+  {#if saveError}
+    <Alert variant="negative" dismissible>Failed to save settings: {saveError}</Alert>
+  {/if}
 
   <div class="space-y-6">
     <div>
