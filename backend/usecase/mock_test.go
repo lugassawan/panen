@@ -353,11 +353,13 @@ func (r *mockBuyTxnRepo) Delete(_ context.Context, id string) error {
 type mockSettingsRepo struct {
 	mu       sync.Mutex
 	settings *settings.RefreshSettings
+	kv       map[string]string
 }
 
 func newMockSettingsRepo() *mockSettingsRepo {
 	return &mockSettingsRepo{
 		settings: settings.DefaultRefreshSettings(),
+		kv:       make(map[string]string),
 	}
 }
 
@@ -373,6 +375,19 @@ func (r *mockSettingsRepo) SaveRefreshSettings(_ context.Context, s *settings.Re
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.settings = s
+	return nil
+}
+
+func (r *mockSettingsRepo) GetSetting(_ context.Context, key string) (string, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return r.kv[key], nil
+}
+
+func (r *mockSettingsRepo) SetSetting(_ context.Context, key, value string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.kv[key] = value
 	return nil
 }
 

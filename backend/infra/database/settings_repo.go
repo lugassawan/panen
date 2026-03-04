@@ -76,6 +76,20 @@ func (r *SettingsRepo) SaveRefreshSettings(ctx context.Context, s *settings.Refr
 	return tx.Commit()
 }
 
+func (r *SettingsRepo) GetSetting(ctx context.Context, key string) (string, error) {
+	var value string
+	err := r.db.QueryRowContext(ctx, `SELECT value FROM app_settings WHERE key = ?`, key).Scan(&value)
+	if err == sql.ErrNoRows {
+		return "", nil
+	}
+	return value, err
+}
+
+func (r *SettingsRepo) SetSetting(ctx context.Context, key, value string) error {
+	_, err := r.db.ExecContext(ctx, settingsUpsert, key, value)
+	return err
+}
+
 func applySettingsKey(s *settings.RefreshSettings, key, value string) error {
 	switch key {
 	case "auto_refresh_enabled":

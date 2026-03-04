@@ -4,24 +4,27 @@
 	coverage coverage-go coverage-frontend playwright-install \
 	release-check
 
+VERSION := $(shell jq -r '.info.productVersion' wails.json)
+LDFLAGS := -X github.com/lugassawan/panen/backend.version=$(VERSION)
+
 dev:
 	wails dev -tags dev
 
 build:
-	wails build
+	wails build -ldflags "$(LDFLAGS)"
 
 build-darwin:
-	wails build -clean -platform darwin/universal
+	wails build -clean -platform darwin/universal -ldflags "$(LDFLAGS)"
 
 build-linux:
 	@if [ "$$(uname)" != "Linux" ]; then \
 		echo "Error: Linux builds require a Linux host (GTK headers needed)." >&2; \
 		exit 1; \
 	fi
-	wails build -clean -platform linux/amd64
+	wails build -clean -platform linux/amd64 -ldflags "$(LDFLAGS)"
 
 build-windows:
-	wails build -clean -platform windows/amd64
+	wails build -clean -platform windows/amd64 -ldflags "$(LDFLAGS)"
 
 # build-all builds for platforms that support cross-compilation from the current host.
 # Linux is excluded because Wails requires native GTK headers (use CI or a Linux host).

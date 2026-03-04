@@ -1,11 +1,15 @@
 <script lang="ts">
 import { onMount } from "svelte";
 import {
+  CheckForUpdate,
+  GetAppVersion,
   GetRefreshSettings,
+  OpenReleaseURL,
   TriggerRefresh,
   UpdateRefreshSettings,
 } from "../../../wailsjs/go/backend/App";
 import Alert from "../../lib/components/Alert.svelte";
+import Button from "../../lib/components/Button.svelte";
 import Select from "../../lib/components/Select.svelte";
 import ThemeToggle from "../../lib/components/ThemeToggle.svelte";
 import { sync } from "../../lib/stores/sync.svelte";
@@ -17,6 +21,15 @@ let lastRefreshedAt = $state("");
 let loadError = $state<string | null>(null);
 let saveError = $state<string | null>(null);
 
+let appVersion = $state("");
+let updateChecking = $state(false);
+let updateResult = $state<{
+  available: boolean;
+  latestVersion: string;
+  releaseURL: string;
+} | null>(null);
+let updateError = $state<string | null>(null);
+
 onMount(async () => {
   try {
     const settings = await GetRefreshSettings();
@@ -25,6 +38,12 @@ onMount(async () => {
     lastRefreshedAt = settings.lastRefreshedAt;
   } catch (e: unknown) {
     loadError = e instanceof Error ? e.message : String(e);
+  }
+
+  try {
+    appVersion = await GetAppVersion();
+  } catch {
+    appVersion = "unknown";
   }
 });
 
@@ -43,6 +62,24 @@ async function triggerRefresh() {
   } catch {
     // error shown via sync store
   }
+}
+
+async function checkForUpdates() {
+  updateChecking = true;
+  updateResult = null;
+  updateError = null;
+  try {
+    const result = await CheckForUpdate();
+    updateResult = result;
+  } catch (e: unknown) {
+    updateError = e instanceof Error ? e.message : String(e);
+  } finally {
+    updateChecking = false;
+  }
+}
+
+function openRelease(url: string) {
+  OpenReleaseURL(url);
 }
 </script>
 
@@ -121,6 +158,47 @@ async function triggerRefresh() {
         >
           {sync.isSyncing ? "Syncing..." : "Refresh Now"}
         </button>
+      </div>
+    </div>
+
+    <div>
+      <p class="mb-3 text-sm text-text-secondary">About</p>
+      <div class="space-y-4 rounded-lg border border-border-default bg-bg-elevated p-4">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-text-primary">Version</span>
+          <span class="font-mono text-sm text-text-secondary">{appVersion}</span>
+        </div>
+
+        <Button
+          variant="secondary"
+          size="sm"
+          loading={updateChecking}
+          onclick={checkForUpdates}
+        >
+          Check for Updates
+        </Button>
+
+        {#if updateResult}
+          {#if updateResult.available}
+            <Alert variant="info">
+              Panen {updateResult.latestVersion} is available.
+              <button
+                class="ml-1 font-medium underline underline-offset-2 hover:opacity-80"
+                onclick={() => openRelease(updateResult!.releaseURL)}
+              >
+                View Release
+              </button>
+            </Alert>
+          {:else}
+            <Alert variant="positive">You're up to date.</Alert>
+          {/if}
+        {/if}
+
+        {#if updateError}
+          <Alert variant="negative" dismissible>
+            Failed to check for updates: {updateError}
+          </Alert>
+        {/if}
       </div>
     </div>
   </div>

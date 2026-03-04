@@ -8,6 +8,7 @@ import (
 	"github.com/lugassawan/panen/backend/domain/user"
 	brokerConfigLoader "github.com/lugassawan/panen/backend/infra/brokerconfig"
 	"github.com/lugassawan/panen/backend/infra/database"
+	"github.com/lugassawan/panen/backend/infra/github"
 	"github.com/lugassawan/panen/backend/infra/platform"
 	"github.com/lugassawan/panen/backend/infra/scraper"
 	"github.com/lugassawan/panen/backend/infra/watchlistconfig"
@@ -26,6 +27,7 @@ type App struct {
 	*presenter.WatchlistHandler
 	*presenter.RefreshHandler
 	*presenter.ChecklistHandler
+	*presenter.UpdateHandler
 	db      *database.DB
 	refresh *usecase.RefreshService
 }
@@ -107,7 +109,14 @@ func (a *App) Startup(ctx context.Context) {
 	checklistSvc := usecase.NewChecklistService(checklistRepo, portfolioRepo, holdingRepo, brokerageRepo, stockRepo)
 	a.ChecklistHandler = presenter.NewChecklistHandler(ctx, checklistSvc)
 
+	ghClient := github.NewClient()
+	updateChecker := &releaseCheckerAdapter{client: ghClient}
+	updateSvc := usecase.NewUpdateService(updateChecker, Version())
+	a.UpdateHandler = presenter.NewUpdateHandler(ctx, updateSvc, settingsRepo)
+
 	refreshSvc.Start(ctx)
+
+	go a.CheckForUpdateOnStartup()
 }
 
 // Shutdown stops background services and closes the database connection.
@@ -120,6 +129,22 @@ func (a *App) Shutdown(ctx context.Context) {
 			runtime.LogErrorf(ctx, "close database: %v", err)
 		}
 	}
+}
+
+// releaseCheckerAdapter bridges github.Client to usecase.ReleaseChecker.
+type releaseCheckerAdapter struct {
+	client *github.Client
+}
+
+func (a *releaseCheckerAdapter) LatestRelease(ctx context.Context) (*usecase.ReleaseInfo, error) {
+	rel, err := a.client.LatestRelease(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &usecase.ReleaseInfo{
+		Version:    rel.Version(),
+		ReleaseURL: rel.HTMLURL,
+	}, nil
 }
 
 func ensureDefaultUser(ctx context.Context, users user.Repository) (string, error) {

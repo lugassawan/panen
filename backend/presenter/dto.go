@@ -155,6 +155,14 @@ type SuggestionResponse struct {
 	CapitalGainPct  float64 `json:"capitalGainPct"`
 }
 
+// UpdateCheckResponse is the frontend-facing response for an update check.
+type UpdateCheckResponse struct {
+	Available      bool   `json:"available"`
+	CurrentVersion string `json:"currentVersion"`
+	LatestVersion  string `json:"latestVersion"`
+	ReleaseURL     string `json:"releaseURL"`
+}
+
 // ChecklistEvaluationResponse is the frontend-facing response for a checklist evaluation.
 type ChecklistEvaluationResponse struct {
 	Action     string                `json:"action"`
