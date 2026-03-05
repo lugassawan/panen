@@ -27,25 +27,25 @@ func Score(input ScoreInput) float64 {
 	// Yield premium (0–40 pts): reward higher yields
 	if input.MinDY > 0 && input.DY >= input.MinDY {
 		premium := (input.DY - input.MinDY) / input.MinDY
-		score += clamp(premium*40, 0, 40)
+		score += clampMax(premium*40, 40)
 	}
 
 	// Payout margin (0–20 pts): reward lower payout ratios
 	if input.MaxPayoutRatio > 0 && input.PayoutRatio < input.MaxPayoutRatio {
 		margin := (input.MaxPayoutRatio - input.PayoutRatio) / input.MaxPayoutRatio
-		score += clamp(margin*20, 0, 20)
+		score += clampMax(margin*20, 20)
 	}
 
 	// Valuation bonus (0–20 pts): reward discount to entry price
 	if input.EntryPrice > 0 && input.Price > 0 && input.Price <= input.EntryPrice {
 		discount := (input.EntryPrice - input.Price) / input.EntryPrice
-		score += clamp(discount*20, 0, 20)
+		score += clampMax(discount*20, 20)
 	}
 
 	// Weight headroom (0–20 pts): reward room to add
 	if input.MaxPositionPct > 0 && input.PositionPct < input.MaxPositionPct {
 		headroom := (input.MaxPositionPct - input.PositionPct) / input.MaxPositionPct
-		score += clamp(headroom*20, 0, 20)
+		score += clampMax(headroom*20, 20)
 	}
 
 	return score
@@ -59,9 +59,9 @@ func Rank(items []RankItem) []RankItem {
 	return items
 }
 
-func clamp(v, lo, hi float64) float64 {
-	if v < lo {
-		return lo
+func clampMax(v, hi float64) float64 {
+	if v < 0 {
+		return 0
 	}
 	if v > hi {
 		return hi

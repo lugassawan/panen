@@ -18,6 +18,11 @@ type DividendService struct {
 	stockData  stock.Repository
 }
 
+type tickerInfo struct {
+	data *stock.Data
+	val  *valuation.ValuationResult
+}
+
 // NewDividendService creates a new DividendService.
 func NewDividendService(
 	portfolios portfolio.Repository,
@@ -51,17 +56,21 @@ func (s *DividendService) GetDividendRanking(
 	}
 
 	thresholds := checklist.ThresholdsForRisk(p.RiskProfile)
+	holdingSet, infoMap, totalValue := s.collectTickerData(ctx, holdings, p)
 
-	// Compute total portfolio value for position weight calculation.
-	type tickerInfo struct {
-		data *stock.Data
-		val  *valuation.ValuationResult
-	}
+	items := buildRankItems(infoMap, holdingSet, totalValue, thresholds)
+	return dividend.Rank(items), nil
+}
+
+func (s *DividendService) collectTickerData(
+	ctx context.Context,
+	holdings []*portfolio.Holding,
+	p *portfolio.Portfolio,
+) (map[string]*portfolio.Holding, map[string]tickerInfo, float64) {
 	infoMap := make(map[string]tickerInfo)
+	holdingSet := make(map[string]*portfolio.Holding)
 	var totalValue float64
 
-	// Collect data for all held tickers.
-	holdingSet := make(map[string]*portfolio.Holding)
 	for _, h := range holdings {
 		holdingSet[h.Ticker] = h
 		data, dataErr := s.stockData.GetByTicker(ctx, h.Ticker)
@@ -73,7 +82,6 @@ func (s *DividendService) GetDividendRanking(
 		totalValue += data.Price * float64(h.Lots) * 100
 	}
 
-	// Collect data for universe tickers not already held.
 	for _, ticker := range p.Universe {
 		if _, held := holdingSet[ticker]; held {
 			continue
@@ -86,8 +94,16 @@ func (s *DividendService) GetDividendRanking(
 		infoMap[ticker] = tickerInfo{data: data, val: val}
 	}
 
-	// Build rank items.
-	var items []dividend.RankItem
+	return holdingSet, infoMap, totalValue
+}
+
+func buildRankItems(
+	infoMap map[string]tickerInfo,
+	holdingSet map[string]*portfolio.Holding,
+	totalValue float64,
+	thresholds checklist.Thresholds,
+) []dividend.RankItem {
+	items := make([]dividend.RankItem, 0, len(infoMap))
 	for ticker, info := range infoMap {
 		h := holdingSet[ticker]
 		isHolding := h != nil
@@ -144,8 +160,7 @@ func (s *DividendService) GetDividendRanking(
 			IsHolding:   isHolding,
 		})
 	}
-
-	return dividend.Rank(items), nil
+	return items
 }
 
 func evaluateStock(data *stock.Data, riskProfile portfolio.RiskProfile) *valuation.ValuationResult {
