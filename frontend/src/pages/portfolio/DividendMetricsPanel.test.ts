@@ -27,7 +27,10 @@ describe("DividendMetricsPanel", () => {
 
   it("displays YoC and projected YoC values", () => {
     render(DividendMetricsPanel, {
-      props: { ticker: "TLKM", dividendMetrics: makeMetrics({ yieldOnCost: 8.5, projectedYoC: 7.2 }) },
+      props: {
+        ticker: "TLKM",
+        dividendMetrics: makeMetrics({ yieldOnCost: 8.5, projectedYoC: 7.2 }),
+      },
     });
 
     expect(screen.getByText("Yield on Cost")).toBeInTheDocument();

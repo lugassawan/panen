@@ -73,18 +73,18 @@ type PortfolioResponse struct {
 
 // HoldingDetailResponse is the frontend-facing response for a holding with valuation.
 type HoldingDetailResponse struct {
-	ID              string                    `json:"id"`
-	Ticker          string                    `json:"ticker"`
-	AvgBuyPrice     float64                   `json:"avgBuyPrice"`
-	Lots            int                       `json:"lots"`
-	CurrentPrice    *float64                  `json:"currentPrice,omitempty"`
-	GrahamNumber    *float64                  `json:"grahamNumber,omitempty"`
-	EntryPrice      *float64                  `json:"entryPrice,omitempty"`
-	ExitTarget      *float64                  `json:"exitTarget,omitempty"`
-	Verdict         *string                   `json:"verdict,omitempty"`
-	MarginOfSafety  *float64                  `json:"marginOfSafety,omitempty"`
-	TrailingStop    *TrailingStopResponse     `json:"trailingStop,omitempty"`
-	DividendMetrics *DividendMetricsResponse  `json:"dividendMetrics,omitempty"`
+	ID              string                   `json:"id"`
+	Ticker          string                   `json:"ticker"`
+	AvgBuyPrice     float64                  `json:"avgBuyPrice"`
+	Lots            int                      `json:"lots"`
+	CurrentPrice    *float64                 `json:"currentPrice,omitempty"`
+	GrahamNumber    *float64                 `json:"grahamNumber,omitempty"`
+	EntryPrice      *float64                 `json:"entryPrice,omitempty"`
+	ExitTarget      *float64                 `json:"exitTarget,omitempty"`
+	Verdict         *string                  `json:"verdict,omitempty"`
+	MarginOfSafety  *float64                 `json:"marginOfSafety,omitempty"`
+	TrailingStop    *TrailingStopResponse    `json:"trailingStop,omitempty"`
+	DividendMetrics *DividendMetricsResponse `json:"dividendMetrics,omitempty"`
 }
 
 // DividendMetricsResponse is the frontend-facing response for dividend metrics.

@@ -16,8 +16,8 @@ const indicatorMap: Record<DividendIndicator, DividendIndicatorDisplay> = {
   },
   AVERAGE_UP: {
     label: "Average Up",
-    colorClass: "text-accent-blue",
-    bgClass: "bg-accent-blue/10 border-accent-blue/20",
+    colorClass: "text-info",
+    bgClass: "bg-info-bg border-info/20",
     icon: "\u25B2",
   },
   HOLD: {

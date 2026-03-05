@@ -7,10 +7,10 @@ import (
 
 func TestDeriveAnnualDPS(t *testing.T) {
 	tests := []struct {
-		name     string
-		price    float64
-		dyPct    float64
-		want     float64
+		name  string
+		price float64
+		dyPct float64
+		want  float64
 	}{
 		{name: "normal", price: 4000, dyPct: 5, want: 200},
 		{name: "high yield", price: 2000, dyPct: 10, want: 200},
@@ -130,8 +130,8 @@ func TestPortfolioYield(t *testing.T) {
 		{
 			name: "two holdings",
 			items: []PortfolioYieldItem{
-				{PositionValue: 10_000_000, AnnualDPS: 200, Lots: 10},  // income = 200*10*100 = 200000
-				{PositionValue: 20_000_000, AnnualDPS: 150, Lots: 20},  // income = 150*20*100 = 300000
+				{PositionValue: 10_000_000, AnnualDPS: 200, Lots: 10}, // income = 200*10*100 = 200000
+				{PositionValue: 20_000_000, AnnualDPS: 150, Lots: 20}, // income = 150*20*100 = 300000
 			},
 			// total value = 30M, total income = 500000, yield = 500000/30M*100 = 1.6667
 			want: 500000.0 / 30_000_000 * 100,

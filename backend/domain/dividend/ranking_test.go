@@ -7,7 +7,7 @@ import (
 
 func TestScore(t *testing.T) {
 	tests := []struct {
-		name string
+		name  string
 		input ScoreInput
 		want  float64
 	}{
