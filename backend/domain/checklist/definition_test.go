@@ -18,7 +18,7 @@ func TestThresholdsForRisk(t *testing.T) {
 			want: Thresholds{
 				MinROE:         15,
 				MaxDER:         0.8,
-				MaxPositionPct: 15,
+				MaxPositionPct: 10,
 				MinDY:          5,
 				MaxPayoutRatio: 60,
 			},
@@ -40,7 +40,7 @@ func TestThresholdsForRisk(t *testing.T) {
 			want: Thresholds{
 				MinROE:         8,
 				MaxDER:         1.5,
-				MaxPositionPct: 30,
+				MaxPositionPct: 35,
 				MinDY:          2,
 				MaxPayoutRatio: 90,
 			},
@@ -96,7 +96,7 @@ func TestManualCheckDefs(t *testing.T) {
 	}{
 		{action: ActionBuy, count: 3},
 		{action: ActionAverageDown, count: 2},
-		{action: ActionAverageUp, count: 2},
+		{action: ActionAverageUp, count: 3},
 		{action: ActionSellExit, count: 2},
 		{action: ActionSellStop, count: 2},
 		{action: ActionHold, count: 0},

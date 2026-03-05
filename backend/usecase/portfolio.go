@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/lugassawan/panen/backend/domain/brokerage"
+	"github.com/lugassawan/panen/backend/domain/checklist"
+	"github.com/lugassawan/panen/backend/domain/dividend"
 	"github.com/lugassawan/panen/backend/domain/portfolio"
 	"github.com/lugassawan/panen/backend/domain/shared"
 	"github.com/lugassawan/panen/backend/domain/stock"
@@ -19,10 +21,11 @@ import (
 // HoldingWithValuation is a use-case-layer composite carrying a holding
 // together with its optional stock data and valuation result.
 type HoldingWithValuation struct {
-	Holding      *portfolio.Holding
-	StockData    *stock.Data
-	Valuation    *valuation.ValuationResult
-	TrailingStop *trailingstop.TrailingStopResult
+	Holding         *portfolio.Holding
+	StockData       *stock.Data
+	Valuation       *valuation.ValuationResult
+	TrailingStop    *trailingstop.TrailingStopResult
+	DividendMetrics *dividend.DividendMetrics
 }
 
 // PortfolioService handles portfolio and holding operations.
@@ -218,9 +221,10 @@ func (s *PortfolioService) GetDetail(
 		return nil, nil, err
 	}
 
+	isValue := p.Mode == portfolio.ModeValue
+
 	// Batch-fetch existing peaks for VALUE mode portfolios.
 	peakMap := make(map[string]*trailingstop.HoldingPeak)
-	isValue := p.Mode == portfolio.ModeValue
 	if isValue && len(holdings) > 0 {
 		holdingIDs := make([]string, len(holdings))
 		for i, h := range holdings {
@@ -234,9 +238,18 @@ func (s *PortfolioService) GetDetail(
 		}
 	}
 
+	// Pre-fetch stock data for all holdings (avoids N+1 in dividend metrics).
+	stockMap := make(map[string]*stock.Data)
+	for _, h := range holdings {
+		data, dataErr := s.stockData.GetByTicker(ctx, h.Ticker)
+		if dataErr == nil {
+			stockMap[h.Ticker] = data
+		}
+	}
+
 	result := make([]*HoldingWithValuation, len(holdings))
 	for i, h := range holdings {
-		result[i] = s.enrichHolding(ctx, h, p.RiskProfile, isValue, peakMap)
+		result[i] = s.enrichHolding(ctx, h, p.RiskProfile, isValue, peakMap, holdings, stockMap)
 	}
 
 	return p, result, nil
@@ -248,11 +261,13 @@ func (s *PortfolioService) enrichHolding(
 	riskProfile portfolio.RiskProfile,
 	isValue bool,
 	peakMap map[string]*trailingstop.HoldingPeak,
+	allHoldings []*portfolio.Holding,
+	stockMap map[string]*stock.Data,
 ) *HoldingWithValuation {
 	hwv := &HoldingWithValuation{Holding: h}
 
-	data, err := s.stockData.GetByTicker(ctx, h.Ticker)
-	if err != nil {
+	data := stockMap[h.Ticker]
+	if data == nil {
 		return hwv
 	}
 
@@ -273,6 +288,8 @@ func (s *PortfolioService) enrichHolding(
 
 	if isValue {
 		hwv.TrailingStop = s.computeTrailingStop(ctx, h, data, riskProfile, peakMap)
+	} else {
+		hwv.DividendMetrics = computeDividendMetrics(h, data, val, riskProfile, allHoldings, stockMap)
 	}
 
 	return hwv
@@ -330,6 +347,74 @@ func (s *PortfolioService) computeTrailingStop(
 		StopPrice:        stopPrice,
 		Triggered:        triggered,
 		FundamentalExits: fundamentals,
+	}
+}
+
+func computeDividendMetrics(
+	h *portfolio.Holding,
+	data *stock.Data,
+	val *valuation.ValuationResult,
+	riskProfile portfolio.RiskProfile,
+	allHoldings []*portfolio.Holding,
+	stockMap map[string]*stock.Data,
+) *dividend.DividendMetrics {
+	thresholds := checklist.ThresholdsForRisk(riskProfile)
+
+	annualDPS := dividend.DeriveAnnualDPS(data.Price, data.DividendYield)
+	yoc := dividend.YieldOnCost(annualDPS, h.AvgBuyPrice)
+	projectedYoC := dividend.ProjectedYoC(annualDPS, h.AvgBuyPrice, h.Lots, data.Price, 1)
+
+	// Compute portfolio-level yield from pre-fetched stock data.
+	var yieldItems []dividend.PortfolioYieldItem
+	for _, oh := range allHoldings {
+		ohData := stockMap[oh.Ticker]
+		if ohData == nil {
+			continue
+		}
+		dps := dividend.DeriveAnnualDPS(ohData.Price, ohData.DividendYield)
+		yieldItems = append(yieldItems, dividend.PortfolioYieldItem{
+			PositionValue: ohData.Price * float64(oh.Lots) * 100,
+			AnnualDPS:     dps,
+			Lots:          oh.Lots,
+		})
+	}
+	portfolioYield := dividend.PortfolioYield(yieldItems)
+
+	// Compute position weight for indicator.
+	var totalValue float64
+	for _, item := range yieldItems {
+		totalValue += item.PositionValue
+	}
+	var positionPct float64
+	if totalValue > 0 {
+		positionPct = (data.Price * float64(h.Lots) * 100) / totalValue * 100
+	}
+
+	var entryPrice, exitTarget float64
+	if val != nil {
+		entryPrice = val.EntryPrice
+		exitTarget = val.ExitTarget
+	}
+
+	indicator := dividend.DetermineIndicator(dividend.IndicatorInput{
+		HasHolding:     true,
+		Price:          data.Price,
+		EntryPrice:     entryPrice,
+		ExitTarget:     exitTarget,
+		DividendYield:  data.DividendYield,
+		PayoutRatio:    data.PayoutRatio,
+		PositionPct:    positionPct,
+		MinDY:          thresholds.MinDY,
+		MaxPayoutRatio: thresholds.MaxPayoutRatio,
+		MaxPositionPct: thresholds.MaxPositionPct,
+	})
+
+	return &dividend.DividendMetrics{
+		Indicator:      indicator,
+		AnnualDPS:      annualDPS,
+		YieldOnCost:    yoc,
+		ProjectedYoC:   projectedYoC,
+		PortfolioYield: portfolioYield,
 	}
 }
 

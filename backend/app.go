@@ -31,6 +31,7 @@ type App struct {
 	*presenter.PaydayHandler
 	*presenter.CrashPlaybookHandler
 	*presenter.ScreenerHandler
+	*presenter.DividendHandler
 	db      *database.DB
 	refresh *usecase.RefreshService
 }
@@ -112,8 +113,11 @@ func (a *App) Startup(ctx context.Context) {
 	refreshSvc := usecase.NewRefreshService(stockRepo, yahoo, settingsRepo, tickerCollector, wailsEmitter)
 	a.refresh = refreshSvc
 
+	dividendSvc := usecase.NewDividendService(portfolioRepo, holdingRepo, stockRepo)
+
 	a.StockHandler = presenter.NewStockHandler(ctx, stocks)
 	a.PortfolioHandler = presenter.NewPortfolioHandler(ctx, portfolios)
+	a.DividendHandler = presenter.NewDividendHandler(ctx, dividendSvc)
 	a.BrokerageHandler = presenter.NewBrokerageHandler(ctx, profileID, brokerages)
 	a.BrokerConfigHandler = presenter.NewBrokerConfigHandler(brokerConfigs)
 	a.WatchlistHandler = presenter.NewWatchlistHandler(ctx, profileID, watchlistSvc)
