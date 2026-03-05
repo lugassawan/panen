@@ -217,6 +217,36 @@ type CashFlowSummaryResponse struct {
 	Balance       float64                `json:"balance"`
 }
 
+// ScreenerCheckResponse is the frontend-facing response for a single screener check.
+type ScreenerCheckResponse struct {
+	Key    string  `json:"key"`
+	Label  string  `json:"label"`
+	Status string  `json:"status"`
+	Value  float64 `json:"value"`
+	Limit  float64 `json:"limit"`
+}
+
+// ScreenerItemResponse is the frontend-facing response for a screened stock.
+type ScreenerItemResponse struct {
+	Ticker        string                  `json:"ticker"`
+	Sector        string                  `json:"sector"`
+	Price         *float64                `json:"price,omitempty"`
+	ROE           *float64                `json:"roe,omitempty"`
+	DER           *float64                `json:"der,omitempty"`
+	EPS           *float64                `json:"eps,omitempty"`
+	PBV           *float64                `json:"pbv,omitempty"`
+	PER           *float64                `json:"per,omitempty"`
+	DividendYield *float64                `json:"dividendYield,omitempty"`
+	GrahamNumber  *float64                `json:"grahamNumber,omitempty"`
+	EntryPrice    *float64                `json:"entryPrice,omitempty"`
+	ExitTarget    *float64                `json:"exitTarget,omitempty"`
+	Verdict       *string                 `json:"verdict,omitempty"`
+	Checks        []ScreenerCheckResponse `json:"checks"`
+	Passed        bool                    `json:"passed"`
+	Score         float64                 `json:"score"`
+	FetchedAt     *string                 `json:"fetchedAt,omitempty"`
+}
+
 // CashFlowItemResponse is the frontend-facing response for a single cash flow entry.
 type CashFlowItemResponse struct {
 	ID          string  `json:"id"`
