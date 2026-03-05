@@ -274,10 +274,11 @@ func newTestPortfolioHandler() (
 	brokerageRepo := newMockBrokerageRepo()
 	stockRepo := newMockStockRepo()
 	peakRepo := newMockPeakRepo()
+	sectorRegistry := newMockSectorRegistry()
 
 	svc := usecase.NewPortfolioService(portfolioRepo, holdingRepo, buyTxnRepo, brokerageRepo, stockRepo, peakRepo)
 	ctx := context.Background()
-	handler := NewPortfolioHandler(ctx, svc)
+	handler := NewPortfolioHandler(ctx, svc, sectorRegistry)
 
 	return handler, portfolioRepo, holdingRepo, brokerageRepo, stockRepo
 }
@@ -724,6 +725,41 @@ func TestDeletePortfolio(t *testing.T) {
 		}
 		if !errors.Is(err, usecase.ErrEmptyID) {
 			t.Errorf("error = %v, want ErrEmptyID", err)
+		}
+	})
+}
+
+func TestGetHoldingSectors(t *testing.T) {
+	t.Run("returns sector for known tickers", func(t *testing.T) {
+		handler, _, _, _, _ := newTestPortfolioHandler()
+
+		result := handler.GetHoldingSectors([]string{"BBCA", "TLKM"})
+		assertEqual(t, "BBCA sector", result["BBCA"], "Financials")
+		assertEqual(t, "TLKM sector", result["TLKM"], "Communication Services")
+	})
+
+	t.Run("returns empty string for unknown ticker", func(t *testing.T) {
+		handler, _, _, _, _ := newTestPortfolioHandler()
+
+		result := handler.GetHoldingSectors([]string{"XXXX"})
+		assertEqual(t, "XXXX sector", result["XXXX"], "")
+	})
+
+	t.Run("returns empty map for empty input", func(t *testing.T) {
+		handler, _, _, _, _ := newTestPortfolioHandler()
+
+		result := handler.GetHoldingSectors([]string{})
+		if len(result) != 0 {
+			t.Errorf("len = %d, want 0", len(result))
+		}
+	})
+
+	t.Run("returns nil map for nil input", func(t *testing.T) {
+		handler, _, _, _, _ := newTestPortfolioHandler()
+
+		result := handler.GetHoldingSectors(nil)
+		if len(result) != 0 {
+			t.Errorf("len = %d, want 0", len(result))
 		}
 	})
 }

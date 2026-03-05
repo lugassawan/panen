@@ -12,11 +12,25 @@ import (
 type PortfolioHandler struct {
 	ctx        context.Context
 	portfolios *usecase.PortfolioService
+	sectors    usecase.SectorRegistry
 }
 
 // NewPortfolioHandler creates a new PortfolioHandler.
-func NewPortfolioHandler(ctx context.Context, portfolios *usecase.PortfolioService) *PortfolioHandler {
-	return &PortfolioHandler{ctx: ctx, portfolios: portfolios}
+func NewPortfolioHandler(
+	ctx context.Context,
+	portfolios *usecase.PortfolioService,
+	sectors usecase.SectorRegistry,
+) *PortfolioHandler {
+	return &PortfolioHandler{ctx: ctx, portfolios: portfolios, sectors: sectors}
+}
+
+// GetHoldingSectors returns the sector for each ticker.
+func (h *PortfolioHandler) GetHoldingSectors(tickers []string) map[string]string {
+	result := make(map[string]string, len(tickers))
+	for _, t := range tickers {
+		result[t] = h.sectors.SectorOf(t)
+	}
+	return result
 }
 
 // ListPortfolios returns all portfolios for a brokerage account.
