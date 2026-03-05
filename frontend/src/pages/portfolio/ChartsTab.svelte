@@ -69,12 +69,14 @@ $effect(() => {
     <p class="text-sm text-loss">{error}</p>
   </div>
 {:else}
-  <PriceHistoryChart tickers={holdings.map(h => h.ticker)} valuations={valuationMap} />
+  <div class="space-y-6">
+    <PriceHistoryChart tickers={holdings.map(h => h.ticker)} valuations={valuationMap} />
 
-  <SectorWarnings sectorWeights={sectors} />
+    <SectorWarnings sectorWeights={sectors} />
 
-  <div class="grid gap-6 lg:grid-cols-2">
-    <PlBarChart {holdings} />
-    <CompositionChart holdingWeights={weights} sectorWeights={sectors} {portfolioMode} />
+    <div class="grid gap-6 lg:grid-cols-2">
+      <PlBarChart {holdings} />
+      <CompositionChart holdingWeights={weights} sectorWeights={sectors} {portfolioMode} />
+    </div>
   </div>
 {/if}
