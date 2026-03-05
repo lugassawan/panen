@@ -163,7 +163,7 @@ $effect(() => {
       };
       annotations.entryBand = {
         type: "box",
-        yMin: "start",
+        yMin: "min",
         yMax: val.entryPrice,
         backgroundColor: zoneColors.entryBand,
         borderWidth: 0,
@@ -191,7 +191,7 @@ $effect(() => {
       annotations.exitBand = {
         type: "box",
         yMin: val.exitTarget,
-        yMax: "end",
+        yMax: "max",
         backgroundColor: zoneColors.exitBand,
         borderWidth: 0,
       };
@@ -233,15 +233,16 @@ $effect(() => {
             afterBody(items) {
               if (!val || !items[0]) return [];
               const lines: string[] = [];
-              if (val.grahamNumber > 0) lines.push(`Graham: ${formatRupiah(val.grahamNumber)}`);
-              if (val.entryPrice > 0) lines.push(`Entry: ${formatRupiah(val.entryPrice)}`);
-              if (val.exitTarget > 0) lines.push(`Exit: ${formatRupiah(val.exitTarget)}`);
+              if (graham && val.grahamNumber > 0)
+                lines.push(`Graham: ${formatRupiah(val.grahamNumber)}`);
+              if (entry && val.entryPrice > 0) lines.push(`Entry: ${formatRupiah(val.entryPrice)}`);
+              if (exit && val.exitTarget > 0) lines.push(`Exit: ${formatRupiah(val.exitTarget)}`);
               const price = items[0].parsed.y;
-              if (val.entryPrice > 0 && price <= val.entryPrice) {
+              if (entry && val.entryPrice > 0 && price <= val.entryPrice) {
                 lines.push("Zone: Undervalued");
-              } else if (val.exitTarget > 0 && price >= val.exitTarget) {
+              } else if (exit && val.exitTarget > 0 && price >= val.exitTarget) {
                 lines.push("Zone: Overvalued");
-              } else if (val.entryPrice > 0 || val.exitTarget > 0) {
+              } else if ((entry && val.entryPrice > 0) || (exit && val.exitTarget > 0)) {
                 lines.push("Zone: Fair Value");
               }
               return lines;
