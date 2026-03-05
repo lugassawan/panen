@@ -17,4 +17,5 @@ var (
 	ErrModeImmutable      = errors.New("portfolio mode cannot be changed after creation")
 	ErrWatchlistNameTaken = errors.New("watchlist name already taken")
 	ErrUnknownIndex       = errors.New("unknown index")
+	ErrEmptyUniverse      = errors.New("universe has no tickers")
 )
