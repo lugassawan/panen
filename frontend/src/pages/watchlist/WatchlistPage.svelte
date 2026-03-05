@@ -11,6 +11,7 @@ import {
 import Badge from "../../lib/components/Badge.svelte";
 import Tooltip from "../../lib/components/Tooltip.svelte";
 import { formatPercent, formatRupiah } from "../../lib/format";
+import { toastStore } from "../../lib/stores/toast.svelte";
 import type { WatchlistItemResponse, WatchlistResponse } from "../../lib/types";
 import { getVerdictDisplay } from "../../lib/verdict";
 import WatchlistAddTicker from "./WatchlistAddTicker.svelte";
@@ -113,6 +114,7 @@ function selectSector(sector: string) {
 
 function handleWatchlistCreated() {
   showCreateForm = false;
+  toastStore.add("Watchlist created", "success");
   load();
 }
 
@@ -124,6 +126,7 @@ function handleWatchlistDeleted() {
     itemsState = "idle";
   }
   deletingWatchlist = null;
+  toastStore.add("Watchlist deleted", "success");
   load();
 }
 
@@ -133,6 +136,7 @@ async function removeTicker(ticker: string) {
   removeError = null;
   try {
     await RemoveFromWatchlist(activeWatchlist.id, ticker);
+    toastStore.add(`${ticker} removed`, "success");
     await loadItems();
   } catch (e: unknown) {
     removeError = e instanceof Error ? e.message : String(e);

@@ -15,6 +15,7 @@ import ThemeToggle from "../../lib/components/ThemeToggle.svelte";
 import Tooltip from "../../lib/components/Tooltip.svelte";
 import { sync } from "../../lib/stores/sync.svelte";
 import { theme } from "../../lib/stores/theme.svelte";
+import { toastStore } from "../../lib/stores/toast.svelte";
 
 let autoRefreshEnabled = $state(true);
 let intervalMinutes = $state(720);
@@ -52,6 +53,7 @@ async function saveSettings() {
   saveError = null;
   try {
     await UpdateRefreshSettings(autoRefreshEnabled, intervalMinutes);
+    toastStore.add("Settings saved", "success");
   } catch (e: unknown) {
     saveError = e instanceof Error ? e.message : String(e);
   }

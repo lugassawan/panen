@@ -9,6 +9,7 @@ import BrokerageAccountForm from "../../components/BrokerageAccountForm.svelte";
 import ConfirmDialog from "../../components/ConfirmDialog.svelte";
 import Button from "../../lib/components/Button.svelte";
 import { formatPercent } from "../../lib/format";
+import { toastStore } from "../../lib/stores/toast.svelte";
 import type { BrokerageAccountResponse, BrokerConfigResponse } from "../../lib/types";
 
 type PageState = "loading" | "list" | "create" | "edit" | "error";
@@ -47,6 +48,7 @@ function startEdit(acct: BrokerageAccountResponse) {
 }
 
 function onSaved() {
+  toastStore.add(editingAccount ? "Account updated" : "Account created", "success");
   editingAccount = null;
   load();
 }
@@ -67,6 +69,7 @@ async function confirmDelete() {
   deleteError = null;
   try {
     await DeleteBrokerageAccount(deletingAccount.id);
+    toastStore.add("Account deleted", "success");
     deletingAccount = null;
     load();
   } catch (e: unknown) {

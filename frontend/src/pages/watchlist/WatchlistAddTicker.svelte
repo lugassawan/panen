@@ -3,6 +3,7 @@ import { Plus } from "lucide-svelte";
 import { AddToWatchlist } from "../../../wailsjs/go/backend/App";
 import Button from "../../lib/components/Button.svelte";
 import Input from "../../lib/components/Input.svelte";
+import { toastStore } from "../../lib/stores/toast.svelte";
 
 let {
   watchlistId,
@@ -24,6 +25,7 @@ async function submit(e: Event) {
   error = null;
   try {
     await AddToWatchlist(watchlistId, t);
+    toastStore.add(`${t} added to watchlist`, "success");
     ticker = "";
     onAdded();
   } catch (err: unknown) {

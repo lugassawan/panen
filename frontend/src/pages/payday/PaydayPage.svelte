@@ -12,6 +12,7 @@ import Badge from "../../lib/components/Badge.svelte";
 import Button from "../../lib/components/Button.svelte";
 import Tooltip from "../../lib/components/Tooltip.svelte";
 import { formatRupiah } from "../../lib/format";
+import { toastStore } from "../../lib/stores/toast.svelte";
 import type {
   MonthlyPaydayResponse,
   PaydayStatus,
@@ -82,6 +83,7 @@ async function handleSaveDay(day: number) {
 async function handleConfirm(portfolioId: string, amount: number) {
   try {
     await ConfirmPayday(portfolioId, amount);
+    toastStore.add("Payday confirmed", "success");
     confirmingPortfolio = null;
     await load();
   } catch (e) {
@@ -99,6 +101,7 @@ function openDeferDialog(portfolio: PortfolioPaydayItemResponse) {
 async function handleDefer(portfolioId: string) {
   try {
     await DeferPayday(portfolioId, deferDate);
+    toastStore.add("Payday deferred", "success");
     deferringPortfolio = null;
     await load();
   } catch (e) {
@@ -109,6 +112,7 @@ async function handleDefer(portfolioId: string) {
 async function handleSkip(portfolioId: string) {
   try {
     await SkipPayday(portfolioId);
+    toastStore.add("Payday skipped", "info");
     await load();
   } catch (e) {
     error = e instanceof Error ? e.message : String(e);
