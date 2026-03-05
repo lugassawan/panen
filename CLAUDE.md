@@ -54,6 +54,7 @@ make release-check     # Validate VERSION against wails.json productVersion
 ## Conventions
 
 - **Commits**: `type: description` — valid types: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `style`, `perf`, `build`, `ci`, `revert` (enforced by `.githooks/commit-msg`; no scopes, no `!`)
+- **Commit splitting**: Split changes into logical commits — separate infra/config, core logic, tests, and wiring. Never bundle unrelated changes into a single commit.
 - **Direct commits to main/master are blocked** by the pre-commit hook
 - **Go**: Standard library style, `gofmt` formatting, tab indentation
 - **Frontend**: 2-space indentation, double quotes, semicolons (Biome enforced)
