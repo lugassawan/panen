@@ -22,6 +22,10 @@ let {
 
 let dialogEl = $state<HTMLDivElement | null>(null);
 
+$effect(() => {
+  dialogEl?.focus();
+});
+
 function trapFocus(e: KeyboardEvent) {
   if (e.key === "Escape") {
     onCancel();
@@ -47,11 +51,7 @@ function trapFocus(e: KeyboardEvent) {
 }
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<div
-  class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-  onkeydown={trapFocus}
->
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
   <div class="fixed inset-0" role="presentation" onclick={onCancel}></div>
   <div
     bind:this={dialogEl}
@@ -60,6 +60,7 @@ function trapFocus(e: KeyboardEvent) {
     aria-modal="true"
     aria-labelledby="confirm-dialog-title"
     tabindex="-1"
+    onkeydown={trapFocus}
   >
     <h3 id="confirm-dialog-title" class="mb-2 text-lg font-semibold text-text-primary">{title}</h3>
     <div class="mb-6 text-sm text-text-secondary">

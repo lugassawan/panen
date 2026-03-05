@@ -16,20 +16,35 @@ let {
 } = $props();
 
 let amount = $state<number>(untrack(() => expected));
+let dialogEl = $state<HTMLDivElement | null>(null);
+
+$effect(() => {
+  dialogEl?.focus();
+});
 
 function handleConfirm() {
   onConfirm(amount);
 }
+
+function handleKeydown(e: KeyboardEvent) {
+  if (e.key === "Escape") {
+    onCancel();
+  }
+}
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<!-- svelte-ignore a11y_click_events_have_key_events -->
-<div
-  class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-  onclick={(e) => { if (e.target === e.currentTarget) onCancel(); }}
->
-  <div class="w-full max-w-sm rounded-lg border border-border-default bg-bg-elevated p-6 shadow-lg">
-    <h3 class="text-lg font-semibold text-text-primary font-display">Confirm Payday</h3>
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+  <div class="fixed inset-0" role="presentation" onclick={onCancel}></div>
+  <div
+    bind:this={dialogEl}
+    class="relative z-10 w-full max-w-sm rounded-lg border border-border-default bg-bg-elevated p-6 shadow-lg"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="payday-confirm-title"
+    tabindex="-1"
+    onkeydown={handleKeydown}
+  >
+    <h3 id="payday-confirm-title" class="text-lg font-semibold text-text-primary font-display">Confirm Payday</h3>
     <p class="mt-2 text-sm text-text-secondary">
       Confirm the payday amount for <span class="font-medium text-text-primary">{portfolioName}</span>.
     </p>
