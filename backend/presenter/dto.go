@@ -73,17 +73,39 @@ type PortfolioResponse struct {
 
 // HoldingDetailResponse is the frontend-facing response for a holding with valuation.
 type HoldingDetailResponse struct {
-	ID             string                `json:"id"`
-	Ticker         string                `json:"ticker"`
-	AvgBuyPrice    float64               `json:"avgBuyPrice"`
-	Lots           int                   `json:"lots"`
-	CurrentPrice   *float64              `json:"currentPrice,omitempty"`
-	GrahamNumber   *float64              `json:"grahamNumber,omitempty"`
-	EntryPrice     *float64              `json:"entryPrice,omitempty"`
-	ExitTarget     *float64              `json:"exitTarget,omitempty"`
-	Verdict        *string               `json:"verdict,omitempty"`
-	MarginOfSafety *float64              `json:"marginOfSafety,omitempty"`
-	TrailingStop   *TrailingStopResponse `json:"trailingStop,omitempty"`
+	ID              string                    `json:"id"`
+	Ticker          string                    `json:"ticker"`
+	AvgBuyPrice     float64                   `json:"avgBuyPrice"`
+	Lots            int                       `json:"lots"`
+	CurrentPrice    *float64                  `json:"currentPrice,omitempty"`
+	GrahamNumber    *float64                  `json:"grahamNumber,omitempty"`
+	EntryPrice      *float64                  `json:"entryPrice,omitempty"`
+	ExitTarget      *float64                  `json:"exitTarget,omitempty"`
+	Verdict         *string                   `json:"verdict,omitempty"`
+	MarginOfSafety  *float64                  `json:"marginOfSafety,omitempty"`
+	TrailingStop    *TrailingStopResponse     `json:"trailingStop,omitempty"`
+	DividendMetrics *DividendMetricsResponse  `json:"dividendMetrics,omitempty"`
+}
+
+// DividendMetricsResponse is the frontend-facing response for dividend metrics.
+type DividendMetricsResponse struct {
+	Indicator      string  `json:"indicator"`
+	AnnualDPS      float64 `json:"annualDPS"`
+	YieldOnCost    float64 `json:"yieldOnCost"`
+	ProjectedYoC   float64 `json:"projectedYoC"`
+	PortfolioYield float64 `json:"portfolioYield"`
+}
+
+// DividendRankItemResponse is the frontend-facing response for a dividend ranking item.
+type DividendRankItemResponse struct {
+	Ticker      string  `json:"ticker"`
+	Indicator   string  `json:"indicator"`
+	DY          float64 `json:"dividendYield"`
+	YoC         float64 `json:"yieldOnCost"`
+	PayoutRatio float64 `json:"payoutRatio"`
+	PositionPct float64 `json:"positionPct"`
+	Score       float64 `json:"score"`
+	IsHolding   bool    `json:"isHolding"`
 }
 
 // FundamentalExitResponse is the frontend-facing response for a fundamental exit criterion.

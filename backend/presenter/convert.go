@@ -5,6 +5,7 @@ import (
 
 	"github.com/lugassawan/panen/backend/domain/brokerage"
 	"github.com/lugassawan/panen/backend/domain/checklist"
+	"github.com/lugassawan/panen/backend/domain/dividend"
 	"github.com/lugassawan/panen/backend/domain/portfolio"
 	"github.com/lugassawan/panen/backend/domain/stock"
 	"github.com/lugassawan/panen/backend/domain/trailingstop"
@@ -124,6 +125,9 @@ func newHoldingDetailResponse(hwv *usecase.HoldingWithValuation) HoldingDetailRe
 	if hwv.TrailingStop != nil {
 		resp.TrailingStop = newTrailingStopResponse(hwv.TrailingStop)
 	}
+	if hwv.DividendMetrics != nil {
+		resp.DividendMetrics = newDividendMetricsResponse(hwv.DividendMetrics)
+	}
 	return resp
 }
 
@@ -143,6 +147,29 @@ func newTrailingStopResponse(ts *trailingstop.TrailingStopResult) *TrailingStopR
 		StopPrice:        ts.StopPrice,
 		Triggered:        ts.Triggered,
 		FundamentalExits: exits,
+	}
+}
+
+func newDividendMetricsResponse(m *dividend.DividendMetrics) *DividendMetricsResponse {
+	return &DividendMetricsResponse{
+		Indicator:      string(m.Indicator),
+		AnnualDPS:      m.AnnualDPS,
+		YieldOnCost:    m.YieldOnCost,
+		ProjectedYoC:   m.ProjectedYoC,
+		PortfolioYield: m.PortfolioYield,
+	}
+}
+
+func newDividendRankItemResponse(item dividend.RankItem) DividendRankItemResponse {
+	return DividendRankItemResponse{
+		Ticker:      item.Ticker,
+		Indicator:   string(item.Indicator),
+		DY:          item.DY,
+		YoC:         item.YieldOnCost,
+		PayoutRatio: item.PayoutRatio,
+		PositionPct: item.PositionPct,
+		Score:       item.Score,
+		IsHolding:   item.IsHolding,
 	}
 }
 
