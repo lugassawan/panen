@@ -19,6 +19,7 @@ type portfolioTestFixture struct {
 	buyTxnRepo    *mockBuyTxnRepo
 	brokerageRepo *mockBrokerageRepo
 	stockRepo     *mockStockRepo
+	peakRepo      *mockPeakRepo
 	acct          *brokerage.Account
 	port          *portfolio.Portfolio
 	ctx           context.Context
@@ -32,8 +33,9 @@ func setupPortfolioTest(t *testing.T) portfolioTestFixture {
 	buyTxnRepo := newMockBuyTxnRepo()
 	brokerageRepo := newMockBrokerageRepo()
 	stockRepo := newMockStockRepo()
+	peakRepo := newMockPeakRepo()
 
-	svc := NewPortfolioService(portfolioRepo, holdingRepo, buyTxnRepo, brokerageRepo, stockRepo)
+	svc := NewPortfolioService(portfolioRepo, holdingRepo, buyTxnRepo, brokerageRepo, stockRepo, peakRepo)
 	ctx := context.Background()
 
 	acct := &brokerage.Account{
@@ -66,6 +68,7 @@ func setupPortfolioTest(t *testing.T) portfolioTestFixture {
 		buyTxnRepo:    buyTxnRepo,
 		brokerageRepo: brokerageRepo,
 		stockRepo:     stockRepo,
+		peakRepo:      peakRepo,
 		acct:          acct,
 		port:          port,
 		ctx:           ctx,
@@ -530,5 +533,190 @@ func TestPortfolioServiceAddHoldingDuplicateAcrossSibling(t *testing.T) {
 	_, err = f.svc.AddHolding(f.ctx, sib.ID, "BBCA", 8500, 5, time.Now().UTC())
 	if !errors.Is(err, ErrDuplicateHolding) {
 		t.Errorf("AddHolding() to sibling error = %v, want ErrDuplicateHolding", err)
+	}
+}
+
+func TestPortfolioServiceGetDetailTrailingStopValueMode(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	_, err := f.svc.AddHolding(f.ctx, f.port.ID, "BBCA", 8500, 10, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("AddHolding() error = %v", err)
+	}
+
+	if err := f.stockRepo.Upsert(f.ctx, &stock.Data{
+		ID: "sd1", Ticker: "BBCA", Price: 9000,
+		EPS: 500, BVPS: 3000, ROE: 18, DER: 0.5,
+		PBV: 2.8, PER: 17,
+		FetchedAt: time.Now().UTC(), Source: "mock",
+	}); err != nil {
+		t.Fatalf("Upsert() error = %v", err)
+	}
+
+	_, holdings, err := f.svc.GetDetail(f.ctx, f.port.ID)
+	if err != nil {
+		t.Fatalf("GetDetail() error = %v", err)
+	}
+	if len(holdings) != 1 {
+		t.Fatalf("len(holdings) = %d, want 1", len(holdings))
+	}
+	ts := holdings[0].TrailingStop
+	if ts == nil {
+		t.Fatal("TrailingStop should not be nil for VALUE mode")
+	}
+	if ts.PeakPrice != 9000 {
+		t.Errorf("PeakPrice = %v, want 9000", ts.PeakPrice)
+	}
+	// Moderate risk profile = 13.5% stop
+	if ts.StopPct != 13.5 {
+		t.Errorf("StopPct = %v, want 13.5", ts.StopPct)
+	}
+	// StopPrice = 9000 * (1 - 13.5/100) = 7785
+	if ts.StopPrice != 7785 {
+		t.Errorf("StopPrice = %v, want 7785", ts.StopPrice)
+	}
+	if ts.Triggered {
+		t.Error("Triggered should be false when price is above stop")
+	}
+	if len(ts.FundamentalExits) != 3 {
+		t.Errorf("len(FundamentalExits) = %d, want 3", len(ts.FundamentalExits))
+	}
+}
+
+func TestPortfolioServiceGetDetailTrailingStopDividendMode(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	// Create a DIVIDEND portfolio.
+	divPort := &portfolio.Portfolio{
+		ID:                 shared.NewID(),
+		BrokerageAccountID: f.acct.ID,
+		Name:               "Dividend Portfolio",
+		Mode:               portfolio.ModeDividend,
+		RiskProfile:        portfolio.RiskProfileModerate,
+		Universe:           []string{},
+		CreatedAt:          time.Now().UTC(),
+		UpdatedAt:          time.Now().UTC(),
+	}
+	if err := f.portfolioRepo.Create(f.ctx, divPort); err != nil {
+		t.Fatalf("Create() error = %v", err)
+	}
+
+	h := portfolio.NewHolding(divPort.ID, "TLKM", 3500, 10)
+	if err := f.holdingRepo.Create(f.ctx, h); err != nil {
+		t.Fatalf("Create() error = %v", err)
+	}
+
+	if err := f.stockRepo.Upsert(f.ctx, &stock.Data{
+		ID: "sd2", Ticker: "TLKM", Price: 3600,
+		EPS: 200, BVPS: 1500, ROE: 14, DER: 0.8,
+		PBV: 2.4, PER: 18,
+		FetchedAt: time.Now().UTC(), Source: "mock",
+	}); err != nil {
+		t.Fatalf("Upsert() error = %v", err)
+	}
+
+	_, holdings, err := f.svc.GetDetail(f.ctx, divPort.ID)
+	if err != nil {
+		t.Fatalf("GetDetail() error = %v", err)
+	}
+	if len(holdings) != 1 {
+		t.Fatalf("len(holdings) = %d, want 1", len(holdings))
+	}
+	if holdings[0].TrailingStop != nil {
+		t.Error("TrailingStop should be nil for DIVIDEND mode")
+	}
+}
+
+func TestPortfolioServiceGetDetailTrailingStopPeakUpdate(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	_, err := f.svc.AddHolding(f.ctx, f.port.ID, "BBCA", 8500, 10, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("AddHolding() error = %v", err)
+	}
+
+	// First call with price 9000.
+	if err := f.stockRepo.Upsert(f.ctx, &stock.Data{
+		ID: "sd1", Ticker: "BBCA", Price: 9000,
+		EPS: 500, BVPS: 3000, ROE: 18, DER: 0.5,
+		PBV: 2.8, PER: 17,
+		FetchedAt: time.Now().UTC(), Source: "mock",
+	}); err != nil {
+		t.Fatalf("Upsert() error = %v", err)
+	}
+
+	_, holdings, _ := f.svc.GetDetail(f.ctx, f.port.ID)
+	if holdings[0].TrailingStop.PeakPrice != 9000 {
+		t.Errorf("initial PeakPrice = %v, want 9000", holdings[0].TrailingStop.PeakPrice)
+	}
+
+	// Second call with higher price 10000.
+	if err := f.stockRepo.Upsert(f.ctx, &stock.Data{
+		ID: "sd1", Ticker: "BBCA", Price: 10000,
+		EPS: 500, BVPS: 3000, ROE: 18, DER: 0.5,
+		PBV: 2.8, PER: 17,
+		FetchedAt: time.Now().UTC(), Source: "mock",
+	}); err != nil {
+		t.Fatalf("Upsert() error = %v", err)
+	}
+
+	_, holdings, _ = f.svc.GetDetail(f.ctx, f.port.ID)
+	if holdings[0].TrailingStop.PeakPrice != 10000 {
+		t.Errorf("updated PeakPrice = %v, want 10000", holdings[0].TrailingStop.PeakPrice)
+	}
+
+	// Third call with lower price 8000 — peak should stay at 10000.
+	if err := f.stockRepo.Upsert(f.ctx, &stock.Data{
+		ID: "sd1", Ticker: "BBCA", Price: 8000,
+		EPS: 500, BVPS: 3000, ROE: 18, DER: 0.5,
+		PBV: 2.8, PER: 17,
+		FetchedAt: time.Now().UTC(), Source: "mock",
+	}); err != nil {
+		t.Fatalf("Upsert() error = %v", err)
+	}
+
+	_, holdings, _ = f.svc.GetDetail(f.ctx, f.port.ID)
+	ts := holdings[0].TrailingStop
+	if ts.PeakPrice != 10000 {
+		t.Errorf("peak should not decrease: PeakPrice = %v, want 10000", ts.PeakPrice)
+	}
+	// StopPrice = 10000 * (1 - 13.5/100) = 8650
+	if ts.StopPrice != 8650 {
+		t.Errorf("StopPrice = %v, want 8650", ts.StopPrice)
+	}
+	// 8000 <= 8650, so triggered
+	if !ts.Triggered {
+		t.Error("Triggered should be true when price is below stop")
+	}
+}
+
+func TestPortfolioServiceGetDetailTrailingStopSeedsFromHigh52Week(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	_, err := f.svc.AddHolding(f.ctx, f.port.ID, "BBCA", 8500, 10, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("AddHolding() error = %v", err)
+	}
+
+	// Price is 8000 but High52Week is 11000. Peak should seed from High52Week.
+	if err := f.stockRepo.Upsert(f.ctx, &stock.Data{
+		ID: "sd1", Ticker: "BBCA", Price: 8000, High52Week: 11000,
+		EPS: 500, BVPS: 3000, ROE: 18, DER: 0.5,
+		PBV: 2.8, PER: 17,
+		FetchedAt: time.Now().UTC(), Source: "mock",
+	}); err != nil {
+		t.Fatalf("Upsert() error = %v", err)
+	}
+
+	_, holdings, err := f.svc.GetDetail(f.ctx, f.port.ID)
+	if err != nil {
+		t.Fatalf("GetDetail() error = %v", err)
+	}
+	ts := holdings[0].TrailingStop
+	if ts == nil {
+		t.Fatal("TrailingStop should not be nil")
+	}
+	if ts.PeakPrice != 11000 {
+		t.Errorf("PeakPrice = %v, want 11000 (seeded from High52Week)", ts.PeakPrice)
 	}
 }

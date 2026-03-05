@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -11,15 +12,17 @@ import (
 	"github.com/lugassawan/panen/backend/domain/portfolio"
 	"github.com/lugassawan/panen/backend/domain/shared"
 	"github.com/lugassawan/panen/backend/domain/stock"
+	"github.com/lugassawan/panen/backend/domain/trailingstop"
 	"github.com/lugassawan/panen/backend/domain/valuation"
 )
 
 // HoldingWithValuation is a use-case-layer composite carrying a holding
 // together with its optional stock data and valuation result.
 type HoldingWithValuation struct {
-	Holding   *portfolio.Holding
-	StockData *stock.Data
-	Valuation *valuation.ValuationResult
+	Holding      *portfolio.Holding
+	StockData    *stock.Data
+	Valuation    *valuation.ValuationResult
+	TrailingStop *trailingstop.TrailingStopResult
 }
 
 // PortfolioService handles portfolio and holding operations.
@@ -29,6 +32,7 @@ type PortfolioService struct {
 	buyTxns    portfolio.BuyTransactionRepository
 	brokerages brokerage.Repository
 	stockData  stock.Repository
+	peaks      trailingstop.PeakRepository
 }
 
 // NewPortfolioService creates a new PortfolioService.
@@ -38,6 +42,7 @@ func NewPortfolioService(
 	buyTxns portfolio.BuyTransactionRepository,
 	brokerages brokerage.Repository,
 	stockData stock.Repository,
+	peaks trailingstop.PeakRepository,
 ) *PortfolioService {
 	return &PortfolioService{
 		portfolios: portfolios,
@@ -45,6 +50,7 @@ func NewPortfolioService(
 		buyTxns:    buyTxns,
 		brokerages: brokerages,
 		stockData:  stockData,
+		peaks:      peaks,
 	}
 }
 
@@ -212,6 +218,22 @@ func (s *PortfolioService) GetDetail(
 		return nil, nil, err
 	}
 
+	// Batch-fetch existing peaks for VALUE mode portfolios.
+	peakMap := make(map[string]*trailingstop.HoldingPeak)
+	isValue := p.Mode == portfolio.ModeValue
+	if isValue && len(holdings) > 0 {
+		holdingIDs := make([]string, len(holdings))
+		for i, h := range holdings {
+			holdingIDs[i] = h.ID
+		}
+		peaks, peakErr := s.peaks.ListByHoldingIDs(ctx, holdingIDs)
+		if peakErr == nil {
+			for _, pk := range peaks {
+				peakMap[pk.HoldingID] = pk
+			}
+		}
+	}
+
 	result := make([]*HoldingWithValuation, len(holdings))
 	for i, h := range holdings {
 		hwv := &HoldingWithValuation{Holding: h}
@@ -232,12 +254,71 @@ func (s *PortfolioService) GetDetail(
 			if valErr == nil {
 				hwv.Valuation = val
 			}
+
+			if isValue {
+				hwv.TrailingStop = s.computeTrailingStop(ctx, h, data, p.RiskProfile, peakMap)
+			}
 		}
 
 		result[i] = hwv
 	}
 
 	return p, result, nil
+}
+
+func (s *PortfolioService) computeTrailingStop(
+	ctx context.Context,
+	h *portfolio.Holding,
+	data *stock.Data,
+	riskProfile portfolio.RiskProfile,
+	peakMap map[string]*trailingstop.HoldingPeak,
+) *trailingstop.TrailingStopResult {
+	stopPct, err := trailingstop.StopPercentage(riskProfile)
+	if err != nil {
+		return nil
+	}
+
+	// Determine current peak. Seed with High52Week to avoid too-tight stops
+	// when the feature is first activated on an existing holding.
+	existing := peakMap[h.ID]
+	var currentPeak float64
+	if existing != nil {
+		currentPeak = existing.PeakPrice
+	}
+	seedPrice := max(data.Price, data.High52Week)
+	newPeak := trailingstop.UpdatePeak(currentPeak, seedPrice)
+
+	// Persist updated peak (side-effect in read path for lazy peak tracking).
+	now := time.Now().UTC()
+	if existing == nil {
+		peak := &trailingstop.HoldingPeak{
+			ID:        shared.NewID(),
+			HoldingID: h.ID,
+			PeakPrice: newPeak,
+			UpdatedAt: now,
+		}
+		if upsertErr := s.peaks.Upsert(ctx, peak); upsertErr != nil {
+			log.Printf("warn: failed to persist peak for holding %s: %v", h.ID, upsertErr)
+		}
+	} else if newPeak > existing.PeakPrice {
+		existing.PeakPrice = newPeak
+		existing.UpdatedAt = now
+		if upsertErr := s.peaks.Upsert(ctx, existing); upsertErr != nil {
+			log.Printf("warn: failed to update peak for holding %s: %v", h.ID, upsertErr)
+		}
+	}
+
+	stopPrice := trailingstop.StopPrice(newPeak, stopPct)
+	triggered := trailingstop.IsTriggered(data.Price, stopPrice)
+	fundamentals := trailingstop.EvaluateFundamentals(data.ROE, data.DER, data.EPS)
+
+	return &trailingstop.TrailingStopResult{
+		PeakPrice:        newPeak,
+		StopPct:          stopPct,
+		StopPrice:        stopPrice,
+		Triggered:        triggered,
+		FundamentalExits: fundamentals,
+	}
 }
 
 // checkDuplicateHolding ensures a ticker is not already held in a sibling portfolio

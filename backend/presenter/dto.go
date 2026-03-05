@@ -73,16 +73,34 @@ type PortfolioResponse struct {
 
 // HoldingDetailResponse is the frontend-facing response for a holding with valuation.
 type HoldingDetailResponse struct {
-	ID             string   `json:"id"`
-	Ticker         string   `json:"ticker"`
-	AvgBuyPrice    float64  `json:"avgBuyPrice"`
-	Lots           int      `json:"lots"`
-	CurrentPrice   *float64 `json:"currentPrice,omitempty"`
-	GrahamNumber   *float64 `json:"grahamNumber,omitempty"`
-	EntryPrice     *float64 `json:"entryPrice,omitempty"`
-	ExitTarget     *float64 `json:"exitTarget,omitempty"`
-	Verdict        *string  `json:"verdict,omitempty"`
-	MarginOfSafety *float64 `json:"marginOfSafety,omitempty"`
+	ID             string                `json:"id"`
+	Ticker         string                `json:"ticker"`
+	AvgBuyPrice    float64               `json:"avgBuyPrice"`
+	Lots           int                   `json:"lots"`
+	CurrentPrice   *float64              `json:"currentPrice,omitempty"`
+	GrahamNumber   *float64              `json:"grahamNumber,omitempty"`
+	EntryPrice     *float64              `json:"entryPrice,omitempty"`
+	ExitTarget     *float64              `json:"exitTarget,omitempty"`
+	Verdict        *string               `json:"verdict,omitempty"`
+	MarginOfSafety *float64              `json:"marginOfSafety,omitempty"`
+	TrailingStop   *TrailingStopResponse `json:"trailingStop,omitempty"`
+}
+
+// FundamentalExitResponse is the frontend-facing response for a fundamental exit criterion.
+type FundamentalExitResponse struct {
+	Key       string `json:"key"`
+	Label     string `json:"label"`
+	Detail    string `json:"detail"`
+	Triggered bool   `json:"triggered"`
+}
+
+// TrailingStopResponse is the frontend-facing response for trailing stop data.
+type TrailingStopResponse struct {
+	PeakPrice        float64                   `json:"peakPrice"`
+	StopPercentage   float64                   `json:"stopPercentage"`
+	StopPrice        float64                   `json:"stopPrice"`
+	Triggered        bool                      `json:"triggered"`
+	FundamentalExits []FundamentalExitResponse `json:"fundamentalExits"`
 }
 
 // PortfolioDetailResponse is the frontend-facing response for a portfolio with holdings.

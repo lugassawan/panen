@@ -9,6 +9,7 @@ var migrations = []string{
 	migrationV5,
 	migrationV6,
 	migrationV7,
+	migrationV8,
 }
 
 const migrationV1 = `
@@ -170,4 +171,13 @@ CREATE TABLE crash_capital (
 INSERT INTO app_settings (key, value) VALUES ('crash_deploy_pct_normal', '30');
 INSERT INTO app_settings (key, value) VALUES ('crash_deploy_pct_crash', '40');
 INSERT INTO app_settings (key, value) VALUES ('crash_deploy_pct_extreme', '30');
+`
+
+const migrationV8 = `
+CREATE TABLE holding_peaks (
+	id         TEXT PRIMARY KEY,
+	holding_id TEXT NOT NULL UNIQUE REFERENCES holdings(id) ON DELETE CASCADE,
+	peak_price REAL NOT NULL DEFAULT 0,
+	updated_at TEXT NOT NULL
+);
 `

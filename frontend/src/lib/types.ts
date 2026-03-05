@@ -66,6 +66,21 @@ export interface PortfolioResponse {
   updatedAt: string;
 }
 
+export interface FundamentalExitResponse {
+  key: string;
+  label: string;
+  detail: string;
+  triggered: boolean;
+}
+
+export interface TrailingStopResponse {
+  peakPrice: number;
+  stopPercentage: number;
+  stopPrice: number;
+  triggered: boolean;
+  fundamentalExits: FundamentalExitResponse[];
+}
+
 export interface HoldingDetailResponse {
   id: string;
   ticker: string;
@@ -77,6 +92,7 @@ export interface HoldingDetailResponse {
   exitTarget?: number;
   verdict?: string;
   marginOfSafety?: number;
+  trailingStop?: TrailingStopResponse;
 }
 
 export interface PortfolioDetailResponse {
