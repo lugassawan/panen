@@ -7,6 +7,7 @@ import (
 	"github.com/lugassawan/panen/backend/domain/checklist"
 	"github.com/lugassawan/panen/backend/domain/portfolio"
 	"github.com/lugassawan/panen/backend/domain/stock"
+	"github.com/lugassawan/panen/backend/domain/trailingstop"
 	"github.com/lugassawan/panen/backend/domain/valuation"
 	"github.com/lugassawan/panen/backend/domain/watchlist"
 	"github.com/lugassawan/panen/backend/usecase"
@@ -120,7 +121,29 @@ func newHoldingDetailResponse(hwv *usecase.HoldingWithValuation) HoldingDetailRe
 		verdict := string(hwv.Valuation.Verdict)
 		resp.Verdict = &verdict
 	}
+	if hwv.TrailingStop != nil {
+		resp.TrailingStop = newTrailingStopResponse(hwv.TrailingStop)
+	}
 	return resp
+}
+
+func newTrailingStopResponse(ts *trailingstop.TrailingStopResult) *TrailingStopResponse {
+	exits := make([]FundamentalExitResponse, len(ts.FundamentalExits))
+	for i, fe := range ts.FundamentalExits {
+		exits[i] = FundamentalExitResponse{
+			Key:       fe.Key,
+			Label:     fe.Label,
+			Detail:    fe.Detail,
+			Triggered: fe.Triggered,
+		}
+	}
+	return &TrailingStopResponse{
+		PeakPrice:        ts.PeakPrice,
+		StopPercentage:   ts.StopPct,
+		StopPrice:        ts.StopPrice,
+		Triggered:        ts.Triggered,
+		FundamentalExits: exits,
+	}
 }
 
 func newWatchlistResponse(w *watchlist.Watchlist) *WatchlistResponse {
