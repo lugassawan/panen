@@ -71,7 +71,8 @@ func (a *App) Startup(ctx context.Context) {
 	yahoo := scraper.NewYahoo()
 
 	stocks := usecase.NewStockService(stockRepo, yahoo)
-	portfolios := usecase.NewPortfolioService(portfolioRepo, holdingRepo, buyTxnRepo, brokerageRepo, stockRepo)
+	peakRepo := database.NewPeakRepo(conn)
+	portfolios := usecase.NewPortfolioService(portfolioRepo, holdingRepo, buyTxnRepo, brokerageRepo, stockRepo, peakRepo)
 	brokerages := usecase.NewBrokerageService(brokerageRepo, portfolioRepo)
 
 	profileID, err := ensureDefaultUser(ctx, userRepo)
