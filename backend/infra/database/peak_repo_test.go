@@ -58,7 +58,7 @@ func setupPeakRepoTest(t *testing.T) peakRepoTestFixture {
 		t.Fatalf("create portfolio: %v", err)
 	}
 
-	var holdings []*portfolio.Holding
+	holdings := make([]*portfolio.Holding, 0, 2)
 	for _, ticker := range []string{"BBCA", "TLKM"} {
 		h := portfolio.NewHolding(port.ID, ticker, 8000, 10)
 		if err := holdRepo.Create(ctx, h); err != nil {
