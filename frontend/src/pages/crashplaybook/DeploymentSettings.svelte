@@ -14,9 +14,14 @@ let {
   onClose: () => void;
 } = $props();
 
+let dialogEl = $state<HTMLDivElement | null>(null);
 let normal = $state(untrack(() => String(settings.normal)));
 let crash = $state(untrack(() => String(settings.crash)));
 let extreme = $state(untrack(() => String(settings.extreme)));
+
+$effect(() => {
+  dialogEl?.focus();
+});
 
 const sum = $derived(Number(normal) + Number(crash) + Number(extreme));
 const isValid = $derived(sum === 100);
@@ -28,11 +33,18 @@ function handleSave() {
 }
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
-<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onclick={onClose}>
-  <!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
-  <div class="w-full max-w-sm rounded-lg border border-border-default bg-bg-elevated p-6" onclick={(e) => e.stopPropagation()}>
-    <h3 class="font-display text-lg font-semibold text-text-primary">Deployment Settings</h3>
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+  <div class="fixed inset-0" role="presentation" onclick={onClose}></div>
+  <div
+    bind:this={dialogEl}
+    class="relative z-10 w-full max-w-sm rounded-lg border border-border-default bg-bg-elevated p-6"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="deploy-settings-title"
+    tabindex="-1"
+    onkeydown={(e) => { if (e.key === "Escape") onClose(); }}
+  >
+    <h3 id="deploy-settings-title" class="font-display text-lg font-semibold text-text-primary">Deployment Settings</h3>
     <p class="mt-1 text-sm text-text-secondary">Set capital deployment % per crash level. Must sum to 100%.</p>
 
     <div class="mt-4 space-y-3">

@@ -1,5 +1,9 @@
 <script lang="ts">
 import Sidebar from "./components/Sidebar.svelte";
+import CommandPalette from "./lib/components/CommandPalette.svelte";
+import ToastContainer from "./lib/components/ToastContainer.svelte";
+import { handleGlobalShortcut } from "./lib/shortcuts";
+import { commandPalette } from "./lib/stores/command-palette.svelte";
 import { theme } from "./lib/stores/theme.svelte";
 import type { Page } from "./lib/types";
 import BrokeragePage from "./pages/brokerage/BrokeragePage.svelte";
@@ -12,10 +16,16 @@ import StockLookupPage from "./pages/stock/StockLookupPage.svelte";
 import WatchlistPage from "./pages/watchlist/WatchlistPage.svelte";
 
 let currentPage = $state<Page>("lookup");
+
+function navigateTo(page: Page) {
+  currentPage = page;
+}
 </script>
 
+<svelte:window onkeydown={(e) => handleGlobalShortcut(e, { onNavigate: navigateTo, onToggleCommandPalette: () => commandPalette.toggle() })} />
+
 <div class="flex h-screen" data-theme={theme.current}>
-  <Sidebar {currentPage} onNavigate={(page) => currentPage = page} />
+  <Sidebar {currentPage} onNavigate={navigateTo} />
 
   <main class="flex-1 overflow-y-auto">
     {#if currentPage === "lookup"}
@@ -37,3 +47,6 @@ let currentPage = $state<Page>("lookup");
     {/if}
   </main>
 </div>
+
+<ToastContainer />
+<CommandPalette onNavigate={navigateTo} />

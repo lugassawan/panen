@@ -1,4 +1,5 @@
 <script lang="ts">
+import { LoaderCircle } from "lucide-svelte";
 import {
   ConfirmPayday,
   DeferPayday,
@@ -9,7 +10,9 @@ import {
 } from "../../../wailsjs/go/backend/App";
 import Badge from "../../lib/components/Badge.svelte";
 import Button from "../../lib/components/Button.svelte";
+import Tooltip from "../../lib/components/Tooltip.svelte";
 import { formatRupiah } from "../../lib/format";
+import { toastStore } from "../../lib/stores/toast.svelte";
 import type {
   MonthlyPaydayResponse,
   PaydayStatus,
@@ -80,6 +83,7 @@ async function handleSaveDay(day: number) {
 async function handleConfirm(portfolioId: string, amount: number) {
   try {
     await ConfirmPayday(portfolioId, amount);
+    toastStore.add("Payday confirmed", "success");
     confirmingPortfolio = null;
     await load();
   } catch (e) {
@@ -97,6 +101,7 @@ function openDeferDialog(portfolio: PortfolioPaydayItemResponse) {
 async function handleDefer(portfolioId: string) {
   try {
     await DeferPayday(portfolioId, deferDate);
+    toastStore.add("Payday deferred", "success");
     deferringPortfolio = null;
     await load();
   } catch (e) {
@@ -107,6 +112,7 @@ async function handleDefer(portfolioId: string) {
 async function handleSkip(portfolioId: string) {
   try {
     await SkipPayday(portfolioId);
+    toastStore.add("Payday skipped", "info");
     await load();
   } catch (e) {
     error = e instanceof Error ? e.message : String(e);
@@ -127,8 +133,9 @@ $effect(() => {
   <p class="mt-1 text-sm text-text-secondary">Track your monthly investment schedule.</p>
 
   {#if state === "loading"}
-    <div class="flex items-center justify-center py-16">
-      <p class="text-sm text-text-secondary">Loading...</p>
+    <div class="flex items-center justify-center gap-2 py-16 text-text-secondary" role="status">
+      <LoaderCircle size={20} strokeWidth={2} class="animate-spin" />
+      <span class="text-sm">Loading payday data...</span>
     </div>
   {:else if state === "error"}
     <div class="mt-6 rounded-lg border border-negative bg-negative-bg p-4">
@@ -167,7 +174,9 @@ $effect(() => {
             </div>
 
             <div class="mt-2 flex items-center justify-between">
-              <span class="text-xs text-text-secondary">{modeLabel(portfolio.mode)}</span>
+              <Tooltip text={portfolio.mode === "VALUE" ? "Monthly capital allocation for value investing opportunities" : "Monthly allocation for dividend reinvestment (DCA)"}>
+                <span class="text-xs text-text-secondary underline decoration-dotted cursor-help">{modeLabel(portfolio.mode)}</span>
+              </Tooltip>
               {#if portfolio.status === "DEFERRED" && portfolio.deferUntil}
                 <span class="text-xs text-warning">Deferred until {portfolio.deferUntil}</span>
               {/if}
@@ -219,17 +228,17 @@ $effect(() => {
 {/if}
 
 {#if deferringPortfolio}
-  <!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
-  <div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-    onclick={() => { deferringPortfolio = null; }}
-  >
-    <!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div class="fixed inset-0" role="presentation" onclick={() => { deferringPortfolio = null; }}></div>
     <div
-      class="w-full max-w-md rounded-lg border border-border-default bg-bg-elevated p-6"
-      onclick={(e) => e.stopPropagation()}
+      class="relative z-10 w-full max-w-md rounded-lg border border-border-default bg-bg-elevated p-6"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="defer-dialog-title"
+      tabindex="-1"
+      onkeydown={(e) => { if (e.key === "Escape") deferringPortfolio = null; }}
     >
-      <h3 class="text-lg font-semibold text-text-primary font-display">Defer Payday</h3>
+      <h3 id="defer-dialog-title" class="text-lg font-semibold text-text-primary font-display">Defer Payday</h3>
       <p class="mt-1 text-sm text-text-secondary">
         Choose a date to defer <span class="font-medium text-text-primary">{deferringPortfolio.portfolioName}</span>.
       </p>

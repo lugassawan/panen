@@ -1,18 +1,13 @@
 <script lang="ts">
-import {
-  ArrowDown,
-  ArrowUp,
-  ArrowUpDown,
-  CheckCircle2,
-  LoaderCircle,
-  XCircle,
-} from "lucide-svelte";
+import { CheckCircle2, LoaderCircle, XCircle } from "lucide-svelte";
 import {
   ListScreenerIndices,
   ListScreenerSectors,
   RunScreen,
 } from "../../../wailsjs/go/backend/App";
 import Badge from "../../lib/components/Badge.svelte";
+import SortableHeader from "../../lib/components/SortableHeader.svelte";
+import Tooltip from "../../lib/components/Tooltip.svelte";
 import { formatPercent, formatRupiah } from "../../lib/format";
 import type { RiskProfile, ScreenerItemResponse } from "../../lib/types";
 import { getVerdictDisplay } from "../../lib/verdict";
@@ -169,7 +164,14 @@ loadReferenceData();
     </div>
   {:else if state === "error"}
     <div class="mx-6 mt-4 rounded border border-negative/20 bg-negative-bg px-4 py-3 text-sm text-negative" role="alert">
-      {error}
+      <p>{error}</p>
+      <button
+        type="button"
+        class="mt-2 text-xs font-medium underline hover:opacity-80 focus-ring rounded"
+        onclick={runScreen}
+      >
+        Retry
+      </button>
     </div>
   {:else if state === "results"}
     <!-- Summary -->
@@ -198,35 +200,28 @@ loadReferenceData();
         <table class="w-full text-sm" aria-label="Screener results">
           <thead class="sticky top-0 border-b border-border-default bg-bg-secondary">
             <tr>
-              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-text-muted">Status</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-text-muted">
+                <Tooltip text="Pass: meets all screening criteria for the selected risk profile. Fail: one or more criteria not met.">
+                  <span class="underline decoration-dotted cursor-help">Status</span>
+                </Tooltip>
+              </th>
               {#each [
-                { key: "ticker", label: "Ticker", align: "left" },
-                { key: "sector", label: "Sector", align: "left" },
-                { key: "price", label: "Price", align: "right" },
-                { key: "roe", label: "ROE", align: "right" },
-                { key: "der", label: "DER", align: "right" },
-                { key: "dividendYield", label: "Div Yield", align: "right" },
-                { key: "verdict", label: "Verdict", align: "left" },
-                { key: "score", label: "Score", align: "right" },
+                { key: "ticker", label: "Ticker" },
+                { key: "sector", label: "Sector" },
+                { key: "price", label: "Price" },
+                { key: "roe", label: "ROE" },
+                { key: "der", label: "DER" },
+                { key: "dividendYield", label: "Div Yield" },
+                { key: "verdict", label: "Verdict" },
+                { key: "score", label: "Score" },
               ] as col}
-                <th
-                  class="cursor-pointer select-none px-4 py-3 text-xs font-semibold uppercase tracking-wider text-text-muted transition-fast hover:text-text-primary {col.align === 'right' ? 'text-right' : 'text-left'}"
-                  onclick={() => toggleSort(col.key)}
-                  aria-sort={sortField === col.key ? (sortAsc ? "ascending" : "descending") : "none"}
-                >
-                  <span class="inline-flex items-center gap-1">
-                    {col.label}
-                    {#if sortField === col.key}
-                      {#if sortAsc}
-                        <ArrowUp size={12} strokeWidth={2} />
-                      {:else}
-                        <ArrowDown size={12} strokeWidth={2} />
-                      {/if}
-                    {:else}
-                      <ArrowUpDown size={12} strokeWidth={2} class="opacity-30" />
-                    {/if}
-                  </span>
-                </th>
+                <SortableHeader
+                  label={col.label}
+                  field={col.key}
+                  currentSort={sortField}
+                  ascending={sortAsc}
+                  onclick={toggleSort}
+                />
               {/each}
             </tr>
           </thead>

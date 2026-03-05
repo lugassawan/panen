@@ -1,6 +1,7 @@
 <script lang="ts">
 import { ArrowLeft } from "lucide-svelte";
 import Button from "../../lib/components/Button.svelte";
+import Tooltip from "../../lib/components/Tooltip.svelte";
 import { formatPercent, formatRupiah } from "../../lib/format";
 import {
   currentValue as calcCurrentValue,
@@ -40,7 +41,7 @@ let overallPL = $derived(calcOverallPL(detail.holdings));
     onclick={onBack}
     aria-label="Back to list"
   >
-    <ArrowLeft size={20} strokeWidth={2} />
+    <ArrowLeft size={20} strokeWidth={2} aria-hidden="true" />
   </button>
   <h2 class="text-xl font-semibold text-text-primary">{detail.portfolio.name}</h2>
   <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {MODE_BADGE[detail.portfolio.mode]}">
@@ -59,7 +60,9 @@ let overallPL = $derived(calcOverallPL(detail.holdings));
     <p class="mt-1 text-lg font-medium">{formatRupiah(currentValue)}</p>
   </div>
   <div class="rounded border border-border-default bg-bg-elevated p-4" data-testid="overall-pl">
-    <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">Overall P/L</p>
+    <Tooltip text="Unrealized profit/loss across all holdings based on current market prices">
+      <p class="text-xs font-semibold uppercase tracking-wider text-text-muted underline decoration-dotted cursor-help">Overall P/L</p>
+    </Tooltip>
     <p class="mt-1 text-lg font-medium font-mono {overallPL >= 0 ? 'text-profit' : 'text-loss'}">
       {overallPL >= 0 ? "+" : ""}{formatPercent(overallPL)}
     </p>
@@ -67,7 +70,9 @@ let overallPL = $derived(calcOverallPL(detail.holdings));
   {#if detail.portfolio.mode === "DIVIDEND"}
     {@const portfolioYield = detail.holdings.find((h) => h.dividendMetrics)?.dividendMetrics?.portfolioYield ?? 0}
     <div class="rounded border border-border-default bg-bg-elevated p-4" data-testid="portfolio-yield">
-      <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">Portfolio Yield</p>
+      <Tooltip text="Weighted average dividend yield across all holdings in this portfolio">
+        <p class="text-xs font-semibold uppercase tracking-wider text-text-muted underline decoration-dotted cursor-help">Portfolio Yield</p>
+      </Tooltip>
       <p class="mt-1 text-lg font-medium font-mono text-text-primary">
         {formatPercent(portfolioYield)}
       </p>

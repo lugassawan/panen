@@ -9,6 +9,7 @@ import BrokerageAccountForm from "../../components/BrokerageAccountForm.svelte";
 import ConfirmDialog from "../../components/ConfirmDialog.svelte";
 import Button from "../../lib/components/Button.svelte";
 import { formatPercent } from "../../lib/format";
+import { toastStore } from "../../lib/stores/toast.svelte";
 import type { BrokerageAccountResponse, BrokerConfigResponse } from "../../lib/types";
 
 type PageState = "loading" | "list" | "create" | "edit" | "error";
@@ -47,6 +48,7 @@ function startEdit(acct: BrokerageAccountResponse) {
 }
 
 function onSaved() {
+  toastStore.add(editingAccount ? "Account updated" : "Account created", "success");
   editingAccount = null;
   load();
 }
@@ -67,6 +69,7 @@ async function confirmDelete() {
   deleteError = null;
   try {
     await DeleteBrokerageAccount(deletingAccount.id);
+    toastStore.add("Account deleted", "success");
     deletingAccount = null;
     load();
   } catch (e: unknown) {
@@ -138,9 +141,10 @@ load();
     {:else}
       <div class="grid gap-4">
         {#each accounts as acct}
-          <div
+          <article
             class="flex items-center justify-between rounded border border-border-default bg-bg-elevated p-4"
             data-testid="brokerage-card"
+            aria-label="{acct.brokerName} brokerage account"
           >
             <div>
               <p class="font-medium text-text-primary">{acct.brokerName}</p>
@@ -159,11 +163,11 @@ load();
                 Edit
               </Button>
               <Button variant="ghost" size="sm" onclick={() => startDelete(acct)}>
-                <Trash2 size={14} strokeWidth={2} />
+                <Trash2 size={14} strokeWidth={2} aria-hidden="true" />
                 Delete
               </Button>
             </div>
-          </div>
+          </article>
         {/each}
       </div>
     {/if}

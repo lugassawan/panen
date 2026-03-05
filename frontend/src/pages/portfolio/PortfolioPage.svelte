@@ -8,6 +8,7 @@ import {
   ListPortfolios,
 } from "../../../wailsjs/go/backend/App";
 import ConfirmDialog from "../../components/ConfirmDialog.svelte";
+import { toastStore } from "../../lib/stores/toast.svelte";
 import type {
   ActionType,
   BrokerConfigResponse,
@@ -90,6 +91,7 @@ async function confirmDelete() {
   deleteError = null;
   try {
     await DeletePortfolio(deletingPortfolio.id);
+    toastStore.add("Portfolio deleted", "success");
     deletingPortfolio = null;
     await load();
   } catch (e: unknown) {
