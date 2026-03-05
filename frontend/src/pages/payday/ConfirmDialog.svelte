@@ -1,4 +1,5 @@
 <script lang="ts">
+import { untrack } from "svelte";
 import Button from "../../lib/components/Button.svelte";
 import Input from "../../lib/components/Input.svelte";
 
@@ -14,8 +15,7 @@ let {
   onCancel: () => void;
 } = $props();
 
-let initialAmount = expected;
-let amount = $state<number>(initialAmount);
+let amount = $state<number>(untrack(() => expected));
 
 function handleConfirm() {
   onConfirm(amount);

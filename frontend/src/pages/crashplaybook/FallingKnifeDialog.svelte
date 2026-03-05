@@ -1,4 +1,5 @@
 <script lang="ts">
+import { untrack } from "svelte";
 import Badge from "../../lib/components/Badge.svelte";
 import Button from "../../lib/components/Button.svelte";
 import type { DiagnosticResponse, DiagnosticSignal } from "../../lib/types";
@@ -15,8 +16,8 @@ let {
   onClose: () => void;
 } = $props();
 
-let companyBadNews = $state<boolean | null>(diagnostic.companyBadNews);
-let fundamentalsOK = $state<boolean | null>(diagnostic.fundamentalsOK);
+let companyBadNews = $state<boolean | null>(untrack(() => diagnostic.companyBadNews));
+let fundamentalsOK = $state<boolean | null>(untrack(() => diagnostic.fundamentalsOK));
 
 function toggleCompanyBadNews() {
   companyBadNews = companyBadNews === null ? true : companyBadNews ? false : null;

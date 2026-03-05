@@ -1,4 +1,5 @@
 <script lang="ts">
+import { untrack } from "svelte";
 import Button from "../../lib/components/Button.svelte";
 import Input from "../../lib/components/Input.svelte";
 import { formatRupiah } from "../../lib/format";
@@ -16,7 +17,7 @@ let {
   onOpenSettings: () => void;
 } = $props();
 
-let amountStr = $state(capital.amount > 0 ? String(capital.amount) : "");
+let amountStr = $state(untrack(() => (capital.amount > 0 ? String(capital.amount) : "")));
 
 function handleSave() {
   const amount = Number(amountStr);

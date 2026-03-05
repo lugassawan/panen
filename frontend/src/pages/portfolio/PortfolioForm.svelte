@@ -1,4 +1,5 @@
 <script lang="ts">
+import { untrack } from "svelte";
 import { CreatePortfolio, UpdatePortfolio } from "../../../wailsjs/go/backend/App";
 import Button from "../../lib/components/Button.svelte";
 import Input from "../../lib/components/Input.svelte";
@@ -16,20 +17,13 @@ let {
   onCancel?: () => void;
 } = $props();
 
-const isEdit = existingPortfolio != null;
-const initialName = existingPortfolio?.name ?? "";
-const initialMode: Mode = existingPortfolio?.mode ?? "VALUE";
-const initialRiskProfile: RiskProfile = existingPortfolio?.riskProfile ?? "MODERATE";
-const initialCapital = existingPortfolio?.capital ?? 0;
-const initialMonthlyAddition = existingPortfolio?.monthlyAddition ?? 0;
-const initialMaxStocks = existingPortfolio?.maxStocks ?? 10;
-
-let name = $state(initialName);
-let mode = $state<Mode>(initialMode);
-let riskProfile = $state<RiskProfile>(initialRiskProfile);
-let capital = $state(initialCapital);
-let monthlyAddition = $state(initialMonthlyAddition);
-let maxStocks = $state(initialMaxStocks);
+const isEdit = untrack(() => existingPortfolio != null);
+let name = $state(untrack(() => existingPortfolio?.name ?? ""));
+let mode = $state<Mode>(untrack(() => existingPortfolio?.mode ?? "VALUE"));
+let riskProfile = $state<RiskProfile>(untrack(() => existingPortfolio?.riskProfile ?? "MODERATE"));
+let capital = $state(untrack(() => existingPortfolio?.capital ?? 0));
+let monthlyAddition = $state(untrack(() => existingPortfolio?.monthlyAddition ?? 0));
+let maxStocks = $state(untrack(() => existingPortfolio?.maxStocks ?? 10));
 let loading = $state(false);
 let error = $state<string | null>(null);
 
