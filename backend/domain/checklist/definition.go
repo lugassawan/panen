@@ -89,6 +89,7 @@ var manualCheckDefs = map[ActionType][]CheckDefinition{
 	ActionAverageUp: {
 		{Key: "dividend_track_record", Label: "Dividend track record is solid", Type: CheckTypeManual},
 		{Key: "no_payout_cut_risk", Label: "No payout cut risk", Type: CheckTypeManual},
+		{Key: "dividend_growth_positive", Label: "Dividend has been growing", Type: CheckTypeManual},
 	},
 	ActionSellExit: {
 		{Key: "no_upcoming_catalyst", Label: "No upcoming positive catalyst", Type: CheckTypeManual},

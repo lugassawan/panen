@@ -96,7 +96,7 @@ func TestManualCheckDefs(t *testing.T) {
 	}{
 		{action: ActionBuy, count: 3},
 		{action: ActionAverageDown, count: 2},
-		{action: ActionAverageUp, count: 2},
+		{action: ActionAverageUp, count: 3},
 		{action: ActionSellExit, count: 2},
 		{action: ActionSellStop, count: 2},
 		{action: ActionHold, count: 0},
