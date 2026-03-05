@@ -22,7 +22,7 @@ var thresholdsByRisk = map[portfolio.RiskProfile]Thresholds{
 	portfolio.RiskProfileConservative: {
 		MinROE:         15,
 		MaxDER:         0.8,
-		MaxPositionPct: 15,
+		MaxPositionPct: 10,
 		MinDY:          5,
 		MaxPayoutRatio: 60,
 	},
@@ -36,7 +36,7 @@ var thresholdsByRisk = map[portfolio.RiskProfile]Thresholds{
 	portfolio.RiskProfileAggressive: {
 		MinROE:         8,
 		MaxDER:         1.5,
-		MaxPositionPct: 30,
+		MaxPositionPct: 35,
 		MinDY:          2,
 		MaxPayoutRatio: 90,
 	},
