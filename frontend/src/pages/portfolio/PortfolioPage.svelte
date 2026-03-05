@@ -10,6 +10,7 @@ import {
 import BrokerageAccountForm from "../../components/BrokerageAccountForm.svelte";
 import ConfirmDialog from "../../components/ConfirmDialog.svelte";
 import Button from "../../lib/components/Button.svelte";
+import { getDividendIndicatorDisplay } from "../../lib/dividend-indicator";
 import { formatPercent, formatRupiah } from "../../lib/format";
 import {
   currentValue as calcCurrentValue,
@@ -24,7 +25,6 @@ import type {
   PortfolioDetailResponse,
   PortfolioResponse,
 } from "../../lib/types";
-import { getDividendIndicatorDisplay } from "../../lib/dividend-indicator";
 import { getVerdictDisplay } from "../../lib/verdict";
 import ActionSelector from "./ActionSelector.svelte";
 import AddHoldingForm from "./AddHoldingForm.svelte";

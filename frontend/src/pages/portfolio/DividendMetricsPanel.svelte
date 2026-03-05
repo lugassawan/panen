@@ -1,8 +1,8 @@
 <script lang="ts">
 import { Coins } from "lucide-svelte";
+import { getDividendIndicatorDisplay } from "../../lib/dividend-indicator";
 import { formatDecimal, formatPercent, formatRupiah } from "../../lib/format";
 import type { DividendMetricsResponse } from "../../lib/types";
-import { getDividendIndicatorDisplay } from "../../lib/dividend-indicator";
 
 let {
   ticker,

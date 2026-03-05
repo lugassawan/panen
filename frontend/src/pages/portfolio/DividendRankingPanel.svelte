@@ -1,8 +1,8 @@
 <script lang="ts">
 import { LoaderCircle, TrendingUp } from "lucide-svelte";
 import { GetDividendRanking } from "../../../wailsjs/go/backend/App";
-import { formatDecimal, formatPercent } from "../../lib/format";
 import { getDividendIndicatorDisplay } from "../../lib/dividend-indicator";
+import { formatDecimal, formatPercent } from "../../lib/format";
 import type { DividendRankItemResponse } from "../../lib/types";
 
 let {
