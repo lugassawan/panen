@@ -8,14 +8,14 @@ import SectorWarnings from "./SectorWarnings.svelte";
 
 interface Props {
   holdings: HoldingDetailResponse[];
-  portfolioId: string;
   portfolioMode: Mode;
 }
 
-let { holdings, portfolioId, portfolioMode }: Props = $props();
+let { holdings, portfolioMode }: Props = $props();
 
 let sectorMap = $state<Record<string, string>>({});
 let loading = $state(true);
+let error = $state<string | null>(null);
 
 let weights: HoldingWeight[] = $derived(holdingWeights(holdings));
 let sectors: SectorWeight[] = $derived(sectorWeights(holdings, sectorMap));
@@ -27,9 +27,13 @@ $effect(() => {
     return;
   }
   loading = true;
+  error = null;
   GetHoldingSectors(tickers)
     .then((result) => {
       sectorMap = result;
+    })
+    .catch((e) => {
+      error = e instanceof Error ? e.message : String(e);
     })
     .finally(() => {
       loading = false;
@@ -40,6 +44,10 @@ $effect(() => {
 {#if loading}
   <div class="flex items-center justify-center py-12">
     <p class="text-sm text-text-muted">Loading chart data…</p>
+  </div>
+{:else if error}
+  <div class="rounded border border-border-default bg-bg-elevated p-6 text-center">
+    <p class="text-sm text-loss">{error}</p>
   </div>
 {:else}
   <SectorWarnings sectorWeights={sectors} />

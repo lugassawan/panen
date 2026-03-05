@@ -163,4 +163,24 @@ describe("PortfolioDetail", () => {
     expect(chartsTab).toHaveAttribute("aria-selected", "true");
     expect(screen.queryByRole("heading", { name: "Add Holding" })).not.toBeInTheDocument();
   });
+
+  it("switches tabs via keyboard ArrowRight/ArrowLeft", async () => {
+    const user = userEvent.setup();
+    render(PortfolioDetail, { props: defaultProps });
+
+    const holdingsTab = screen.getByRole("tab", { name: "Holdings" });
+    holdingsTab.focus();
+    await user.keyboard("{ArrowRight}");
+
+    expect(screen.getByRole("tab", { name: "Charts" })).toHaveAttribute("aria-selected", "true");
+
+    await user.keyboard("{ArrowLeft}");
+    expect(screen.getByRole("tab", { name: "Holdings" })).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("inactive tab has tabindex -1", () => {
+    render(PortfolioDetail, { props: defaultProps });
+    expect(screen.getByRole("tab", { name: "Holdings" })).toHaveAttribute("tabindex", "0");
+    expect(screen.getByRole("tab", { name: "Charts" })).toHaveAttribute("tabindex", "-1");
+  });
 });

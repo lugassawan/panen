@@ -58,7 +58,7 @@ const holdings: HoldingDetailResponse[] = [
 describe("ChartsTab", () => {
   it("calls GetHoldingSectors with tickers", async () => {
     render(ChartsTab, {
-      props: { holdings, portfolioId: "p1", portfolioMode: "VALUE" },
+      props: { holdings, portfolioMode: "VALUE" },
     });
 
     await waitFor(() => {
@@ -68,7 +68,7 @@ describe("ChartsTab", () => {
 
   it("renders sub-components after loading", async () => {
     render(ChartsTab, {
-      props: { holdings, portfolioId: "p1", portfolioMode: "VALUE" },
+      props: { holdings, portfolioMode: "VALUE" },
     });
 
     await waitFor(() => {
@@ -80,7 +80,7 @@ describe("ChartsTab", () => {
 
   it("shows loading state initially", () => {
     render(ChartsTab, {
-      props: { holdings, portfolioId: "p1", portfolioMode: "VALUE" },
+      props: { holdings, portfolioMode: "VALUE" },
     });
 
     expect(screen.getByText(/Loading chart data/)).toBeInTheDocument();
@@ -89,11 +89,22 @@ describe("ChartsTab", () => {
   it("handles empty holdings without calling backend", async () => {
     mockGetHoldingSectors.mockClear();
     render(ChartsTab, {
-      props: { holdings: [], portfolioId: "p1", portfolioMode: "VALUE" },
+      props: { holdings: [], portfolioMode: "VALUE" },
     });
 
     await waitFor(() => {
       expect(mockGetHoldingSectors).not.toHaveBeenCalled();
+    });
+  });
+
+  it("shows error message when backend call fails", async () => {
+    mockGetHoldingSectors.mockImplementationOnce(() => Promise.reject(new Error("network error")));
+    render(ChartsTab, {
+      props: { holdings, portfolioMode: "VALUE" },
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("network error")).toBeInTheDocument();
     });
   });
 });

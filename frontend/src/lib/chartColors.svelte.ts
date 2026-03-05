@@ -51,8 +51,8 @@ const GOLD_HUES = [
   "#b8891a",
   "#9e7614",
   "#fdf9ee",
-  "#f0d87e",
-  "#e8c456",
+  "#c99220",
+  "#dbb445",
 ];
 
 export function accentPalette(n: number): string[] {
