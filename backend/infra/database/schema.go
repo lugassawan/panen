@@ -10,6 +10,7 @@ var migrations = []string{
 	migrationV6,
 	migrationV7,
 	migrationV8,
+	migrationV9,
 }
 
 const migrationV1 = `
@@ -180,4 +181,20 @@ CREATE TABLE holding_peaks (
 	peak_price REAL NOT NULL DEFAULT 0,
 	updated_at TEXT NOT NULL
 );
+`
+
+const migrationV9 = `
+CREATE TABLE price_history (
+	id     TEXT PRIMARY KEY,
+	ticker TEXT NOT NULL,
+	date   TEXT NOT NULL,
+	open   REAL NOT NULL DEFAULT 0,
+	high   REAL NOT NULL DEFAULT 0,
+	low    REAL NOT NULL DEFAULT 0,
+	close  REAL NOT NULL DEFAULT 0,
+	volume INTEGER NOT NULL DEFAULT 0,
+	source TEXT NOT NULL,
+	UNIQUE(ticker, date, source)
+);
+CREATE INDEX idx_price_history_ticker_date ON price_history(ticker, date);
 `
