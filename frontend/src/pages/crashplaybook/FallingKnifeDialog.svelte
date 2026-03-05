@@ -47,12 +47,18 @@ function checkColor(value: boolean | null, invertMeaning = false): string {
 }
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
-<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onclick={onClose}>
-  <!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
-  <div class="w-full max-w-md rounded-lg border border-border-default bg-bg-elevated p-6" onclick={(e) => e.stopPropagation()}>
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+  <div class="fixed inset-0" role="presentation" onclick={onClose}></div>
+  <div
+    class="relative z-10 w-full max-w-md rounded-lg border border-border-default bg-bg-elevated p-6"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="fk-dialog-title"
+    tabindex="-1"
+    onkeydown={(e) => { if (e.key === "Escape") onClose(); }}
+  >
     <div class="flex items-center justify-between">
-      <h3 class="font-display text-lg font-semibold text-text-primary">Falling Knife Diagnostic</h3>
+      <h3 id="fk-dialog-title" class="font-display text-lg font-semibold text-text-primary">Falling Knife Diagnostic</h3>
       <Badge variant={signal.variant}>{signal.label}</Badge>
     </div>
     <p class="mt-1 text-sm text-text-secondary">

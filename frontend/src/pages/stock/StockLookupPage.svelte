@@ -1,8 +1,10 @@
 <script lang="ts">
 import { LoaderCircle } from "lucide-svelte";
 import { LookupStock } from "../../../wailsjs/go/backend/App";
+import DataTimestamp from "../../lib/components/DataTimestamp.svelte";
 import Input from "../../lib/components/Input.svelte";
 import Select from "../../lib/components/Select.svelte";
+import Tooltip from "../../lib/components/Tooltip.svelte";
 import { formatDecimal, formatPercent, formatRupiah } from "../../lib/format";
 import type { RiskProfile, StockValuationResponse } from "../../lib/types";
 import { getVerdictDisplay } from "../../lib/verdict";
@@ -37,6 +39,7 @@ function percentInRange(value: number, min: number, max: number): number {
 </script>
 
 <div class="mx-auto max-w-2xl px-4 py-8">
+  <h1 class="mb-6 text-2xl font-bold text-text-primary font-display">Stock Lookup</h1>
   <!-- Search Form -->
   <form
     onsubmit={(e) => { e.preventDefault(); lookup(); }}
@@ -122,11 +125,15 @@ function percentInRange(value: number, min: number, max: number): number {
       <h2 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">Graham Valuation</h2>
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <div class="text-xs text-text-muted">Graham Number</div>
+          <Tooltip text="Intrinsic value estimate using Benjamin Graham's formula: sqrt(22.5 * EPS * BVPS)">
+            <div class="text-xs text-text-muted underline decoration-dotted cursor-help">Graham Number</div>
+          </Tooltip>
           <div class="text-lg font-semibold font-mono" data-testid="graham-number">{formatRupiah(result.grahamNumber)}</div>
         </div>
         <div>
-          <div class="text-xs text-text-muted">Margin of Safety</div>
+          <Tooltip text="How much the current price is below the Graham Number. Higher = more undervalued.">
+            <div class="text-xs text-text-muted underline decoration-dotted cursor-help">Margin of Safety</div>
+          </Tooltip>
           <div class="text-lg font-semibold font-mono">{formatPercent(result.marginOfSafety)}</div>
         </div>
         <div>
@@ -144,7 +151,9 @@ function percentInRange(value: number, min: number, max: number): number {
     {#if result.pbvBand}
       {@const pbvPct = percentInRange(result.pbv, result.pbvBand.min, result.pbvBand.max)}
       <div class="mb-4 rounded border border-border-default bg-bg-elevated p-4" data-testid="pbv-band">
-        <h2 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">PBV Band</h2>
+        <Tooltip text="Price-to-Book Value historical range. Position shows where current PBV sits relative to its 5-year band." position="right">
+          <h2 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted underline decoration-dotted cursor-help">PBV Band</h2>
+        </Tooltip>
         <div class="mb-2 text-lg font-semibold font-mono">Current PBV: {formatDecimal(result.pbv)}</div>
         <div class="grid grid-cols-4 gap-2 text-center text-xs">
           <div>
@@ -240,8 +249,9 @@ function percentInRange(value: number, min: number, max: number): number {
     </div>
 
     <!-- Metadata Footer -->
-    <div class="text-center text-xs text-text-muted">
-      Source: {result.source} &middot; Fetched: {result.fetchedAt}
+    <div class="flex items-center justify-center gap-3 text-xs text-text-muted">
+      <span>Source: {result.source}</span>
+      <DataTimestamp date={result.fetchedAt} label="Fetched" />
     </div>
   {/if}
 </div>

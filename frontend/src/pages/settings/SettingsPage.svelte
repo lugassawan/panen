@@ -12,6 +12,7 @@ import Alert from "../../lib/components/Alert.svelte";
 import Button from "../../lib/components/Button.svelte";
 import Select from "../../lib/components/Select.svelte";
 import ThemeToggle from "../../lib/components/ThemeToggle.svelte";
+import Tooltip from "../../lib/components/Tooltip.svelte";
 import { sync } from "../../lib/stores/sync.svelte";
 import { theme } from "../../lib/stores/theme.svelte";
 
@@ -116,7 +117,9 @@ function openRelease(url: string) {
       <div class="space-y-4 rounded-lg border border-border-default bg-bg-elevated p-4">
         <!-- Auto Refresh Toggle -->
         <label class="flex items-center justify-between">
-          <span class="text-sm text-text-primary">Auto Refresh</span>
+          <Tooltip text="Automatically refresh stock data in the background at the configured interval">
+            <span class="text-sm text-text-primary underline decoration-dotted cursor-help">Auto Refresh</span>
+          </Tooltip>
           <input
             type="checkbox"
             bind:checked={autoRefreshEnabled}

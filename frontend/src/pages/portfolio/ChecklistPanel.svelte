@@ -95,9 +95,9 @@ $effect(() => {
           >
             <span class="mt-0.5 flex-shrink-0">
               {#if check.status === "PASS"}
-                <Check size={16} strokeWidth={2} class="text-profit" />
+                <Check size={16} strokeWidth={2} class="text-profit" aria-hidden="true" />
               {:else}
-                <X size={16} strokeWidth={2} class="text-loss" />
+                <X size={16} strokeWidth={2} class="text-loss" aria-hidden="true" />
               {/if}
             </span>
             <div class="flex-1">

@@ -1,4 +1,5 @@
 <script lang="ts">
+import { LoaderCircle } from "lucide-svelte";
 import {
   GetCrashCapital,
   GetDeploymentPlan,
@@ -11,6 +12,7 @@ import {
 } from "../../../wailsjs/go/backend/App";
 import Button from "../../lib/components/Button.svelte";
 import Select from "../../lib/components/Select.svelte";
+import Tooltip from "../../lib/components/Tooltip.svelte";
 import type {
   CrashCapitalResponse,
   DeploymentPlanResponse,
@@ -149,8 +151,9 @@ $effect(() => {
   <p class="mt-1 text-sm text-text-secondary">Pre-calculated crash response levels for your holdings.</p>
 
   {#if state === "loading"}
-    <div class="flex items-center justify-center py-16">
-      <p class="text-sm text-text-secondary">Loading...</p>
+    <div class="flex items-center justify-center gap-2 py-16 text-text-secondary" role="status">
+      <LoaderCircle size={20} strokeWidth={2} class="animate-spin" />
+      <span class="text-sm">Loading crash playbook...</span>
     </div>
   {:else if state === "error"}
     <div class="mt-6 rounded-lg border border-negative bg-negative-bg p-4">

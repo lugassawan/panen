@@ -19,7 +19,7 @@ const conditionConfig: Record<
 const config = $derived(conditionConfig[market.condition] ?? conditionConfig.NORMAL);
 </script>
 
-<div class="rounded-lg border border-border-default bg-bg-elevated p-4">
+<div class="rounded-lg border border-border-default bg-bg-elevated p-4" aria-label="Market status">
   <div class="flex items-center justify-between">
     <div class="flex items-center gap-3">
       <h3 class="text-sm font-medium text-text-secondary">IHSG Market Status</h3>

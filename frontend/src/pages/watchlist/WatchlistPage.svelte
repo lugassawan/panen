@@ -9,6 +9,7 @@ import {
   RemoveFromWatchlist,
 } from "../../../wailsjs/go/backend/App";
 import Badge from "../../lib/components/Badge.svelte";
+import Tooltip from "../../lib/components/Tooltip.svelte";
 import { formatPercent, formatRupiah } from "../../lib/format";
 import type { WatchlistItemResponse, WatchlistResponse } from "../../lib/types";
 import { getVerdictDisplay } from "../../lib/verdict";
@@ -288,13 +289,14 @@ load();
       {:else if itemsState === "loaded"}
         <!-- Sector Filter Chips -->
         {#if sectors.length > 0}
-          <div class="flex flex-wrap gap-2 border-b border-border-default px-6 py-3">
+          <div class="flex flex-wrap gap-2 border-b border-border-default px-6 py-3" role="group" aria-label="Filter by sector">
             <button
               type="button"
               class="rounded-full border px-3 py-1 text-xs font-medium transition-fast focus-ring {activeSector === ''
                 ? 'border-green-700 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
                 : 'border-border-default bg-bg-elevated text-text-secondary hover:bg-bg-tertiary hover:text-text-primary'}"
               onclick={() => selectSector("")}
+              aria-pressed={activeSector === ''}
             >
               All
             </button>
@@ -305,6 +307,7 @@ load();
                   ? 'border-green-700 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
                   : 'border-border-default bg-bg-elevated text-text-secondary hover:bg-bg-tertiary hover:text-text-primary'}"
                 onclick={() => selectSector(sector)}
+                aria-pressed={activeSector === sector}
               >
                 {sector}
               </button>
@@ -374,10 +377,12 @@ load();
                     </td>
                     <td class="px-4 py-3">
                       {#if verdictDisplay && item.verdict}
-                        <Badge variant={verdictBadgeVariant(item.verdict)}>
-                          <span aria-hidden="true">{verdictDisplay.icon}</span>
-                          {verdictDisplay.label}
-                        </Badge>
+                        <Tooltip text={verdictDisplay.description}>
+                          <Badge variant={verdictBadgeVariant(item.verdict)}>
+                            <span aria-hidden="true">{verdictDisplay.icon}</span>
+                            {verdictDisplay.label}
+                          </Badge>
+                        </Tooltip>
                       {:else}
                         <span class="text-text-muted">&mdash;</span>
                       {/if}

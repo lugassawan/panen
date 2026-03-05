@@ -138,9 +138,10 @@ load();
     {:else}
       <div class="grid gap-4">
         {#each accounts as acct}
-          <div
+          <article
             class="flex items-center justify-between rounded border border-border-default bg-bg-elevated p-4"
             data-testid="brokerage-card"
+            aria-label="{acct.brokerName} brokerage account"
           >
             <div>
               <p class="font-medium text-text-primary">{acct.brokerName}</p>
@@ -159,11 +160,11 @@ load();
                 Edit
               </Button>
               <Button variant="ghost" size="sm" onclick={() => startDelete(acct)}>
-                <Trash2 size={14} strokeWidth={2} />
+                <Trash2 size={14} strokeWidth={2} aria-hidden="true" />
                 Delete
               </Button>
             </div>
-          </div>
+          </article>
         {/each}
       </div>
     {/if}
