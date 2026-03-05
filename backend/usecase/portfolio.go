@@ -249,14 +249,13 @@ func (s *PortfolioService) GetDetail(
 
 	result := make([]*HoldingWithValuation, len(holdings))
 	for i, h := range holdings {
-		result[i] = s.enrichHolding(ctx, h, p.RiskProfile, isValue, peakMap, holdings, stockMap)
+		result[i] = enrichHolding(h, p.RiskProfile, isValue, peakMap, holdings, stockMap)
 	}
 
 	return p, result, nil
 }
 
-func (s *PortfolioService) enrichHolding(
-	ctx context.Context,
+func enrichHolding(
 	h *portfolio.Holding,
 	riskProfile portfolio.RiskProfile,
 	isValue bool,
@@ -287,7 +286,7 @@ func (s *PortfolioService) enrichHolding(
 	}
 
 	if isValue {
-		hwv.TrailingStop = s.computeTrailingStop(ctx, h, data, riskProfile, peakMap)
+		hwv.TrailingStop = computeTrailingStop(h, data, riskProfile, peakMap)
 	} else {
 		hwv.DividendMetrics = computeDividendMetrics(h, data, val, riskProfile, allHoldings, stockMap)
 	}
@@ -295,20 +294,56 @@ func (s *PortfolioService) enrichHolding(
 	return hwv
 }
 
-func (s *PortfolioService) computeTrailingStop(
-	ctx context.Context,
-	h *portfolio.Holding,
-	data *stock.Data,
-	riskProfile portfolio.RiskProfile,
-	peakMap map[string]*trailingstop.HoldingPeak,
-) *trailingstop.TrailingStopResult {
-	stopPct, err := trailingstop.StopPercentage(riskProfile)
+// SyncPeaks updates peak prices for all holdings in a VALUE mode portfolio.
+// This is an explicit command that should be called before reading portfolio detail.
+func (s *PortfolioService) SyncPeaks(ctx context.Context, portfolioID string) error {
+	p, err := s.portfolios.GetByID(ctx, portfolioID)
 	if err != nil {
+		return err
+	}
+	if p.Mode != portfolio.ModeValue {
 		return nil
 	}
 
-	// Determine current peak. Seed with High52Week to avoid too-tight stops
-	// when the feature is first activated on an existing holding.
+	holdings, err := s.holdings.ListByPortfolioID(ctx, portfolioID)
+	if err != nil {
+		return err
+	}
+	if len(holdings) == 0 {
+		return nil
+	}
+
+	holdingIDs := make([]string, len(holdings))
+	for i, h := range holdings {
+		holdingIDs[i] = h.ID
+	}
+	existingPeaks, err := s.peaks.ListByHoldingIDs(ctx, holdingIDs)
+	if err != nil {
+		return err
+	}
+	peakMap := make(map[string]*trailingstop.HoldingPeak, len(existingPeaks))
+	for _, pk := range existingPeaks {
+		peakMap[pk.HoldingID] = pk
+	}
+
+	now := time.Now().UTC()
+	for _, h := range holdings {
+		data, dataErr := s.stockData.GetByTicker(ctx, h.Ticker)
+		if dataErr != nil {
+			continue
+		}
+		s.syncHoldingPeak(ctx, h, data, peakMap, now)
+	}
+	return nil
+}
+
+func (s *PortfolioService) syncHoldingPeak(
+	ctx context.Context,
+	h *portfolio.Holding,
+	data *stock.Data,
+	peakMap map[string]*trailingstop.HoldingPeak,
+	now time.Time,
+) {
 	existing := peakMap[h.ID]
 	var currentPeak float64
 	if existing != nil {
@@ -317,8 +352,6 @@ func (s *PortfolioService) computeTrailingStop(
 	seedPrice := max(data.Price, data.High52Week)
 	newPeak := trailingstop.UpdatePeak(currentPeak, seedPrice)
 
-	// Persist updated peak (side-effect in read path for lazy peak tracking).
-	now := time.Now().UTC()
 	if existing == nil {
 		peak := &trailingstop.HoldingPeak{
 			ID:        shared.NewID(),
@@ -336,6 +369,26 @@ func (s *PortfolioService) computeTrailingStop(
 			log.Printf("warn: failed to update peak for holding %s: %v", h.ID, upsertErr)
 		}
 	}
+}
+
+func computeTrailingStop(
+	h *portfolio.Holding,
+	data *stock.Data,
+	riskProfile portfolio.RiskProfile,
+	peakMap map[string]*trailingstop.HoldingPeak,
+) *trailingstop.TrailingStopResult {
+	stopPct, err := trailingstop.StopPercentage(riskProfile)
+	if err != nil {
+		return nil
+	}
+
+	existing := peakMap[h.ID]
+	var currentPeak float64
+	if existing != nil {
+		currentPeak = existing.PeakPrice
+	}
+	seedPrice := max(data.Price, data.High52Week)
+	newPeak := trailingstop.UpdatePeak(currentPeak, seedPrice)
 
 	stopPrice := trailingstop.StopPrice(newPeak, stopPct)
 	triggered := trailingstop.IsTriggered(data.Price, stopPrice)
