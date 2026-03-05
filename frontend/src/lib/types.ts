@@ -231,6 +231,17 @@ export interface DeploymentPlanResponse {
   levels: DeploymentLevelPlanResponse[];
 }
 
+export interface PricePointResponse {
+  date: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
+export type PriceRange = "1M" | "3M" | "6M" | "1Y" | "ALL";
+
 export interface HoldingWeight {
   ticker: string;
   value: number;

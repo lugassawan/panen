@@ -38,6 +38,7 @@ vi.mock("../../../wailsjs/go/backend/App", () => ({
   ToggleManualCheck: (...args: unknown[]) => mockToggleManualCheck(...args),
   ResetChecklist: (...args: unknown[]) => mockResetChecklist(...args),
   GetHoldingSectors: vi.fn(() => Promise.resolve({})),
+  GetPriceHistory: vi.fn(() => Promise.resolve([])),
 }));
 
 vi.mock("chart.js", () => {
@@ -54,7 +55,11 @@ vi.mock("chart.js", () => {
     Tooltip: {},
     ArcElement: {},
     DoughnutController: {},
+    Filler: {},
     Legend: {},
+    LineController: {},
+    LineElement: {},
+    PointElement: {},
   };
 });
 

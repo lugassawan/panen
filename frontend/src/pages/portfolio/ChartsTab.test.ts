@@ -4,9 +4,15 @@ import { describe, expect, it, vi } from "vitest";
 const mockGetHoldingSectors = vi.fn(() =>
   Promise.resolve({ BBCA: "Financials", TLKM: "Communication Services" }),
 );
+const mockGetPriceHistory = vi.fn(() =>
+  Promise.resolve([
+    { date: "2025-01-02", open: 9000, high: 9200, low: 8900, close: 9100, volume: 100000 },
+  ]),
+);
 
 vi.mock("../../../wailsjs/go/backend/App", () => ({
   GetHoldingSectors: (...args: unknown[]) => mockGetHoldingSectors(...args),
+  GetPriceHistory: (...args: unknown[]) => mockGetPriceHistory(...args),
 }));
 
 vi.mock("chart.js", () => {
@@ -23,7 +29,11 @@ vi.mock("chart.js", () => {
     Tooltip: {},
     ArcElement: {},
     DoughnutController: {},
+    Filler: {},
     Legend: {},
+    LineController: {},
+    LineElement: {},
+    PointElement: {},
   };
 });
 
@@ -72,6 +82,7 @@ describe("ChartsTab", () => {
     });
 
     await waitFor(() => {
+      expect(screen.getByTestId("price-history-chart")).toBeInTheDocument();
       expect(screen.getByTestId("pl-bar-chart")).toBeInTheDocument();
       expect(screen.getByTestId("composition-chart")).toBeInTheDocument();
       expect(screen.getByTestId("sector-warnings")).toBeInTheDocument();

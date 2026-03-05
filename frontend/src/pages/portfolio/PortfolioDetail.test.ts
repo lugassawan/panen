@@ -6,6 +6,7 @@ vi.mock("../../../wailsjs/go/backend/App", () => ({
   AddHolding: vi.fn(),
   GetDividendRanking: vi.fn(),
   GetHoldingSectors: vi.fn(() => Promise.resolve({ BBCA: "Financials" })),
+  GetPriceHistory: vi.fn(() => Promise.resolve([])),
 }));
 
 vi.mock("chart.js", () => {
@@ -22,7 +23,11 @@ vi.mock("chart.js", () => {
     Tooltip: {},
     ArcElement: {},
     DoughnutController: {},
+    Filler: {},
     Legend: {},
+    LineController: {},
+    LineElement: {},
+    PointElement: {},
   };
 });
 
