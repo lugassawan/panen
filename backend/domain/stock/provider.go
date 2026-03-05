@@ -29,4 +29,6 @@ type DataProvider interface {
 	FetchPrice(ctx context.Context, ticker string) (*PriceResult, error)
 	// FetchFinancials returns fundamental financial metrics for a ticker.
 	FetchFinancials(ctx context.Context, ticker string) (*FinancialResult, error)
+	// FetchPriceHistory returns daily OHLCV data for a ticker.
+	FetchPriceHistory(ctx context.Context, ticker string) ([]PricePoint, error)
 }
