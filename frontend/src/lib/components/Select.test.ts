@@ -14,9 +14,19 @@ describe("Select", () => {
   it("applies base styling classes", () => {
     render(SelectWrapper, { props: { "aria-label": "test" } });
     const select = screen.getByRole("combobox");
+    expect(select.className).toContain("appearance-none");
     expect(select.className).toContain("rounded");
     expect(select.className).toContain("border-border-default");
     expect(select.className).toContain("bg-bg-elevated");
+  });
+
+  it("renders chevron icon", () => {
+    render(SelectWrapper, { props: { "aria-label": "test" } });
+    const select = screen.getByRole("combobox");
+    const wrapper = select.parentElement;
+    expect(wrapper).not.toBeNull();
+    const chevron = wrapper?.querySelector("svg");
+    expect(chevron).toBeInTheDocument();
   });
 
   it("sets id attribute", () => {
