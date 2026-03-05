@@ -173,8 +173,14 @@ func (m *mockBrokerageRepo) GetByID(_ context.Context, id string) (*brokerage.Ac
 	return a, nil
 }
 
-func (m *mockBrokerageRepo) ListByProfileID(_ context.Context, _ string) ([]*brokerage.Account, error) {
-	return nil, nil
+func (m *mockBrokerageRepo) ListByProfileID(_ context.Context, profileID string) ([]*brokerage.Account, error) {
+	var result []*brokerage.Account
+	for _, a := range m.accounts {
+		if a.ProfileID == profileID {
+			result = append(result, a)
+		}
+	}
+	return result, nil
 }
 
 func (m *mockBrokerageRepo) Update(_ context.Context, a *brokerage.Account) error {

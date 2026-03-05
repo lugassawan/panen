@@ -645,6 +645,9 @@ func TestPortfolioServiceGetDetailTrailingStopPeakUpdate(t *testing.T) {
 		t.Fatalf("Upsert() error = %v", err)
 	}
 
+	if err := f.svc.SyncPeaks(f.ctx, f.port.ID); err != nil {
+		t.Fatalf("SyncPeaks() error = %v", err)
+	}
 	_, holdings, _ := f.svc.GetDetail(f.ctx, f.port.ID)
 	if holdings[0].TrailingStop.PeakPrice != 9000 {
 		t.Errorf("initial PeakPrice = %v, want 9000", holdings[0].TrailingStop.PeakPrice)
@@ -660,6 +663,9 @@ func TestPortfolioServiceGetDetailTrailingStopPeakUpdate(t *testing.T) {
 		t.Fatalf("Upsert() error = %v", err)
 	}
 
+	if err := f.svc.SyncPeaks(f.ctx, f.port.ID); err != nil {
+		t.Fatalf("SyncPeaks() error = %v", err)
+	}
 	_, holdings, _ = f.svc.GetDetail(f.ctx, f.port.ID)
 	if holdings[0].TrailingStop.PeakPrice != 10000 {
 		t.Errorf("updated PeakPrice = %v, want 10000", holdings[0].TrailingStop.PeakPrice)
@@ -675,6 +681,9 @@ func TestPortfolioServiceGetDetailTrailingStopPeakUpdate(t *testing.T) {
 		t.Fatalf("Upsert() error = %v", err)
 	}
 
+	if err := f.svc.SyncPeaks(f.ctx, f.port.ID); err != nil {
+		t.Fatalf("SyncPeaks() error = %v", err)
+	}
 	_, holdings, _ = f.svc.GetDetail(f.ctx, f.port.ID)
 	ts := holdings[0].TrailingStop
 	if ts.PeakPrice != 10000 {
@@ -708,6 +717,9 @@ func TestPortfolioServiceGetDetailTrailingStopSeedsFromHigh52Week(t *testing.T) 
 		t.Fatalf("Upsert() error = %v", err)
 	}
 
+	if err := f.svc.SyncPeaks(f.ctx, f.port.ID); err != nil {
+		t.Fatalf("SyncPeaks() error = %v", err)
+	}
 	_, holdings, err := f.svc.GetDetail(f.ctx, f.port.ID)
 	if err != nil {
 		t.Fatalf("GetDetail() error = %v", err)
@@ -718,5 +730,40 @@ func TestPortfolioServiceGetDetailTrailingStopSeedsFromHigh52Week(t *testing.T) 
 	}
 	if ts.PeakPrice != 11000 {
 		t.Errorf("PeakPrice = %v, want 11000 (seeded from High52Week)", ts.PeakPrice)
+	}
+}
+
+func TestGetDetailDoesNotPersistPeaks(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	_, err := f.svc.AddHolding(f.ctx, f.port.ID, "BBCA", 8500, 10, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("AddHolding() error = %v", err)
+	}
+
+	if err := f.stockRepo.Upsert(f.ctx, &stock.Data{
+		ID: "sd1", Ticker: "BBCA", Price: 9000,
+		EPS: 500, BVPS: 3000, ROE: 18, DER: 0.5,
+		PBV: 2.8, PER: 17,
+		FetchedAt: time.Now().UTC(), Source: "mock",
+	}); err != nil {
+		t.Fatalf("Upsert() error = %v", err)
+	}
+
+	// Call GetDetail without SyncPeaks — should still return trailing stop
+	// from computed data but NOT persist any peaks.
+	_, holdings, _ := f.svc.GetDetail(f.ctx, f.port.ID)
+	if holdings[0].TrailingStop == nil {
+		t.Fatal("TrailingStop should not be nil even without SyncPeaks")
+	}
+
+	// Verify no peaks were persisted.
+	holdingID := holdings[0].Holding.ID
+	peaks, peakErr := f.peakRepo.ListByHoldingIDs(f.ctx, []string{holdingID})
+	if peakErr != nil {
+		t.Fatalf("ListByHoldingIDs() error = %v", peakErr)
+	}
+	if len(peaks) != 0 {
+		t.Errorf("expected 0 persisted peaks after GetDetail without SyncPeaks, got %d", len(peaks))
 	}
 }

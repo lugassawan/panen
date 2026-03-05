@@ -81,7 +81,12 @@ func (h *PortfolioHandler) AddHolding(
 }
 
 // GetPortfolio returns a portfolio with all holdings and optional valuations.
+// SyncPeaks is called first to update trailing stop peak prices (command),
+// followed by GetDetail to read the portfolio (query).
 func (h *PortfolioHandler) GetPortfolio(id string) (*PortfolioDetailResponse, error) {
+	if err := h.portfolios.SyncPeaks(h.ctx, id); err != nil {
+		return nil, err
+	}
 	p, holdings, err := h.portfolios.GetDetail(h.ctx, id)
 	if err != nil {
 		return nil, err
