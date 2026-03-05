@@ -24,10 +24,13 @@ import type {
   PortfolioDetailResponse,
   PortfolioResponse,
 } from "../../lib/types";
+import { getDividendIndicatorDisplay } from "../../lib/dividend-indicator";
 import { getVerdictDisplay } from "../../lib/verdict";
 import ActionSelector from "./ActionSelector.svelte";
 import AddHoldingForm from "./AddHoldingForm.svelte";
 import ChecklistPanel from "./ChecklistPanel.svelte";
+import DividendMetricsPanel from "./DividendMetricsPanel.svelte";
+import DividendRankingPanel from "./DividendRankingPanel.svelte";
 import PortfolioForm from "./PortfolioForm.svelte";
 import TrailingStopPanel from "./TrailingStopPanel.svelte";
 
@@ -260,7 +263,7 @@ load();
     </div>
 
     <!-- Summary Bar -->
-    <div class="mb-6 grid grid-cols-3 gap-4">
+    <div class="mb-6 grid {detail.portfolio.mode === 'DIVIDEND' ? 'grid-cols-4' : 'grid-cols-3'} gap-4">
       <div class="rounded border border-border-default bg-bg-elevated p-4" data-testid="total-invested">
         <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">Total Invested</p>
         <p class="mt-1 text-lg font-medium">{formatRupiah(totalInvested)}</p>
@@ -275,6 +278,15 @@ load();
           {overallPL >= 0 ? "+" : ""}{formatPercent(overallPL)}
         </p>
       </div>
+      {#if detail.portfolio.mode === "DIVIDEND"}
+        {@const portfolioYield = detail.holdings.find((h) => h.dividendMetrics)?.dividendMetrics?.portfolioYield ?? 0}
+        <div class="rounded border border-border-default bg-bg-elevated p-4" data-testid="portfolio-yield">
+          <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">Portfolio Yield</p>
+          <p class="mt-1 text-lg font-medium font-mono text-text-primary">
+            {formatPercent(portfolioYield)}
+          </p>
+        </div>
+      {/if}
     </div>
 
     <!-- Holdings Table -->
@@ -313,7 +325,13 @@ load();
                 {/if}
               </td>
               <td class="px-4 py-3">
-                {#if verdict}
+                {#if holding.dividendMetrics}
+                  {@const divDisplay = getDividendIndicatorDisplay(holding.dividendMetrics.indicator)}
+                  <span class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium {divDisplay.bgClass} {divDisplay.colorClass}">
+                    <span aria-hidden="true">{divDisplay.icon}</span>
+                    {divDisplay.label}
+                  </span>
+                {:else if verdict}
                   <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium {verdict.bgClass} {verdict.colorClass}">
                     <span aria-hidden="true">{verdict.icon}</span>
                     {verdict.label}
@@ -355,6 +373,24 @@ load();
             {/if}
           {/each}
         </div>
+      </div>
+    {/if}
+
+    <!-- Dividend Metrics (DIVIDEND mode only) -->
+    {#if detail.portfolio.mode === "DIVIDEND" && detail.holdings.some((h) => h.dividendMetrics)}
+      <div class="mb-6">
+        <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">Dividend Metrics</h3>
+        <div class="space-y-3">
+          {#each detail.holdings as holding}
+            {#if holding.dividendMetrics}
+              <DividendMetricsPanel ticker={holding.ticker} dividendMetrics={holding.dividendMetrics} />
+            {/if}
+          {/each}
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <DividendRankingPanel portfolioId={detail.portfolio.id} />
       </div>
     {/if}
 
