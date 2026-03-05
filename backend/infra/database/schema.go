@@ -7,6 +7,7 @@ var migrations = []string{
 	migrationV3,
 	migrationV4,
 	migrationV5,
+	migrationV6,
 }
 
 const migrationV1 = `
@@ -127,4 +128,30 @@ CREATE TABLE checklist_results (
 	updated_at    TEXT NOT NULL,
 	UNIQUE(portfolio_id, ticker, action)
 );
+`
+
+const migrationV6 = `
+CREATE TABLE payday_events (
+	id            TEXT PRIMARY KEY,
+	month         TEXT NOT NULL,
+	portfolio_id  TEXT NOT NULL REFERENCES portfolios(id) ON DELETE CASCADE,
+	expected      REAL NOT NULL DEFAULT 0,
+	actual        REAL NOT NULL DEFAULT 0,
+	status        TEXT NOT NULL CHECK(status IN ('SCHEDULED','PENDING','CONFIRMED','DEFERRED','SKIPPED')),
+	defer_until   TEXT,
+	confirmed_at  TEXT,
+	created_at    TEXT NOT NULL,
+	updated_at    TEXT NOT NULL,
+	UNIQUE(month, portfolio_id)
+);
+CREATE TABLE cash_flows (
+	id            TEXT PRIMARY KEY,
+	portfolio_id  TEXT NOT NULL REFERENCES portfolios(id) ON DELETE CASCADE,
+	type          TEXT NOT NULL CHECK(type IN ('INITIAL','MONTHLY','DIVIDEND','SALE')),
+	amount        REAL NOT NULL DEFAULT 0,
+	date          TEXT NOT NULL,
+	note          TEXT NOT NULL DEFAULT '',
+	created_at    TEXT NOT NULL
+);
+INSERT INTO app_settings (key, value) VALUES ('payday_day', '0');
 `

@@ -28,6 +28,7 @@ type App struct {
 	*presenter.RefreshHandler
 	*presenter.ChecklistHandler
 	*presenter.UpdateHandler
+	*presenter.PaydayHandler
 	db      *database.DB
 	refresh *usecase.RefreshService
 }
@@ -108,6 +109,11 @@ func (a *App) Startup(ctx context.Context) {
 	checklistRepo := database.NewChecklistResultRepo(conn)
 	checklistSvc := usecase.NewChecklistService(checklistRepo, portfolioRepo, holdingRepo, brokerageRepo, stockRepo)
 	a.ChecklistHandler = presenter.NewChecklistHandler(ctx, checklistSvc)
+
+	paydayRepo := database.NewPaydayRepo(conn)
+	cashFlowRepo := database.NewCashFlowRepo(conn)
+	paydaySvc := usecase.NewPaydayService(paydayRepo, cashFlowRepo, portfolioRepo, settingsRepo)
+	a.PaydayHandler = presenter.NewPaydayHandler(ctx, paydaySvc)
 
 	ghClient := github.NewClient()
 	updateChecker := &releaseCheckerAdapter{client: ghClient}

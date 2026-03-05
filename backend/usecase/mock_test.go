@@ -7,6 +7,7 @@ import (
 
 	"github.com/lugassawan/panen/backend/domain/brokerage"
 	"github.com/lugassawan/panen/backend/domain/checklist"
+	"github.com/lugassawan/panen/backend/domain/payday"
 	"github.com/lugassawan/panen/backend/domain/portfolio"
 	"github.com/lugassawan/panen/backend/domain/settings"
 	"github.com/lugassawan/panen/backend/domain/shared"
@@ -190,6 +191,16 @@ func (r *mockPortfolioRepo) GetByID(_ context.Context, id string) (*portfolio.Po
 		return nil, shared.ErrNotFound
 	}
 	return p, nil
+}
+
+func (r *mockPortfolioRepo) ListAll(_ context.Context) ([]*portfolio.Portfolio, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	result := make([]*portfolio.Portfolio, 0, len(r.items))
+	for _, p := range r.items {
+		result = append(result, p)
+	}
+	return result, nil
 }
 
 func (r *mockPortfolioRepo) ListByBrokerageAccountID(
@@ -511,4 +522,110 @@ func (r *mockChecklistResultRepo) DeleteByPortfolioID(_ context.Context, portfol
 		}
 	}
 	return nil
+}
+
+// mockPaydayRepo is an in-memory payday.Repository for testing.
+type mockPaydayRepo struct {
+	mu     sync.Mutex
+	events map[string]*payday.PaydayEvent // key: month+":"+portfolioID
+}
+
+func newMockPaydayRepo() *mockPaydayRepo {
+	return &mockPaydayRepo{events: make(map[string]*payday.PaydayEvent)}
+}
+
+func paydayKey(month, portfolioID string) string {
+	return month + ":" + portfolioID
+}
+
+func (r *mockPaydayRepo) Create(_ context.Context, event *payday.PaydayEvent) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.events[paydayKey(event.Month, event.PortfolioID)] = event
+	return nil
+}
+
+func (r *mockPaydayRepo) GetByMonthAndPortfolio(
+	_ context.Context,
+	month, portfolioID string,
+) (*payday.PaydayEvent, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	ev, ok := r.events[paydayKey(month, portfolioID)]
+	if !ok {
+		return nil, shared.ErrNotFound
+	}
+	return ev, nil
+}
+
+func (r *mockPaydayRepo) ListByMonth(_ context.Context, month string) ([]*payday.PaydayEvent, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	var result []*payday.PaydayEvent
+	for _, ev := range r.events {
+		if ev.Month == month {
+			result = append(result, ev)
+		}
+	}
+	return result, nil
+}
+
+func (r *mockPaydayRepo) ListByPortfolioID(_ context.Context, portfolioID string) ([]*payday.PaydayEvent, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	var result []*payday.PaydayEvent
+	for _, ev := range r.events {
+		if ev.PortfolioID == portfolioID {
+			result = append(result, ev)
+		}
+	}
+	return result, nil
+}
+
+func (r *mockPaydayRepo) Update(_ context.Context, event *payday.PaydayEvent) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	key := paydayKey(event.Month, event.PortfolioID)
+	if _, ok := r.events[key]; !ok {
+		return shared.ErrNotFound
+	}
+	r.events[key] = event
+	return nil
+}
+
+// mockCashFlowRepo is an in-memory payday.CashFlowRepository for testing.
+type mockCashFlowRepo struct {
+	mu    sync.Mutex
+	flows map[string][]*payday.CashFlow // key: portfolioID
+}
+
+func newMockCashFlowRepo() *mockCashFlowRepo {
+	return &mockCashFlowRepo{flows: make(map[string][]*payday.CashFlow)}
+}
+
+func (r *mockCashFlowRepo) Create(_ context.Context, cf *payday.CashFlow) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.flows[cf.PortfolioID] = append(r.flows[cf.PortfolioID], cf)
+	return nil
+}
+
+func (r *mockCashFlowRepo) ListByPortfolioID(_ context.Context, portfolioID string) ([]*payday.CashFlow, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return r.flows[portfolioID], nil
+}
+
+func (r *mockCashFlowRepo) Delete(_ context.Context, id string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	for pid, flows := range r.flows {
+		for i, cf := range flows {
+			if cf.ID == id {
+				r.flows[pid] = append(flows[:i], flows[i+1:]...)
+				return nil
+			}
+		}
+	}
+	return shared.ErrNotFound
 }

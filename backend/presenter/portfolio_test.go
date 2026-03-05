@@ -47,6 +47,14 @@ func (m *mockPortfolioRepo) GetByID(_ context.Context, id string) (*portfolio.Po
 	return p, nil
 }
 
+func (m *mockPortfolioRepo) ListAll(_ context.Context) ([]*portfolio.Portfolio, error) {
+	result := make([]*portfolio.Portfolio, 0, len(m.portfolios))
+	for _, p := range m.portfolios {
+		result = append(result, p)
+	}
+	return result, nil
+}
+
 func (m *mockPortfolioRepo) ListByBrokerageAccountID(
 	_ context.Context,
 	brokerageAccountID string,
