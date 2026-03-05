@@ -12,6 +12,25 @@ import (
 	"github.com/lugassawan/panen/backend/domain/stock"
 )
 
+const priceHistoryFixture = `{
+  "chart": {
+    "result": [{
+      "meta": {"regularMarketPrice": 9875.0},
+      "timestamp": [1704153600, 1704240000, 1704326400],
+      "indicators": {
+        "quote": [{
+          "open":   [9000.0, 9100.0, null],
+          "high":   [9200.0, 9300.0, null],
+          "low":    [8900.0, 9000.0, null],
+          "close":  [9100.0, 9250.0, null],
+          "volume": [100000, 150000, null]
+        }]
+      }
+    }],
+    "error": null
+  }
+}`
+
 const chartFixture = `{
   "chart": {
     "result": [{
@@ -67,7 +86,11 @@ func newTestServerWithHandler(
 		case r.URL.Path == "/v1/test/getcrumb":
 			_, _ = w.Write([]byte("testcrumb123"))
 		case strings.Contains(r.URL.Path, "/v8/finance/chart/"):
-			handleTestEndpoint(w, r, chartFixture)
+			if r.URL.Query().Get("range") == "5y" {
+				handleTestEndpoint(w, r, priceHistoryFixture)
+			} else {
+				handleTestEndpoint(w, r, chartFixture)
+			}
 		case strings.Contains(r.URL.Path, "/v10/finance/quoteSummary/"):
 			handleTestEndpoint(w, r, quoteSummaryFixture)
 		default:
@@ -374,6 +397,71 @@ func TestPersistent401ReturnsError(t *testing.T) {
 	if !errors.Is(err, stock.ErrSourceDown) {
 		t.Errorf("expected ErrSourceDown, got: %v", err)
 	}
+}
+
+func TestFetchPriceHistory(t *testing.T) {
+	srv := newTestServer(t)
+	defer srv.Close()
+	y := newTestYahoo(t, srv)
+
+	t.Run("happy path", func(t *testing.T) {
+		points, err := y.FetchPriceHistory(context.Background(), "BBCA")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		// null entries should be skipped, so 2 valid points
+		if len(points) != 2 {
+			t.Fatalf("len(points) = %d, want 2", len(points))
+		}
+		if points[0].Open != 9000 {
+			t.Errorf("points[0].Open = %v, want 9000", points[0].Open)
+		}
+		if points[0].Close != 9100 {
+			t.Errorf("points[0].Close = %v, want 9100", points[0].Close)
+		}
+		if points[0].Volume != 100000 {
+			t.Errorf("points[0].Volume = %v, want 100000", points[0].Volume)
+		}
+		if points[1].Close != 9250 {
+			t.Errorf("points[1].Close = %v, want 9250", points[1].Close)
+		}
+		if points[0].Ticker != "BBCA" {
+			t.Errorf("Ticker = %q, want BBCA", points[0].Ticker)
+		}
+		if points[0].Source != "yahoo" {
+			t.Errorf("Source = %q, want yahoo", points[0].Source)
+		}
+	})
+
+	t.Run("invalid ticker 404", func(t *testing.T) {
+		_, err := y.FetchPriceHistory(context.Background(), "NOTFOUND")
+		if err == nil {
+			t.Fatal("expected error, got nil")
+		}
+		if !errors.Is(err, stock.ErrInvalidTicker) {
+			t.Errorf("expected ErrInvalidTicker, got: %v", err)
+		}
+	})
+
+	t.Run("empty result", func(t *testing.T) {
+		_, err := y.FetchPriceHistory(context.Background(), "EMPTY")
+		if err == nil {
+			t.Fatal("expected error, got nil")
+		}
+		if !errors.Is(err, stock.ErrNoData) {
+			t.Errorf("expected ErrNoData, got: %v", err)
+		}
+	})
+
+	t.Run("malformed JSON", func(t *testing.T) {
+		_, err := y.FetchPriceHistory(context.Background(), "BADJSON")
+		if err == nil {
+			t.Fatal("expected error, got nil")
+		}
+		if !errors.Is(err, stock.ErrNoData) {
+			t.Errorf("expected ErrNoData, got: %v", err)
+		}
+	})
 }
 
 func assertFloat(t *testing.T, field string, got, want float64) {

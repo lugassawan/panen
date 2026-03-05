@@ -108,6 +108,10 @@ func (p *mockProvider) FetchFinancials(ctx context.Context, ticker string) (*sto
 	return p.finFunc(ctx, ticker)
 }
 
+func (p *mockProvider) FetchPriceHistory(_ context.Context, _ string) ([]stock.PricePoint, error) {
+	return nil, nil
+}
+
 // mockBrokerageRepo is an in-memory brokerage.Repository for testing.
 type mockBrokerageRepo struct {
 	mu    sync.Mutex

@@ -4,6 +4,7 @@ import { holdingWeights, sectorWeights } from "../../lib/portfolio";
 import type { HoldingDetailResponse, HoldingWeight, Mode, SectorWeight } from "../../lib/types";
 import CompositionChart from "./CompositionChart.svelte";
 import PlBarChart from "./PlBarChart.svelte";
+import PriceHistoryChart from "./PriceHistoryChart.svelte";
 import SectorWarnings from "./SectorWarnings.svelte";
 
 interface Props {
@@ -50,6 +51,8 @@ $effect(() => {
     <p class="text-sm text-loss">{error}</p>
   </div>
 {:else}
+  <PriceHistoryChart tickers={holdings.map(h => h.ticker)} />
+
   <SectorWarnings sectorWeights={sectors} />
 
   <div class="grid gap-6 lg:grid-cols-2">

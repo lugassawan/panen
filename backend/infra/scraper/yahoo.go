@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"strings"
 	"sync"
+	"time"
 
 	"golang.org/x/time/rate"
 
@@ -112,6 +113,77 @@ func (y *Yahoo) FetchPrice(ctx context.Context, ticker string) (*stock.PriceResu
 		High52Week: high52,
 		Low52Week:  low52,
 	}, nil
+}
+
+// FetchPriceHistory returns daily OHLCV data for the last 5 years.
+func (y *Yahoo) FetchPriceHistory(ctx context.Context, ticker string) ([]stock.PricePoint, error) {
+	encoded := url.PathEscape(FormatIDX(ticker))
+	reqURL := fmt.Sprintf("%s/v8/finance/chart/%s?range=5y&interval=1d", y.baseURL, encoded)
+
+	body, err := y.doGet(ctx, reqURL)
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := parseChartResult(body)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(result.Indicators.Quote) == 0 {
+		return nil, fmt.Errorf("%w: no quote data", stock.ErrNoData)
+	}
+
+	points := extractPricePoints(result, ticker, y.Source())
+	if len(points) == 0 {
+		return nil, fmt.Errorf("%w: no valid price points", stock.ErrNoData)
+	}
+
+	return points, nil
+}
+
+func parseChartResult(body []byte) (chartResult, error) {
+	var resp chartResponse
+	if err := json.Unmarshal(body, &resp); err != nil {
+		return chartResult{}, fmt.Errorf("%w: malformed chart response", stock.ErrNoData)
+	}
+	if resp.Chart.Error != nil {
+		return chartResult{}, fmt.Errorf("%w: %s", stock.ErrNoData, resp.Chart.Error.Description)
+	}
+	if len(resp.Chart.Result) == 0 {
+		return chartResult{}, fmt.Errorf("%w: empty chart result", stock.ErrNoData)
+	}
+	return resp.Chart.Result[0], nil
+}
+
+func extractPricePoints(result chartResult, ticker, source string) []stock.PricePoint {
+	q := result.Indicators.Quote[0]
+	var points []stock.PricePoint
+
+	for i, ts := range result.Timestamp {
+		if i >= len(q.Open) || i >= len(q.High) || i >= len(q.Low) || i >= len(q.Close) {
+			break
+		}
+		if q.Open[i] == nil || q.High[i] == nil || q.Low[i] == nil || q.Close[i] == nil {
+			continue
+		}
+
+		pp := stock.PricePoint{
+			Ticker: ticker,
+			Date:   time.Unix(ts, 0).UTC(),
+			Open:   *q.Open[i],
+			High:   *q.High[i],
+			Low:    *q.Low[i],
+			Close:  *q.Close[i],
+			Source: source,
+		}
+		if i < len(q.Volume) && q.Volume[i] != nil {
+			pp.Volume = *q.Volume[i]
+		}
+		points = append(points, pp)
+	}
+
+	return points
 }
 
 // FetchFinancials returns fundamental financial metrics for a ticker.

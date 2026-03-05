@@ -1,0 +1,38 @@
+package presenter
+
+import (
+	"context"
+
+	"github.com/lugassawan/panen/backend/usecase"
+)
+
+// PriceHistoryHandler handles price history requests.
+type PriceHistoryHandler struct {
+	ctx          context.Context
+	priceHistory *usecase.PriceHistoryService
+}
+
+// NewPriceHistoryHandler creates a new PriceHistoryHandler.
+func NewPriceHistoryHandler(ctx context.Context, priceHistory *usecase.PriceHistoryService) *PriceHistoryHandler {
+	return &PriceHistoryHandler{ctx: ctx, priceHistory: priceHistory}
+}
+
+// GetPriceHistory returns historical closing prices for a ticker.
+func (h *PriceHistoryHandler) GetPriceHistory(ticker string) ([]PricePointResponse, error) {
+	points, err := h.priceHistory.GetHistory(h.ctx, ticker)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]PricePointResponse, len(points))
+	for i, p := range points {
+		result[i] = PricePointResponse{
+			Date:   p.Date.Format(dateLayout),
+			Open:   p.Open,
+			High:   p.High,
+			Low:    p.Low,
+			Close:  p.Close,
+			Volume: p.Volume,
+		}
+	}
+	return result, nil
+}

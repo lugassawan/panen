@@ -1,5 +1,7 @@
 package presenter
 
+const dateLayout = "2006-01-02"
+
 // BandStatsResponse is the frontend-facing response for PBV/PER band statistics.
 type BandStatsResponse struct {
 	Min    float64 `json:"min"`
@@ -267,6 +269,16 @@ type ScreenerItemResponse struct {
 	Passed        bool                    `json:"passed"`
 	Score         float64                 `json:"score"`
 	FetchedAt     *string                 `json:"fetchedAt,omitempty"`
+}
+
+// PricePointResponse is the frontend-facing response for a single price history point.
+type PricePointResponse struct {
+	Date   string  `json:"date"`
+	Open   float64 `json:"open"`
+	High   float64 `json:"high"`
+	Low    float64 `json:"low"`
+	Close  float64 `json:"close"`
+	Volume int64   `json:"volume"`
 }
 
 // CashFlowItemResponse is the frontend-facing response for a single cash flow entry.

@@ -10,6 +10,7 @@ type chartResponse struct {
 
 type chartResult struct {
 	Meta       chartMeta  `json:"meta"`
+	Timestamp  []int64    `json:"timestamp"`
 	Indicators indicators `json:"indicators"`
 }
 
@@ -22,8 +23,11 @@ type indicators struct {
 }
 
 type quoteIndicator struct {
-	High []*float64 `json:"high"`
-	Low  []*float64 `json:"low"`
+	Open   []*float64 `json:"open"`
+	High   []*float64 `json:"high"`
+	Low    []*float64 `json:"low"`
+	Close  []*float64 `json:"close"`
+	Volume []*int64   `json:"volume"`
 }
 
 // quoteSummaryResponse maps the Yahoo Finance v10 quoteSummary API response.

@@ -41,6 +41,10 @@ func (m *mockDataProvider) FetchFinancials(ctx context.Context, ticker string) (
 	return nil, errors.New("not implemented")
 }
 
+func (m *mockDataProvider) FetchPriceHistory(_ context.Context, _ string) ([]stock.PricePoint, error) {
+	return nil, nil
+}
+
 // --- helper to build a stock handler with mocks ---
 
 func newTestStockHandler(provider *mockDataProvider) (*StockHandler, *mockStockRepo) {

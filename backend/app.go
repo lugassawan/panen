@@ -32,6 +32,7 @@ type App struct {
 	*presenter.CrashPlaybookHandler
 	*presenter.ScreenerHandler
 	*presenter.DividendHandler
+	*presenter.PriceHistoryHandler
 	db      *database.DB
 	refresh *usecase.RefreshService
 }
@@ -105,6 +106,10 @@ func (a *App) Startup(ctx context.Context) {
 
 	screenerSvc := usecase.NewScreenerService(stockRepo, indexRegistry, sectorRegistry)
 	a.ScreenerHandler = presenter.NewScreenerHandler(ctx, screenerSvc)
+
+	priceHistoryRepo := database.NewPriceHistoryRepo(conn)
+	priceHistorySvc := usecase.NewPriceHistoryService(priceHistoryRepo, yahoo)
+	a.PriceHistoryHandler = presenter.NewPriceHistoryHandler(ctx, priceHistorySvc)
 
 	settingsRepo := database.NewSettingsRepo(conn)
 	tickerCollector := database.NewTickerCollector(conn)
