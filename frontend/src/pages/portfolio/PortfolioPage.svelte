@@ -29,6 +29,7 @@ import ActionSelector from "./ActionSelector.svelte";
 import AddHoldingForm from "./AddHoldingForm.svelte";
 import ChecklistPanel from "./ChecklistPanel.svelte";
 import PortfolioForm from "./PortfolioForm.svelte";
+import TrailingStopPanel from "./TrailingStopPanel.svelte";
 
 type PageState =
   | "loading"
@@ -339,6 +340,23 @@ load();
         </tbody>
       </table>
     </div>
+
+    <!-- Trailing Stops (VALUE mode only) -->
+    {#if detail.portfolio.mode === "VALUE" && detail.holdings.some((h) => h.trailingStop)}
+      <div class="mb-6">
+        <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">Trailing Stops</h3>
+        <div class="space-y-3">
+          {#each detail.holdings as holding}
+            {#if holding.trailingStop}
+              <div>
+                <p class="mb-1 text-sm font-medium text-text-primary">{holding.ticker}</p>
+                <TrailingStopPanel trailingStop={holding.trailingStop} />
+              </div>
+            {/if}
+          {/each}
+        </div>
+      </div>
+    {/if}
 
     <!-- Add Holding -->
     <div class="rounded border border-border-default bg-bg-elevated p-4">
