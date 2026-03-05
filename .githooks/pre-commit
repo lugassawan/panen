@@ -29,10 +29,10 @@ fi
 
 # Run linters
 if [ -n "$STAGED_GO_FILES" ]; then
-    make custom-gcl
-    ./custom-gcl run ./...
+    make custom-gcl || exit 1
+    ./custom-gcl run ./... || exit 1
 fi
 
 if [ -n "$STAGED_FE_FILES" ]; then
-    cd frontend && biome check . && cd ..
+    (cd frontend && biome check .) || exit 1
 fi

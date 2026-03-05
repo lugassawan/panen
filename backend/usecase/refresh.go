@@ -13,7 +13,14 @@ import (
 	"github.com/lugassawan/panen/backend/domain/stock"
 )
 
-const eventRefreshError = "refresh:error"
+const (
+	eventRefreshError   = "refresh:error"
+	eventRefreshSummary = "refresh:summary"
+
+	stateIdle    = "idle"
+	stateSyncing = "syncing"
+	stateError   = "error"
+)
 
 // EventEmitter abstracts event emission (implemented by Wails runtime wrapper in presenter).
 type EventEmitter interface {
@@ -86,7 +93,7 @@ func NewRefreshService(
 		settings:  settings,
 		collector: collector,
 		emitter:   emitter,
-		status:    RefreshStatus{State: "idle"},
+		status:    RefreshStatus{State: stateIdle},
 	}
 }
 
@@ -205,13 +212,13 @@ func (r *RefreshService) refresh(ctx context.Context) error {
 	}
 	defer r.running.Store(false)
 
-	r.setStatus(RefreshStatus{State: "syncing"})
+	r.setStatus(RefreshStatus{State: stateSyncing})
 
 	start := time.Now()
 
 	tickers, err := r.collector.CollectAll(ctx)
 	if err != nil {
-		errStatus := RefreshStatus{State: "error", Error: fmt.Sprintf("collect tickers: %v", err)}
+		errStatus := RefreshStatus{State: stateError, Error: fmt.Sprintf("collect tickers: %v", err)}
 		r.setStatus(errStatus)
 		return fmt.Errorf("collect tickers: %w", err)
 	}
@@ -239,7 +246,7 @@ func (r *RefreshService) refresh(ctx context.Context) error {
 	}
 
 	duration := time.Since(start)
-	r.emitter.Emit("refresh:summary", RefreshSummary{
+	r.emitter.Emit(eventRefreshSummary, RefreshSummary{
 		Total:    total,
 		Fetched:  fetched,
 		Skipped:  skipped,
@@ -257,9 +264,9 @@ func (r *RefreshService) refresh(ctx context.Context) error {
 		}
 	}
 
-	finalState := "idle"
+	finalState := stateIdle
 	if total > 0 && failed == total {
-		finalState = "error"
+		finalState = stateError
 	}
 	r.setStatus(RefreshStatus{
 		State:       finalState,

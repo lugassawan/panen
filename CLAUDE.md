@@ -61,7 +61,7 @@ make release-check     # Validate VERSION against wails.json productVersion
 - **Branches**: `feat/`, `fix/`, `chore/` prefixes
 - **Worktrees**: Only use git worktrees when running parallel agents on independent tasks — never for single sequential work or when targeting main/master (pre-commit hook blocks direct commits). After work is done, clean up with `git worktree remove <path>` (use `--force` if it has uncommitted changes) and `git branch -D <branch>` to delete the worktree branch
 - **Lint warnings**: Always fix the root cause before considering suppression. Refactor code, extract helpers, or restructure queries to satisfy the linter. Only use `//nolint` or `// biome-ignore` as a last resort when a fix is genuinely impossible, and always include a justification comment explaining why.
-- **Code review**: Prefer running code review before creating PRs (e.g., via available code-review skills or agents)
+- **Code review**: Run code review before creating PRs (e.g., via available code-review skills or agents) unless one was already performed in the current session. Address reviewer feedback to maintain code quality.
 - **PRs**: Title uses `type: description` (same types as commits); body follows `.github/pull_request_template.md`
 
 ## Custom Linter (panenlint)
