@@ -17,6 +17,7 @@ var (
 	ErrPaydayNotConfigured = errors.New("payday day not configured")
 	ErrInvalidPaydayDay    = errors.New("payday day must be between 0 and 31")
 	ErrInvalidTransition   = errors.New("invalid status transition")
+	ErrDeferDateNotFuture  = errors.New("defer date must be in the future")
 )
 
 // MonthlyPaydayStatus aggregates payday events for a single month.
@@ -197,8 +198,15 @@ func (s *PaydayService) ConfirmPayday(ctx context.Context, portfolioID string, a
 }
 
 // DeferPayday defers the current month's payday event to a later date.
+// The deferUntil date must be in the future (after today).
 func (s *PaydayService) DeferPayday(ctx context.Context, portfolioID string, deferUntil time.Time) error {
 	now := time.Now().UTC()
+	today := now.Truncate(24 * time.Hour)
+	deferDate := deferUntil.Truncate(24 * time.Hour)
+	if !deferDate.After(today) {
+		return ErrDeferDateNotFuture
+	}
+
 	currentMonth := now.Format("2006-01")
 
 	event, err := s.events.GetByMonthAndPortfolio(ctx, currentMonth, portfolioID)
@@ -310,7 +318,7 @@ func (s *PaydayService) GetCashFlowSummary(ctx context.Context, portfolioID stri
 		totalInflow += cf.Amount
 	}
 
-	totalDeployed := 0.0
+	totalDeployed := 0.0 // TODO: calculate from buy transactions when portfolio deployment tracking is added
 	return &CashFlowSummary{
 		Items:         items,
 		TotalInflow:   totalInflow,

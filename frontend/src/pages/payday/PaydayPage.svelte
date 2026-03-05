@@ -25,6 +25,8 @@ let state = $state<PageState>("loading");
 let error = $state<string | null>(null);
 let monthStatus = $state<MonthlyPaydayResponse | null>(null);
 let confirmingPortfolio = $state<PortfolioPaydayItemResponse | null>(null);
+let deferringPortfolio = $state<PortfolioPaydayItemResponse | null>(null);
+let deferDate = $state<string>("");
 let expandedCashFlow = $state<string | null>(null);
 
 function statusBadgeVariant(
@@ -85,12 +87,17 @@ async function handleConfirm(portfolioId: string, amount: number) {
   }
 }
 
+function openDeferDialog(portfolio: PortfolioPaydayItemResponse) {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 7);
+  deferDate = tomorrow.toISOString().split("T")[0];
+  deferringPortfolio = portfolio;
+}
+
 async function handleDefer(portfolioId: string) {
   try {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 7);
-    const deferDate = tomorrow.toISOString().split("T")[0];
     await DeferPayday(portfolioId, deferDate);
+    deferringPortfolio = null;
     await load();
   } catch (e) {
     error = e instanceof Error ? e.message : String(e);
@@ -171,7 +178,7 @@ $effect(() => {
                 <Button variant="primary" size="sm" onclick={() => { confirmingPortfolio = portfolio; }}>
                   Confirm
                 </Button>
-                <Button variant="secondary" size="sm" onclick={() => handleDefer(portfolio.portfolioId)}>
+                <Button variant="secondary" size="sm" onclick={() => openDeferDialog(portfolio)}>
                   Defer
                 </Button>
                 <Button variant="danger" size="sm" onclick={() => handleSkip(portfolio.portfolioId)}>
@@ -209,4 +216,38 @@ $effect(() => {
     onConfirm={(amount) => handleConfirm(confirmingPortfolio!.portfolioId, amount)}
     onCancel={() => { confirmingPortfolio = null; }}
   />
+{/if}
+
+{#if deferringPortfolio}
+  <!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+    onclick={() => { deferringPortfolio = null; }}
+  >
+    <!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
+    <div
+      class="w-full max-w-md rounded-lg border border-border-default bg-bg-elevated p-6"
+      onclick={(e) => e.stopPropagation()}
+    >
+      <h3 class="text-lg font-semibold text-text-primary font-display">Defer Payday</h3>
+      <p class="mt-1 text-sm text-text-secondary">
+        Choose a date to defer <span class="font-medium text-text-primary">{deferringPortfolio.portfolioName}</span>.
+      </p>
+      <label class="mt-4 block text-sm font-medium text-text-secondary">
+        Defer Until
+        <input
+          type="date"
+          class="mt-1 block w-full rounded-md border border-border-default bg-bg-primary px-3 py-2 text-sm text-text-primary focus-ring"
+          bind:value={deferDate}
+          min={new Date(Date.now() + 86400000).toISOString().split("T")[0]}
+        />
+      </label>
+      <div class="mt-4 flex items-center justify-end gap-3">
+        <Button variant="secondary" size="sm" onclick={() => { deferringPortfolio = null; }}>Cancel</Button>
+        <Button variant="primary" size="sm" onclick={() => handleDefer(deferringPortfolio!.portfolioId)}>
+          Defer
+        </Button>
+      </div>
+    </div>
+  </div>
 {/if}

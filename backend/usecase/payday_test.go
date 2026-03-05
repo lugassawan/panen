@@ -459,6 +459,35 @@ func TestDeferPayday(t *testing.T) {
 		}
 	})
 
+	t.Run("rejects past defer date", func(t *testing.T) {
+		f := setupPaydayTest(t)
+		p := addTestPortfolio(t, f, "Defer Past", 5000000)
+
+		now := time.Now().UTC()
+		currentMonth := now.Format("2006-01")
+		seedPaydayEvent(t, f, currentMonth, p.ID, payday.StatusPending)
+
+		pastDate := now.Add(-24 * time.Hour)
+		err := f.svc.DeferPayday(f.ctx, p.ID, pastDate)
+		if !errors.Is(err, ErrDeferDateNotFuture) {
+			t.Errorf("expected ErrDeferDateNotFuture, got %v", err)
+		}
+	})
+
+	t.Run("rejects today as defer date", func(t *testing.T) {
+		f := setupPaydayTest(t)
+		p := addTestPortfolio(t, f, "Defer Today", 5000000)
+
+		now := time.Now().UTC()
+		currentMonth := now.Format("2006-01")
+		seedPaydayEvent(t, f, currentMonth, p.ID, payday.StatusPending)
+
+		err := f.svc.DeferPayday(f.ctx, p.ID, now)
+		if !errors.Is(err, ErrDeferDateNotFuture) {
+			t.Errorf("expected ErrDeferDateNotFuture, got %v", err)
+		}
+	})
+
 	t.Run("rejects from SCHEDULED status", func(t *testing.T) {
 		f := setupPaydayTest(t)
 		p := addTestPortfolio(t, f, "Defer Scheduled", 5000000)
@@ -623,5 +652,72 @@ func TestGetCashFlowSummaryItemFields(t *testing.T) {
 	}
 	if item.Note != "Test note" {
 		t.Errorf("Note = %s, want %s", item.Note, "Test note")
+	}
+}
+
+func TestGetPaydayHistoryEmpty(t *testing.T) {
+	f := setupPaydayTest(t)
+	if err := f.svc.SavePaydayDay(f.ctx, 25); err != nil {
+		t.Fatalf("save payday day: %v", err)
+	}
+
+	history, err := f.svc.GetPaydayHistory(f.ctx)
+	if err != nil {
+		t.Fatalf("GetPaydayHistory() error = %v", err)
+	}
+	if len(history) != 0 {
+		t.Errorf("expected 0 months, got %d", len(history))
+	}
+}
+
+func TestGetPaydayHistoryExcludesCurrentMonth(t *testing.T) {
+	f := setupPaydayTest(t)
+	if err := f.svc.SavePaydayDay(f.ctx, 25); err != nil {
+		t.Fatalf("save payday day: %v", err)
+	}
+	p := addTestPortfolio(t, f, "History", 5000000)
+
+	now := time.Now().UTC()
+	currentMonth := now.Format("2006-01")
+
+	// Seed event in current month — should be excluded from history.
+	seedPaydayEvent(t, f, currentMonth, p.ID, payday.StatusPending)
+
+	history, err := f.svc.GetPaydayHistory(f.ctx)
+	if err != nil {
+		t.Fatalf("GetPaydayHistory() error = %v", err)
+	}
+	if len(history) != 0 {
+		t.Errorf("expected 0 months (current excluded), got %d", len(history))
+	}
+}
+
+func TestGetPaydayHistoryReturnsPastMonths(t *testing.T) {
+	f := setupPaydayTest(t)
+	if err := f.svc.SavePaydayDay(f.ctx, 25); err != nil {
+		t.Fatalf("save payday day: %v", err)
+	}
+	p := addTestPortfolio(t, f, "History", 5000000)
+
+	// Seed events in past months.
+	seedPaydayEvent(t, f, "2025-12", p.ID, payday.StatusConfirmed)
+	seedPaydayEvent(t, f, "2026-01", p.ID, payday.StatusSkipped)
+
+	history, err := f.svc.GetPaydayHistory(f.ctx)
+	if err != nil {
+		t.Fatalf("GetPaydayHistory() error = %v", err)
+	}
+	if len(history) != 2 {
+		t.Fatalf("expected 2 months, got %d", len(history))
+	}
+	// Should be sorted descending.
+	if history[0].Month != "2026-01" {
+		t.Errorf("first month = %s, want 2026-01", history[0].Month)
+	}
+	if history[1].Month != "2025-12" {
+		t.Errorf("second month = %s, want 2025-12", history[1].Month)
+	}
+	if len(history[0].Portfolios) != 1 {
+		t.Errorf("expected 1 portfolio in 2026-01, got %d", len(history[0].Portfolios))
 	}
 }
