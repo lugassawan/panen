@@ -1,7 +1,13 @@
 <script lang="ts">
 import { GetHoldingSectors } from "../../../wailsjs/go/backend/App";
 import { holdingWeights, sectorWeights } from "../../lib/portfolio";
-import type { HoldingDetailResponse, HoldingWeight, Mode, SectorWeight } from "../../lib/types";
+import type {
+  HoldingDetailResponse,
+  HoldingWeight,
+  Mode,
+  SectorWeight,
+  ValuationZone,
+} from "../../lib/types";
 import CompositionChart from "./CompositionChart.svelte";
 import PlBarChart from "./PlBarChart.svelte";
 import PriceHistoryChart from "./PriceHistoryChart.svelte";
@@ -20,6 +26,18 @@ let error = $state<string | null>(null);
 
 let weights: HoldingWeight[] = $derived(holdingWeights(holdings));
 let sectors: SectorWeight[] = $derived(sectorWeights(holdings, sectorMap));
+
+let valuationMap: Record<string, ValuationZone> = $derived.by(() => {
+  const map: Record<string, ValuationZone> = {};
+  for (const h of holdings) {
+    map[h.ticker] = {
+      grahamNumber: h.grahamNumber ?? 0,
+      entryPrice: h.entryPrice ?? 0,
+      exitTarget: h.exitTarget ?? 0,
+    };
+  }
+  return map;
+});
 
 $effect(() => {
   const tickers = holdings.map((h) => h.ticker);
@@ -51,7 +69,7 @@ $effect(() => {
     <p class="text-sm text-loss">{error}</p>
   </div>
 {:else}
-  <PriceHistoryChart tickers={holdings.map(h => h.ticker)} />
+  <PriceHistoryChart tickers={holdings.map(h => h.ticker)} valuations={valuationMap} />
 
   <SectorWarnings sectorWeights={sectors} />
 
