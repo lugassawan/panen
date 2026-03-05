@@ -49,7 +49,7 @@ func (h *PaydayHandler) ConfirmPayday(portfolioID string, actualAmount float64) 
 
 // DeferPayday defers the current month's payday to a later date.
 func (h *PaydayHandler) DeferPayday(portfolioID string, deferUntil string) error {
-	t, err := time.Parse("2006-01-02", deferUntil)
+	t, err := time.Parse(dateLayout, deferUntil)
 	if err != nil {
 		return err
 	}

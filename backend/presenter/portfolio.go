@@ -75,7 +75,7 @@ func (h *PortfolioHandler) AddHolding(
 	lots int,
 	dateStr string,
 ) (*HoldingDetailResponse, error) {
-	date, err := time.Parse("2006-01-02", dateStr)
+	date, err := time.Parse(dateLayout, dateStr)
 	if err != nil {
 		return nil, err
 	}
