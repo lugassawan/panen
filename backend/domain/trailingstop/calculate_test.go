@@ -153,7 +153,13 @@ func TestEvaluateFundamentals(t *testing.T) {
 			}
 			for i, exit := range exits {
 				if exit.Triggered != tt.wantTriggered[i] {
-					t.Errorf("exits[%d].Triggered = %v, want %v (key=%s)", i, exit.Triggered, tt.wantTriggered[i], exit.Key)
+					t.Errorf(
+						"exits[%d].Triggered = %v, want %v (key=%s)",
+						i,
+						exit.Triggered,
+						tt.wantTriggered[i],
+						exit.Key,
+					)
 				}
 			}
 		})
