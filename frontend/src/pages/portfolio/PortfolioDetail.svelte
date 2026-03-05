@@ -80,6 +80,12 @@ let overallPL = $derived(calcOverallPL(detail.holdings));
   {/if}
 </div>
 
+<!-- Add Holding -->
+<div class="mb-6 rounded border border-border-default bg-bg-elevated p-4">
+  <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">Add Holding</h3>
+  <AddHoldingForm portfolioId={detail.portfolio.id} onAdded={onHoldingAdded} />
+</div>
+
 <!-- Holdings Table -->
 <div class="mb-6">
   <HoldingsTable holdings={detail.holdings} {onChecklist} />
@@ -119,9 +125,3 @@ let overallPL = $derived(calcOverallPL(detail.holdings));
     <DividendRankingPanel portfolioId={detail.portfolio.id} />
   </div>
 {/if}
-
-<!-- Add Holding -->
-<div class="rounded border border-border-default bg-bg-elevated p-4">
-  <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">Add Holding</h3>
-  <AddHoldingForm portfolioId={detail.portfolio.id} onAdded={onHoldingAdded} />
-</div>
