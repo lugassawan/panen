@@ -13,6 +13,8 @@ func TestFormatIDX(t *testing.T) {
 		{name: "lowercase ticker", ticker: "bbca", want: "bbca.JK"},
 		{name: "empty string", ticker: "", want: ".JK"},
 		{name: "partial suffix", ticker: "BBCA.J", want: "BBCA.J.JK"},
+		{name: "index ticker ^JKSE", ticker: "^JKSE", want: "^JKSE"},
+		{name: "index ticker ^DJI", ticker: "^DJI", want: "^DJI"},
 	}
 
 	for _, tt := range tests {
