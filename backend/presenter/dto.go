@@ -171,3 +171,41 @@ type ChecklistEvaluationResponse struct {
 	AllPassed  bool                  `json:"allPassed"`
 	Suggestion *SuggestionResponse   `json:"suggestion,omitempty"`
 }
+
+// MonthlyPaydayResponse is the frontend-facing response for a monthly payday status.
+type MonthlyPaydayResponse struct {
+	Month         string                        `json:"month"`
+	PaydayDay     int                           `json:"paydayDay"`
+	Portfolios    []PortfolioPaydayItemResponse `json:"portfolios"`
+	TotalExpected float64                       `json:"totalExpected"`
+}
+
+// PortfolioPaydayItemResponse is the frontend-facing response for a portfolio's payday status.
+type PortfolioPaydayItemResponse struct {
+	PortfolioID   string  `json:"portfolioId"`
+	PortfolioName string  `json:"portfolioName"`
+	Mode          string  `json:"mode"`
+	Expected      float64 `json:"expected"`
+	Actual        float64 `json:"actual"`
+	Status        string  `json:"status"`
+	DeferUntil    *string `json:"deferUntil,omitempty"`
+}
+
+// CashFlowSummaryResponse is the frontend-facing response for a cash flow summary.
+type CashFlowSummaryResponse struct {
+	Items         []CashFlowItemResponse `json:"items"`
+	TotalInflow   float64                `json:"totalInflow"`
+	TotalDeployed float64                `json:"totalDeployed"`
+	Balance       float64                `json:"balance"`
+}
+
+// CashFlowItemResponse is the frontend-facing response for a single cash flow entry.
+type CashFlowItemResponse struct {
+	ID          string  `json:"id"`
+	PortfolioID string  `json:"portfolioId"`
+	Type        string  `json:"type"`
+	Amount      float64 `json:"amount"`
+	Date        string  `json:"date"`
+	Note        string  `json:"note"`
+	CreatedAt   string  `json:"createdAt"`
+}

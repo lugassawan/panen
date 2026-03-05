@@ -18,6 +18,9 @@ const (
 	portfolioGetByID = `SELECT id, brokerage_acct_id, name, mode, risk_profile, capital,
 		monthly_addition, max_stocks, universe, created_at, updated_at
 		FROM portfolios WHERE id = ?`
+	portfolioListAll = `SELECT id, brokerage_acct_id, name, mode, risk_profile,
+		capital, monthly_addition, max_stocks, universe, created_at, updated_at
+		FROM portfolios ORDER BY created_at`
 	portfolioListByBrokerageAccountID = `SELECT id, brokerage_acct_id, name, mode, risk_profile,
 		capital, monthly_addition, max_stocks, universe, created_at, updated_at
 		FROM portfolios WHERE brokerage_acct_id = ? ORDER BY created_at`
@@ -78,6 +81,15 @@ func (r *PortfolioRepo) GetByID(ctx context.Context, id string) (*portfolio.Port
 	return &p, nil
 }
 
+func (r *PortfolioRepo) ListAll(ctx context.Context) ([]*portfolio.Portfolio, error) {
+	rows, err := r.db.QueryContext(ctx, portfolioListAll)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	return scanPortfolios(rows)
+}
+
 func (r *PortfolioRepo) ListByBrokerageAccountID(
 	ctx context.Context, brokerageAccountID string,
 ) ([]*portfolio.Portfolio, error) {
@@ -86,7 +98,10 @@ func (r *PortfolioRepo) ListByBrokerageAccountID(
 		return nil, err
 	}
 	defer rows.Close()
+	return scanPortfolios(rows)
+}
 
+func scanPortfolios(rows *sql.Rows) ([]*portfolio.Portfolio, error) {
 	var portfolios []*portfolio.Portfolio
 	for rows.Next() {
 		var p portfolio.Portfolio
@@ -104,6 +119,7 @@ func (r *PortfolioRepo) ListByBrokerageAccountID(
 		if p.Universe == nil {
 			p.Universe = []string{}
 		}
+		var err error
 		if p.CreatedAt, err = parseTime(createdAt); err != nil {
 			return nil, err
 		}

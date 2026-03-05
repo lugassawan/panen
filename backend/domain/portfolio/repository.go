@@ -6,6 +6,7 @@ import "context"
 type Repository interface {
 	Create(ctx context.Context, p *Portfolio) error
 	GetByID(ctx context.Context, id string) (*Portfolio, error)
+	ListAll(ctx context.Context) ([]*Portfolio, error)
 	ListByBrokerageAccountID(ctx context.Context, brokerageAccountID string) ([]*Portfolio, error)
 	Update(ctx context.Context, p *Portfolio) error
 	Delete(ctx context.Context, id string) error

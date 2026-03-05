@@ -64,16 +64,17 @@ vi.mock("./lib/stores/theme.svelte", () => ({
 }));
 
 describe("App navigation", () => {
-  it("renders sidebar with 5 nav items", () => {
+  it("renders sidebar with 6 nav items", () => {
     render(App);
     const nav = screen.getByRole("navigation", { name: /main/i });
     const buttons = within(nav).getAllByRole("button");
-    expect(buttons).toHaveLength(5);
+    expect(buttons).toHaveLength(6);
     expect(buttons[0]).toHaveTextContent("Stock Lookup");
     expect(buttons[1]).toHaveTextContent("Watchlist");
     expect(buttons[2]).toHaveTextContent("Portfolio");
-    expect(buttons[3]).toHaveTextContent("Brokerage");
-    expect(buttons[4]).toHaveTextContent("Settings");
+    expect(buttons[3]).toHaveTextContent("Payday");
+    expect(buttons[4]).toHaveTextContent("Brokerage");
+    expect(buttons[5]).toHaveTextContent("Settings");
   });
 
   it("starts on Stock Lookup page by default", () => {

@@ -88,7 +88,43 @@ export type RiskProfile = "CONSERVATIVE" | "MODERATE" | "AGGRESSIVE";
 
 export type Verdict = "UNDERVALUED" | "FAIR" | "OVERVALUED";
 
-export type Page = "lookup" | "watchlist" | "portfolio" | "brokerage" | "settings";
+export type Page = "lookup" | "watchlist" | "portfolio" | "payday" | "brokerage" | "settings";
+
+export type PaydayStatus = "SCHEDULED" | "PENDING" | "CONFIRMED" | "DEFERRED" | "SKIPPED";
+
+export interface MonthlyPaydayResponse {
+  month: string;
+  paydayDay: number;
+  portfolios: PortfolioPaydayItemResponse[];
+  totalExpected: number;
+}
+
+export interface PortfolioPaydayItemResponse {
+  portfolioId: string;
+  portfolioName: string;
+  mode: Mode;
+  expected: number;
+  actual: number;
+  status: PaydayStatus;
+  deferUntil?: string;
+}
+
+export interface CashFlowSummaryResponse {
+  items: CashFlowItemResponse[];
+  totalInflow: number;
+  totalDeployed: number;
+  balance: number;
+}
+
+export interface CashFlowItemResponse {
+  id: string;
+  portfolioId: string;
+  type: string;
+  amount: number;
+  date: string;
+  note: string;
+  createdAt: string;
+}
 
 export interface WatchlistResponse {
   id: string;

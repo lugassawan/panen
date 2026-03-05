@@ -204,3 +204,57 @@ func newChecklistEvaluationResponse(eval *usecase.ChecklistEvaluation) *Checklis
 func formatDTO(t time.Time) string {
 	return t.UTC().Format(timeLayout)
 }
+
+func newMonthlyPaydayResponse(status *usecase.MonthlyPaydayStatus) *MonthlyPaydayResponse {
+	portfolios := make([]PortfolioPaydayItemResponse, len(status.Portfolios))
+	for i, ps := range status.Portfolios {
+		portfolios[i] = newPortfolioPaydayItemResponse(ps)
+	}
+	return &MonthlyPaydayResponse{
+		Month:         status.Month,
+		PaydayDay:     status.PaydayDay,
+		Portfolios:    portfolios,
+		TotalExpected: status.TotalExpected,
+	}
+}
+
+func newPortfolioPaydayItemResponse(ps usecase.PortfolioPaydayStatus) PortfolioPaydayItemResponse {
+	resp := PortfolioPaydayItemResponse{
+		PortfolioID:   ps.PortfolioID,
+		PortfolioName: ps.PortfolioName,
+		Mode:          ps.Mode,
+		Expected:      ps.Expected,
+		Actual:        ps.Actual,
+		Status:        ps.Status,
+	}
+	if ps.DeferUntil != nil {
+		s := formatDTO(*ps.DeferUntil)
+		resp.DeferUntil = &s
+	}
+	return resp
+}
+
+func newCashFlowSummaryResponse(summary *usecase.CashFlowSummary) *CashFlowSummaryResponse {
+	items := make([]CashFlowItemResponse, len(summary.Items))
+	for i, item := range summary.Items {
+		items[i] = newCashFlowItemResponse(item)
+	}
+	return &CashFlowSummaryResponse{
+		Items:         items,
+		TotalInflow:   summary.TotalInflow,
+		TotalDeployed: summary.TotalDeployed,
+		Balance:       summary.Balance,
+	}
+}
+
+func newCashFlowItemResponse(item usecase.CashFlowItem) CashFlowItemResponse {
+	return CashFlowItemResponse{
+		ID:          item.ID,
+		PortfolioID: item.PortfolioID,
+		Type:        item.Type,
+		Amount:      item.Amount,
+		Date:        formatDTO(item.Date),
+		Note:        item.Note,
+		CreatedAt:   formatDTO(item.CreatedAt),
+	}
+}
