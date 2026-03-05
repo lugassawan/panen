@@ -81,6 +81,25 @@ export interface TrailingStopResponse {
   fundamentalExits: FundamentalExitResponse[];
 }
 
+export interface DividendMetricsResponse {
+  indicator: string;
+  annualDPS: number;
+  yieldOnCost: number;
+  projectedYoC: number;
+  portfolioYield: number;
+}
+
+export interface DividendRankItemResponse {
+  ticker: string;
+  indicator: string;
+  dividendYield: number;
+  yieldOnCost: number;
+  payoutRatio: number;
+  positionPct: number;
+  score: number;
+  isHolding: boolean;
+}
+
 export interface HoldingDetailResponse {
   id: string;
   ticker: string;
@@ -93,6 +112,7 @@ export interface HoldingDetailResponse {
   verdict?: string;
   marginOfSafety?: number;
   trailingStop?: TrailingStopResponse;
+  dividendMetrics?: DividendMetricsResponse;
 }
 
 export interface PortfolioDetailResponse {
