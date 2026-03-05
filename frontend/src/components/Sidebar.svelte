@@ -1,5 +1,13 @@
 <script lang="ts">
-import { Bookmark, Briefcase, CalendarDays, Landmark, Search, Settings } from "lucide-svelte";
+import {
+  Bookmark,
+  Briefcase,
+  CalendarDays,
+  Landmark,
+  Search,
+  Settings,
+  Shield,
+} from "lucide-svelte";
 import type { Component } from "svelte";
 import SyncIndicator from "../lib/components/SyncIndicator.svelte";
 import type { Page } from "../lib/types";
@@ -11,6 +19,7 @@ const navItems: { page: Page; label: string; icon: Component }[] = [
   { page: "watchlist", label: "Watchlist", icon: Bookmark },
   { page: "portfolio", label: "Portfolio", icon: Briefcase },
   { page: "payday", label: "Payday", icon: CalendarDays },
+  { page: "crashplaybook", label: "Crash Playbook", icon: Shield },
   { page: "brokerage", label: "Brokerage", icon: Landmark },
   { page: "settings", label: "Settings", icon: Settings },
 ];

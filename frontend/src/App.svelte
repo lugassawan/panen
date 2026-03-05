@@ -3,6 +3,7 @@ import Sidebar from "./components/Sidebar.svelte";
 import { theme } from "./lib/stores/theme.svelte";
 import type { Page } from "./lib/types";
 import BrokeragePage from "./pages/brokerage/BrokeragePage.svelte";
+import CrashPlaybookPage from "./pages/crashplaybook/CrashPlaybookPage.svelte";
 import PaydayPage from "./pages/payday/PaydayPage.svelte";
 import PortfolioPage from "./pages/portfolio/PortfolioPage.svelte";
 import SettingsPage from "./pages/settings/SettingsPage.svelte";
@@ -24,6 +25,8 @@ let currentPage = $state<Page>("lookup");
       <PortfolioPage />
     {:else if currentPage === "payday"}
       <PaydayPage />
+    {:else if currentPage === "crashplaybook"}
+      <CrashPlaybookPage />
     {:else if currentPage === "brokerage"}
       <BrokeragePage />
     {:else if currentPage === "settings"}

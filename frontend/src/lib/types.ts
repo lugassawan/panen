@@ -88,7 +88,14 @@ export type RiskProfile = "CONSERVATIVE" | "MODERATE" | "AGGRESSIVE";
 
 export type Verdict = "UNDERVALUED" | "FAIR" | "OVERVALUED";
 
-export type Page = "lookup" | "watchlist" | "portfolio" | "payday" | "brokerage" | "settings";
+export type Page =
+  | "lookup"
+  | "watchlist"
+  | "portfolio"
+  | "payday"
+  | "crashplaybook"
+  | "brokerage"
+  | "settings";
 
 export type PaydayStatus = "SCHEDULED" | "PENDING" | "CONFIRMED" | "DEFERRED" | "SKIPPED";
 
@@ -124,6 +131,73 @@ export interface CashFlowItemResponse {
   date: string;
   note: string;
   createdAt: string;
+}
+
+export type MarketCondition = "NORMAL" | "ELEVATED" | "CORRECTION" | "CRASH" | "RECOVERY";
+
+export type CrashLevel = "NORMAL_DIP" | "CRASH" | "EXTREME";
+
+export type DiagnosticSignal = "OPPORTUNITY" | "FALLING_KNIFE" | "INCONCLUSIVE";
+
+export interface MarketStatusResponse {
+  condition: MarketCondition;
+  ihsgPrice: number;
+  ihsgPeak: number;
+  drawdownPct: number;
+  fetchedAt: string;
+}
+
+export interface ResponseLevelResponse {
+  level: CrashLevel;
+  triggerPrice: number;
+  deployPct: number;
+}
+
+export interface StockPlaybookResponse {
+  ticker: string;
+  currentPrice: number;
+  entryPrice: number;
+  levels: ResponseLevelResponse[];
+  activeLevel?: CrashLevel;
+}
+
+export interface PortfolioPlaybookResponse {
+  market: MarketStatusResponse;
+  stocks: StockPlaybookResponse[];
+  refreshMin: number;
+}
+
+export interface DiagnosticResponse {
+  marketCrashed: boolean;
+  companyBadNews: boolean | null;
+  fundamentalsOK: boolean | null;
+  belowEntry: boolean;
+  signal: DiagnosticSignal;
+}
+
+export interface CrashCapitalResponse {
+  portfolioId: string;
+  amount: number;
+  deployed: number;
+}
+
+export interface DeploymentLevelPlanResponse {
+  level: CrashLevel;
+  pct: number;
+  amount: number;
+}
+
+export interface DeploymentPlanResponse {
+  total: number;
+  deployed: number;
+  remaining: number;
+  levels: DeploymentLevelPlanResponse[];
+}
+
+export interface DeploymentSettingsResponse {
+  normal: number;
+  crash: number;
+  extreme: number;
 }
 
 export interface WatchlistResponse {

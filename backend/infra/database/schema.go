@@ -8,6 +8,7 @@ var migrations = []string{
 	migrationV4,
 	migrationV5,
 	migrationV6,
+	migrationV7,
 }
 
 const migrationV1 = `
@@ -154,4 +155,19 @@ CREATE TABLE cash_flows (
 	created_at    TEXT NOT NULL
 );
 INSERT INTO app_settings (key, value) VALUES ('payday_day', '0');
+`
+
+const migrationV7 = `
+CREATE TABLE crash_capital (
+	id           TEXT PRIMARY KEY,
+	portfolio_id TEXT NOT NULL REFERENCES portfolios(id) ON DELETE CASCADE,
+	amount       REAL NOT NULL DEFAULT 0,
+	deployed     REAL NOT NULL DEFAULT 0,
+	created_at   TEXT NOT NULL,
+	updated_at   TEXT NOT NULL,
+	UNIQUE(portfolio_id)
+);
+INSERT INTO app_settings (key, value) VALUES ('crash_deploy_pct_normal', '30');
+INSERT INTO app_settings (key, value) VALUES ('crash_deploy_pct_crash', '40');
+INSERT INTO app_settings (key, value) VALUES ('crash_deploy_pct_extreme', '30');
 `

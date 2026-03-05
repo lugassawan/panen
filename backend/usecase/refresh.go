@@ -64,11 +64,12 @@ type RefreshService struct {
 	collector TickerCollector
 	emitter   EventEmitter
 
-	mu      sync.Mutex
-	status  RefreshStatus
-	running atomic.Bool
-	cancel  context.CancelFunc
-	done    chan struct{}
+	mu               sync.Mutex
+	status           RefreshStatus
+	running          atomic.Bool
+	cancel           context.CancelFunc
+	done             chan struct{}
+	intervalOverride int // minutes, 0 = no override
 }
 
 // NewRefreshService creates a new RefreshService.
@@ -113,6 +114,14 @@ func (r *RefreshService) RunNow(ctx context.Context) error {
 	return r.refresh(ctx)
 }
 
+// SetIntervalOverride sets a temporary interval override in minutes.
+// Pass 0 to clear the override.
+func (r *RefreshService) SetIntervalOverride(minutes int) {
+	r.mu.Lock()
+	r.intervalOverride = minutes
+	r.mu.Unlock()
+}
+
 // GetStatus returns the current refresh status (thread-safe).
 func (r *RefreshService) GetStatus() RefreshStatus {
 	r.mu.Lock()
@@ -147,22 +156,40 @@ func (r *RefreshService) loop(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			cfg, err := r.settings.GetRefreshSettings(ctx)
-			if err != nil || !cfg.AutoRefreshEnabled {
+			if !r.shouldRefresh(ctx) {
 				continue
 			}
-
-			newInterval := time.Duration(cfg.IntervalMinutes) * time.Minute
-			if newInterval > 0 && newInterval != interval {
+			if newInterval := r.effectiveInterval(ctx); newInterval > 0 && newInterval != interval {
 				interval = newInterval
 				ticker.Reset(interval)
 			}
-
 			if err := r.refresh(ctx); err != nil {
 				r.emitter.Emit(eventRefreshError, err.Error())
 			}
 		}
 	}
+}
+
+func (r *RefreshService) shouldRefresh(ctx context.Context) bool {
+	cfg, err := r.settings.GetRefreshSettings(ctx)
+	return err == nil && cfg.AutoRefreshEnabled
+}
+
+func (r *RefreshService) effectiveInterval(ctx context.Context) time.Duration {
+	cfg, err := r.settings.GetRefreshSettings(ctx)
+	if err != nil {
+		return 0
+	}
+	interval := time.Duration(cfg.IntervalMinutes) * time.Minute
+	r.mu.Lock()
+	override := r.intervalOverride
+	r.mu.Unlock()
+	if override > 0 {
+		if ov := time.Duration(override) * time.Minute; ov < interval {
+			interval = ov
+		}
+	}
+	return interval
 }
 
 func (r *RefreshService) setStatus(s RefreshStatus) {
