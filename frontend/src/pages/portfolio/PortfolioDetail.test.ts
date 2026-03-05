@@ -5,6 +5,45 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("../../../wailsjs/go/backend/App", () => ({
   AddHolding: vi.fn(),
   GetDividendRanking: vi.fn(),
+  GetHoldingSectors: vi.fn(() => Promise.resolve({ BBCA: "Financials" })),
+}));
+
+vi.mock("chart.js", () => {
+  class MockChart {
+    static register = vi.fn();
+    destroy = vi.fn();
+  }
+  return {
+    Chart: MockChart,
+    BarController: {},
+    BarElement: {},
+    CategoryScale: {},
+    LinearScale: {},
+    Tooltip: {},
+    ArcElement: {},
+    DoughnutController: {},
+    Legend: {},
+  };
+});
+
+vi.mock("../../lib/chartColors.svelte", () => ({
+  chartColors: () => ({
+    profit: "#1b7d4e",
+    loss: "#c4342d",
+    textPrimary: "#1a1a1a",
+    textSecondary: "#4b5060",
+    textMuted: "#9ca3af",
+    borderDefault: "#e0dbd2",
+    bgElevated: "#ffffff",
+  }),
+  defaultChartOptions: () => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: { duration: 200 },
+    plugins: {},
+    scales: { x: {}, y: {} },
+  }),
+  accentPalette: (n: number) => Array.from({ length: n }, () => "#1b6b4a"),
 }));
 
 import type { PortfolioDetailResponse } from "../../lib/types";
@@ -97,5 +136,51 @@ describe("PortfolioDetail", () => {
   it("renders Add Holding section", () => {
     render(PortfolioDetail, { props: defaultProps });
     expect(screen.getByRole("heading", { name: "Add Holding" })).toBeInTheDocument();
+  });
+
+  it("renders tab bar with Holdings and Charts tabs", () => {
+    render(PortfolioDetail, { props: defaultProps });
+    const tablist = screen.getByRole("tablist");
+    expect(tablist).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Holdings" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Charts" })).toBeInTheDocument();
+  });
+
+  it("shows holdings tab by default", () => {
+    render(PortfolioDetail, { props: defaultProps });
+    const holdingsTab = screen.getByRole("tab", { name: "Holdings" });
+    expect(holdingsTab).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByText("BBCA")).toBeInTheDocument();
+  });
+
+  it("switches to charts tab on click", async () => {
+    const user = userEvent.setup();
+    render(PortfolioDetail, { props: defaultProps });
+
+    await user.click(screen.getByRole("tab", { name: "Charts" }));
+
+    const chartsTab = screen.getByRole("tab", { name: "Charts" });
+    expect(chartsTab).toHaveAttribute("aria-selected", "true");
+    expect(screen.queryByRole("heading", { name: "Add Holding" })).not.toBeInTheDocument();
+  });
+
+  it("switches tabs via keyboard ArrowRight/ArrowLeft", async () => {
+    const user = userEvent.setup();
+    render(PortfolioDetail, { props: defaultProps });
+
+    const holdingsTab = screen.getByRole("tab", { name: "Holdings" });
+    holdingsTab.focus();
+    await user.keyboard("{ArrowRight}");
+
+    expect(screen.getByRole("tab", { name: "Charts" })).toHaveAttribute("aria-selected", "true");
+
+    await user.keyboard("{ArrowLeft}");
+    expect(screen.getByRole("tab", { name: "Holdings" })).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("inactive tab has tabindex -1", () => {
+    render(PortfolioDetail, { props: defaultProps });
+    expect(screen.getByRole("tab", { name: "Holdings" })).toHaveAttribute("tabindex", "0");
+    expect(screen.getByRole("tab", { name: "Charts" })).toHaveAttribute("tabindex", "-1");
   });
 });

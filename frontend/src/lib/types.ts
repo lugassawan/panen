@@ -231,6 +231,18 @@ export interface DeploymentPlanResponse {
   levels: DeploymentLevelPlanResponse[];
 }
 
+export interface HoldingWeight {
+  ticker: string;
+  value: number;
+  pct: number;
+}
+
+export interface SectorWeight {
+  sector: string;
+  value: number;
+  pct: number;
+}
+
 export interface DeploymentSettingsResponse {
   normal: number;
   crash: number;

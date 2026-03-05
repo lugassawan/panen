@@ -10,6 +10,7 @@ import {
 } from "../../lib/portfolio";
 import type { PortfolioDetailResponse } from "../../lib/types";
 import AddHoldingForm from "./AddHoldingForm.svelte";
+import ChartsTab from "./ChartsTab.svelte";
 import DividendMetricsPanel from "./DividendMetricsPanel.svelte";
 import DividendRankingPanel from "./DividendRankingPanel.svelte";
 import HoldingsTable from "./HoldingsTable.svelte";
@@ -23,6 +24,30 @@ interface Props {
 }
 
 let { detail, onBack, onChecklist, onHoldingAdded }: Props = $props();
+
+let activeTab = $state<"holdings" | "charts">("holdings");
+
+const TAB_ACCENT: Record<string, string> = {
+  VALUE: "border-green-700 text-green-700",
+  DIVIDEND: "border-gold-500 text-gold-500",
+};
+
+const TABS: ("holdings" | "charts")[] = ["holdings", "charts"];
+
+function handleTabKeydown(e: KeyboardEvent) {
+  const idx = TABS.indexOf(activeTab);
+  let next = idx;
+  if (e.key === "ArrowRight") next = (idx + 1) % TABS.length;
+  else if (e.key === "ArrowLeft") next = (idx - 1 + TABS.length) % TABS.length;
+  else if (e.key === "Home") next = 0;
+  else if (e.key === "End") next = TABS.length - 1;
+  else return;
+  e.preventDefault();
+  activeTab = TABS[next];
+  const tablist = (e.currentTarget as HTMLElement).parentElement;
+  const btn = tablist?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[next];
+  btn?.focus();
+}
 
 const MODE_BADGE: Record<string, string> = {
   VALUE: "bg-green-100 text-green-700",
@@ -80,48 +105,86 @@ let overallPL = $derived(calcOverallPL(detail.holdings));
   {/if}
 </div>
 
-<!-- Add Holding -->
-<div class="mb-6 rounded border border-border-default bg-bg-elevated p-4">
-  <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">Add Holding</h3>
-  <AddHoldingForm portfolioId={detail.portfolio.id} onAdded={onHoldingAdded} />
+<!-- Tab Bar -->
+<div class="mb-6 flex gap-0 border-b border-border-default" role="tablist">
+  <button
+    type="button"
+    role="tab"
+    aria-selected={activeTab === "holdings"}
+    aria-controls="panel-holdings"
+    tabindex={activeTab === "holdings" ? 0 : -1}
+    class="px-4 py-2 text-sm font-medium transition-fast focus-ring -mb-px {activeTab === 'holdings' ? `border-b-2 ${TAB_ACCENT[detail.portfolio.mode]}` : 'text-text-secondary hover:text-text-primary'}"
+    onclick={() => (activeTab = "holdings")}
+    onkeydown={handleTabKeydown}
+  >
+    Holdings
+  </button>
+  <button
+    type="button"
+    role="tab"
+    aria-selected={activeTab === "charts"}
+    aria-controls="panel-charts"
+    tabindex={activeTab === "charts" ? 0 : -1}
+    class="px-4 py-2 text-sm font-medium transition-fast focus-ring -mb-px {activeTab === 'charts' ? `border-b-2 ${TAB_ACCENT[detail.portfolio.mode]}` : 'text-text-secondary hover:text-text-primary'}"
+    onclick={() => (activeTab = "charts")}
+    onkeydown={handleTabKeydown}
+  >
+    Charts
+  </button>
 </div>
 
-<!-- Holdings Table -->
-<div class="mb-6">
-  <HoldingsTable holdings={detail.holdings} {onChecklist} />
-</div>
-
-<!-- Trailing Stops (VALUE mode only) -->
-{#if detail.portfolio.mode === "VALUE" && detail.holdings.some((h) => h.trailingStop)}
-  <div class="mb-6">
-    <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">Trailing Stops</h3>
-    <div class="space-y-3">
-      {#each detail.holdings as holding}
-        {#if holding.trailingStop}
-          <div>
-            <p class="mb-1 text-sm font-medium text-text-primary">{holding.ticker}</p>
-            <TrailingStopPanel trailingStop={holding.trailingStop} />
-          </div>
-        {/if}
-      {/each}
+{#if activeTab === "holdings"}
+  <div id="panel-holdings" role="tabpanel">
+    <!-- Add Holding -->
+    <div class="mb-6 rounded border border-border-default bg-bg-elevated p-4">
+      <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">Add Holding</h3>
+      <AddHoldingForm portfolioId={detail.portfolio.id} onAdded={onHoldingAdded} />
     </div>
+
+    <!-- Holdings Table -->
+    <div class="mb-6">
+      <HoldingsTable holdings={detail.holdings} {onChecklist} />
+    </div>
+
+    <!-- Trailing Stops (VALUE mode only) -->
+    {#if detail.portfolio.mode === "VALUE" && detail.holdings.some((h) => h.trailingStop)}
+      <div class="mb-6">
+        <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">Trailing Stops</h3>
+        <div class="space-y-3">
+          {#each detail.holdings as holding}
+            {#if holding.trailingStop}
+              <div>
+                <p class="mb-1 text-sm font-medium text-text-primary">{holding.ticker}</p>
+                <TrailingStopPanel trailingStop={holding.trailingStop} />
+              </div>
+            {/if}
+          {/each}
+        </div>
+      </div>
+    {/if}
+
+    <!-- Dividend Metrics (DIVIDEND mode only) -->
+    {#if detail.portfolio.mode === "DIVIDEND" && detail.holdings.some((h) => h.dividendMetrics)}
+      <div class="mb-6">
+        <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">Dividend Metrics</h3>
+        <div class="space-y-3">
+          {#each detail.holdings as holding}
+            {#if holding.dividendMetrics}
+              <DividendMetricsPanel ticker={holding.ticker} dividendMetrics={holding.dividendMetrics} />
+            {/if}
+          {/each}
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <DividendRankingPanel portfolioId={detail.portfolio.id} />
+      </div>
+    {/if}
   </div>
 {/if}
 
-<!-- Dividend Metrics (DIVIDEND mode only) -->
-{#if detail.portfolio.mode === "DIVIDEND" && detail.holdings.some((h) => h.dividendMetrics)}
-  <div class="mb-6">
-    <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">Dividend Metrics</h3>
-    <div class="space-y-3">
-      {#each detail.holdings as holding}
-        {#if holding.dividendMetrics}
-          <DividendMetricsPanel ticker={holding.ticker} dividendMetrics={holding.dividendMetrics} />
-        {/if}
-      {/each}
-    </div>
-  </div>
-
-  <div class="mb-6">
-    <DividendRankingPanel portfolioId={detail.portfolio.id} />
+{#if activeTab === "charts"}
+  <div id="panel-charts" role="tabpanel">
+    <ChartsTab holdings={detail.holdings} portfolioMode={detail.portfolio.mode} />
   </div>
 {/if}

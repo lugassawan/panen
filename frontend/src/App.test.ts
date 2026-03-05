@@ -36,6 +36,7 @@ vi.mock("../wailsjs/go/backend/App", () => ({
     }),
   ),
   UpdateRefreshSettings: vi.fn(() => Promise.resolve()),
+  GetHoldingSectors: vi.fn(() => Promise.resolve({})),
 }));
 
 vi.mock("../wailsjs/runtime/runtime", () => ({
