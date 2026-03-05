@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from "@testing-library/svelte";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 const mockGetPriceHistory = vi.fn(() =>
@@ -29,6 +30,10 @@ vi.mock("chart.js", () => {
   };
 });
 
+vi.mock("chartjs-plugin-annotation", () => ({
+  default: {},
+}));
+
 vi.mock("../../lib/chartColors.svelte", () => ({
   chartColors: () => ({
     profit: "#1b7d4e",
@@ -47,6 +52,13 @@ vi.mock("../../lib/chartColors.svelte", () => ({
     scales: { x: {}, y: {} },
   }),
   accentPalette: (n: number) => Array.from({ length: n }, () => "#1b6b4a"),
+  valuationZoneColors: () => ({
+    graham: "#9333ea",
+    entry: "#16a34a",
+    exit: "#dc2626",
+    entryBand: "#16a34a18",
+    exitBand: "#dc262618",
+  }),
 }));
 
 import PriceHistoryChart from "./PriceHistoryChart.svelte";
@@ -119,5 +131,107 @@ describe("PriceHistoryChart", () => {
     });
 
     expect(screen.getByText("Select a ticker")).toBeInTheDocument();
+  });
+
+  it("does not show valuation toggles without valuation props", async () => {
+    render(PriceHistoryChart, {
+      props: { tickers: ["BBCA"] },
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("price-history-chart")).toBeInTheDocument();
+    });
+
+    expect(screen.queryByRole("group", { name: "Valuation zones" })).not.toBeInTheDocument();
+  });
+
+  it("shows valuation toggles when valuation data provided", async () => {
+    render(PriceHistoryChart, {
+      props: {
+        tickers: ["BBCA"],
+        valuations: {
+          BBCA: { grahamNumber: 8000, entryPrice: 7500, exitTarget: 11000 },
+        },
+      },
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole("group", { name: "Valuation zones" })).toBeInTheDocument();
+      expect(screen.getByLabelText("Graham")).toBeInTheDocument();
+      expect(screen.getByLabelText("Entry Price")).toBeInTheDocument();
+      expect(screen.getByLabelText("Exit Target")).toBeInTheDocument();
+    });
+  });
+
+  it("has all valuation toggles checked by default", async () => {
+    render(PriceHistoryChart, {
+      props: {
+        tickers: ["BBCA"],
+        valuations: {
+          BBCA: { grahamNumber: 8000, entryPrice: 7500, exitTarget: 11000 },
+        },
+      },
+    });
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Graham")).toBeChecked();
+      expect(screen.getByLabelText("Entry Price")).toBeChecked();
+      expect(screen.getByLabelText("Exit Target")).toBeChecked();
+    });
+  });
+
+  it("does not show toggles when all valuation values are zero", async () => {
+    render(PriceHistoryChart, {
+      props: {
+        tickers: ["BBCA"],
+        valuations: {
+          BBCA: { grahamNumber: 0, entryPrice: 0, exitTarget: 0 },
+        },
+      },
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("price-history-chart")).toBeInTheDocument();
+    });
+
+    expect(screen.queryByRole("group", { name: "Valuation zones" })).not.toBeInTheDocument();
+  });
+
+  it("unchecking toggle updates checkbox state", async () => {
+    const user = userEvent.setup();
+    render(PriceHistoryChart, {
+      props: {
+        tickers: ["BBCA"],
+        valuations: {
+          BBCA: { grahamNumber: 8000, entryPrice: 7500, exitTarget: 11000 },
+        },
+      },
+    });
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Graham")).toBeChecked();
+    });
+
+    await user.click(screen.getByLabelText("Graham"));
+    expect(screen.getByLabelText("Graham")).not.toBeChecked();
+  });
+
+  it("hides individual toggle when its value is zero", async () => {
+    render(PriceHistoryChart, {
+      props: {
+        tickers: ["BBCA"],
+        valuations: {
+          BBCA: { grahamNumber: 0, entryPrice: 7500, exitTarget: 11000 },
+        },
+      },
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole("group", { name: "Valuation zones" })).toBeInTheDocument();
+    });
+
+    expect(screen.queryByLabelText("Graham")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Entry Price")).toBeInTheDocument();
+    expect(screen.getByLabelText("Exit Target")).toBeInTheDocument();
   });
 });

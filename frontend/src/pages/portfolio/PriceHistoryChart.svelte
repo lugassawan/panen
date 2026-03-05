@@ -9,13 +9,19 @@ import {
   PointElement,
   Tooltip,
 } from "chart.js";
+import annotationPlugin from "chartjs-plugin-annotation";
 import { TrendingUp } from "lucide-svelte";
 import { GetPriceHistory } from "../../../wailsjs/go/backend/App";
-import { accentPalette, chartColors, defaultChartOptions } from "../../lib/chartColors.svelte";
+import {
+  accentPalette,
+  chartColors,
+  defaultChartOptions,
+  valuationZoneColors,
+} from "../../lib/chartColors.svelte";
 import EmptyState from "../../lib/components/EmptyState.svelte";
 import Select from "../../lib/components/Select.svelte";
 import { formatRupiah } from "../../lib/format";
-import type { PricePointResponse, PriceRange } from "../../lib/types";
+import type { PricePointResponse, PriceRange, ValuationZone } from "../../lib/types";
 
 Chart.register(
   CategoryScale,
@@ -25,13 +31,15 @@ Chart.register(
   LineElement,
   PointElement,
   Tooltip,
+  annotationPlugin,
 );
 
 interface Props {
   tickers: string[];
+  valuations?: Record<string, ValuationZone>;
 }
 
-let { tickers }: Props = $props();
+let { tickers, valuations = {} }: Props = $props();
 
 let selectedTicker = $state("");
 let range: PriceRange = $state("1Y");
@@ -39,6 +47,10 @@ let loading = $state(false);
 let error = $state<string | null>(null);
 let allPoints = $state<PricePointResponse[]>([]);
 let canvas: HTMLCanvasElement | undefined = $state();
+
+let showGraham = $state(true);
+let showEntry = $state(true);
+let showExit = $state(true);
 
 // Auto-select first ticker if only one
 $effect(() => {
@@ -86,6 +98,13 @@ let filteredPoints: PricePointResponse[] = $derived.by(() => {
   return allPoints.filter((p) => p.date >= cutoffStr);
 });
 
+let currentValuation = $derived.by(() => {
+  const v = valuations[selectedTicker];
+  if (!v) return null;
+  if (v.grahamNumber === 0 && v.entryPrice === 0 && v.exitTarget === 0) return null;
+  return v;
+});
+
 // Render chart
 $effect(() => {
   if (!canvas || filteredPoints.length === 0) return;
@@ -93,6 +112,91 @@ $effect(() => {
   const colors = chartColors();
   const opts = defaultChartOptions();
   const accent = accentPalette(1)[0];
+  const zoneColors = valuationZoneColors();
+  const val = currentValuation;
+
+  // Read toggle state to track reactivity
+  const graham = showGraham;
+  const entry = showEntry;
+  const exit = showExit;
+
+  const annotations: Record<string, unknown> = {};
+
+  if (val) {
+    if (graham && val.grahamNumber > 0) {
+      annotations.grahamLine = {
+        type: "line",
+        yMin: val.grahamNumber,
+        yMax: val.grahamNumber,
+        borderColor: zoneColors.graham,
+        borderWidth: 1.5,
+        borderDash: [6, 4],
+        label: {
+          display: true,
+          content: `Graham ${formatRupiah(val.grahamNumber)}`,
+          position: "start",
+          backgroundColor: `${zoneColors.graham}cc`,
+          color: "#fff",
+          font: { family: "DM Mono, monospace", size: 10 },
+          padding: 3,
+        },
+      };
+    }
+
+    if (entry && val.entryPrice > 0) {
+      annotations.entryLine = {
+        type: "line",
+        yMin: val.entryPrice,
+        yMax: val.entryPrice,
+        borderColor: zoneColors.entry,
+        borderWidth: 1.5,
+        borderDash: [6, 4],
+        label: {
+          display: true,
+          content: `Entry ${formatRupiah(val.entryPrice)}`,
+          position: "start",
+          backgroundColor: `${zoneColors.entry}cc`,
+          color: "#fff",
+          font: { family: "DM Mono, monospace", size: 10 },
+          padding: 3,
+        },
+      };
+      annotations.entryBand = {
+        type: "box",
+        yMin: "min",
+        yMax: val.entryPrice,
+        backgroundColor: zoneColors.entryBand,
+        borderWidth: 0,
+      };
+    }
+
+    if (exit && val.exitTarget > 0) {
+      annotations.exitLine = {
+        type: "line",
+        yMin: val.exitTarget,
+        yMax: val.exitTarget,
+        borderColor: zoneColors.exit,
+        borderWidth: 1.5,
+        borderDash: [6, 4],
+        label: {
+          display: true,
+          content: `Exit ${formatRupiah(val.exitTarget)}`,
+          position: "start",
+          backgroundColor: `${zoneColors.exit}cc`,
+          color: "#fff",
+          font: { family: "DM Mono, monospace", size: 10 },
+          padding: 3,
+        },
+      };
+      annotations.exitBand = {
+        type: "box",
+        yMin: val.exitTarget,
+        yMax: "max",
+        backgroundColor: zoneColors.exitBand,
+        borderWidth: 0,
+      };
+    }
+  }
 
   const chart = new Chart(canvas, {
     type: "line",
@@ -116,6 +220,7 @@ $effect(() => {
       plugins: {
         ...opts.plugins,
         legend: { display: false },
+        annotation: { annotations },
         tooltip: {
           ...opts.plugins?.tooltip,
           callbacks: {
@@ -124,6 +229,23 @@ $effect(() => {
             },
             label(ctx) {
               return formatRupiah(ctx.parsed.y);
+            },
+            afterBody(items) {
+              if (!val || !items[0]) return [];
+              const lines: string[] = [];
+              if (graham && val.grahamNumber > 0)
+                lines.push(`Graham: ${formatRupiah(val.grahamNumber)}`);
+              if (entry && val.entryPrice > 0) lines.push(`Entry: ${formatRupiah(val.entryPrice)}`);
+              if (exit && val.exitTarget > 0) lines.push(`Exit: ${formatRupiah(val.exitTarget)}`);
+              const price = items[0].parsed.y;
+              if (entry && val.entryPrice > 0 && price <= val.entryPrice) {
+                lines.push("Zone: Undervalued");
+              } else if (exit && val.exitTarget > 0 && price >= val.exitTarget) {
+                lines.push("Zone: Overvalued");
+              } else if ((entry && val.entryPrice > 0) || (exit && val.exitTarget > 0)) {
+                lines.push("Zone: Fair Value");
+              }
+              return lines;
             },
           },
         },
@@ -189,6 +311,29 @@ $effect(() => {
       {/if}
     </div>
   </div>
+
+  {#if currentValuation}
+    <div class="mb-3 flex flex-wrap gap-3 text-xs" role="group" aria-label="Valuation zones">
+      {#if currentValuation.grahamNumber > 0}
+        <label class="flex items-center gap-1.5 text-text-secondary">
+          <input type="checkbox" bind:checked={showGraham} class="focus-ring" style:accent-color={valuationZoneColors().graham} />
+          Graham
+        </label>
+      {/if}
+      {#if currentValuation.entryPrice > 0}
+        <label class="flex items-center gap-1.5 text-text-secondary">
+          <input type="checkbox" bind:checked={showEntry} class="focus-ring" style:accent-color={valuationZoneColors().entry} />
+          Entry Price
+        </label>
+      {/if}
+      {#if currentValuation.exitTarget > 0}
+        <label class="flex items-center gap-1.5 text-text-secondary">
+          <input type="checkbox" bind:checked={showExit} class="focus-ring" style:accent-color={valuationZoneColors().exit} />
+          Exit Target
+        </label>
+      {/if}
+    </div>
+  {/if}
 
   {#if !selectedTicker}
     <EmptyState icon={TrendingUp} title="Select a ticker" description="Choose a holding to view its price history." />

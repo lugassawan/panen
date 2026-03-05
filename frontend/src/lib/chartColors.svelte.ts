@@ -64,6 +64,16 @@ export function accentPalette(n: number): string[] {
   return result;
 }
 
+export function valuationZoneColors() {
+  return {
+    graham: "#9333ea",
+    entry: "#16a34a",
+    exit: "#dc2626",
+    entryBand: "#16a34a18",
+    exitBand: "#dc262618",
+  };
+}
+
 export function defaultChartOptions(): ChartOptions {
   const colors = resolveColors();
   return {

@@ -231,6 +231,12 @@ export interface DeploymentPlanResponse {
   levels: DeploymentLevelPlanResponse[];
 }
 
+export interface ValuationZone {
+  grahamNumber: number;
+  entryPrice: number;
+  exitTarget: number;
+}
+
 export interface PricePointResponse {
   date: string;
   open: number;

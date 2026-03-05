@@ -85,9 +85,11 @@ let overallPL = $derived(calcOverallPL(detail.holdings));
     <p class="mt-1 text-lg font-medium">{formatRupiah(currentValue)}</p>
   </div>
   <div class="rounded border border-border-default bg-bg-elevated p-4" data-testid="overall-pl">
-    <Tooltip text="Unrealized profit/loss across all holdings based on current market prices">
-      <p class="text-xs font-semibold uppercase tracking-wider text-text-muted underline decoration-dotted cursor-help">Overall P/L</p>
-    </Tooltip>
+    <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">
+      <Tooltip text="Unrealized profit/loss across all holdings based on current market prices">
+        <span class="underline decoration-dotted cursor-help">Overall P/L</span>
+      </Tooltip>
+    </p>
     <p class="mt-1 text-lg font-medium font-mono {overallPL >= 0 ? 'text-profit' : 'text-loss'}">
       {overallPL >= 0 ? "+" : ""}{formatPercent(overallPL)}
     </p>
@@ -95,9 +97,11 @@ let overallPL = $derived(calcOverallPL(detail.holdings));
   {#if detail.portfolio.mode === "DIVIDEND"}
     {@const portfolioYield = detail.holdings.find((h) => h.dividendMetrics)?.dividendMetrics?.portfolioYield ?? 0}
     <div class="rounded border border-border-default bg-bg-elevated p-4" data-testid="portfolio-yield">
-      <Tooltip text="Weighted average dividend yield across all holdings in this portfolio">
-        <p class="text-xs font-semibold uppercase tracking-wider text-text-muted underline decoration-dotted cursor-help">Portfolio Yield</p>
-      </Tooltip>
+      <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">
+        <Tooltip text="Weighted average dividend yield across all holdings in this portfolio">
+          <span class="underline decoration-dotted cursor-help">Portfolio Yield</span>
+        </Tooltip>
+      </p>
       <p class="mt-1 text-lg font-medium font-mono text-text-primary">
         {formatPercent(portfolioYield)}
       </p>
