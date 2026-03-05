@@ -120,7 +120,7 @@ func TestPriceHistoryServiceGetHistoryUsesCacheWhenFresh(t *testing.T) {
 
 func TestPriceHistoryServiceGetHistoryRefetchesWhenStale(t *testing.T) {
 	repo := newMockPriceHistoryRepo()
-	repo.latestDate = time.Now().UTC().AddDate(0, 0, -3) // 3 days old
+	repo.latestDate = time.Now().UTC().AddDate(0, 0, -4) // 4 days old, beyond 3-day window
 
 	provider := newMockProvider()
 	fetchCalled := false

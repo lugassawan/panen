@@ -47,13 +47,14 @@ func (s *PriceHistoryService) GetHistory(
 	return s.historyRepo.GetByTicker(ctx, ticker, s.provider.Source())
 }
 
-// isFresh returns true if the latest date is yesterday or today (UTC).
+// isFresh returns true if the latest date is within the last 3 days (UTC).
+// A 3-day window avoids unnecessary re-fetches on weekends and single-day holidays.
 func isFresh(latest time.Time) bool {
 	if latest.IsZero() {
 		return false
 	}
 	today := time.Now().UTC().Truncate(24 * time.Hour)
-	yesterday := today.AddDate(0, 0, -1)
+	cutoff := today.AddDate(0, 0, -3)
 	latestDay := latest.UTC().Truncate(24 * time.Hour)
-	return !latestDay.Before(yesterday)
+	return !latestDay.Before(cutoff)
 }
