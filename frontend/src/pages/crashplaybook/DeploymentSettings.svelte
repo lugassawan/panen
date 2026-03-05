@@ -14,9 +14,14 @@ let {
   onClose: () => void;
 } = $props();
 
+let dialogEl = $state<HTMLDivElement | null>(null);
 let normal = $state(untrack(() => String(settings.normal)));
 let crash = $state(untrack(() => String(settings.crash)));
 let extreme = $state(untrack(() => String(settings.extreme)));
+
+$effect(() => {
+  dialogEl?.focus();
+});
 
 const sum = $derived(Number(normal) + Number(crash) + Number(extreme));
 const isValid = $derived(sum === 100);
@@ -31,6 +36,7 @@ function handleSave() {
 <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
   <div class="fixed inset-0" role="presentation" onclick={onClose}></div>
   <div
+    bind:this={dialogEl}
     class="relative z-10 w-full max-w-sm rounded-lg border border-border-default bg-bg-elevated p-6"
     role="dialog"
     aria-modal="true"

@@ -26,7 +26,7 @@ function createToastStore() {
       }
 
       setTimeout(() => {
-        this.dismiss(id);
+        toasts = toasts.filter((t) => t.id !== id);
       }, duration);
     },
     dismiss(id: string) {

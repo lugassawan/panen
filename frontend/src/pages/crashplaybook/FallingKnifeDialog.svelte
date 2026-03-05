@@ -16,8 +16,13 @@ let {
   onClose: () => void;
 } = $props();
 
+let dialogEl = $state<HTMLDivElement | null>(null);
 let companyBadNews = $state<boolean | null>(untrack(() => diagnostic.companyBadNews));
 let fundamentalsOK = $state<boolean | null>(untrack(() => diagnostic.fundamentalsOK));
+
+$effect(() => {
+  dialogEl?.focus();
+});
 
 function toggleCompanyBadNews() {
   companyBadNews = companyBadNews === null ? true : companyBadNews ? false : null;
@@ -50,6 +55,7 @@ function checkColor(value: boolean | null, invertMeaning = false): string {
 <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
   <div class="fixed inset-0" role="presentation" onclick={onClose}></div>
   <div
+    bind:this={dialogEl}
     class="relative z-10 w-full max-w-md rounded-lg border border-border-default bg-bg-elevated p-6"
     role="dialog"
     aria-modal="true"

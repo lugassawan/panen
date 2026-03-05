@@ -94,9 +94,7 @@ function handleKeydown(e: KeyboardEvent) {
     <div class="fixed inset-0" role="presentation" onclick={() => commandPalette.close()}></div>
     <div
       class="relative z-10 w-full max-w-lg rounded-lg border border-border-default bg-bg-elevated shadow-lg overflow-hidden"
-      role="combobox"
-      aria-expanded="true"
-      aria-haspopup="listbox"
+      role="presentation"
       onkeydown={handleKeydown}
     >
       <div class="flex items-center gap-3 border-b border-border-default px-4 py-3">
@@ -107,7 +105,10 @@ function handleKeydown(e: KeyboardEvent) {
           type="text"
           placeholder="Search pages..."
           class="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-muted outline-none"
+          role="combobox"
           aria-label="Search pages"
+          aria-expanded="true"
+          aria-haspopup="listbox"
           aria-autocomplete="list"
           aria-controls="command-list"
           aria-activedescendant={filtered.length > 0 ? `cmd-${filtered[activeIndex].id}` : undefined}
