@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("../../../wailsjs/go/backend/App", () => ({
   AddHolding: vi.fn(),
   GetDividendRanking: vi.fn(),
+  GetHoldingSectors: vi.fn(() => Promise.resolve({ BBCA: "Financials" })),
 }));
 
 import type { PortfolioDetailResponse } from "../../lib/types";
@@ -97,5 +98,31 @@ describe("PortfolioDetail", () => {
   it("renders Add Holding section", () => {
     render(PortfolioDetail, { props: defaultProps });
     expect(screen.getByRole("heading", { name: "Add Holding" })).toBeInTheDocument();
+  });
+
+  it("renders tab bar with Holdings and Charts tabs", () => {
+    render(PortfolioDetail, { props: defaultProps });
+    const tablist = screen.getByRole("tablist");
+    expect(tablist).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Holdings" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Charts" })).toBeInTheDocument();
+  });
+
+  it("shows holdings tab by default", () => {
+    render(PortfolioDetail, { props: defaultProps });
+    const holdingsTab = screen.getByRole("tab", { name: "Holdings" });
+    expect(holdingsTab).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByText("BBCA")).toBeInTheDocument();
+  });
+
+  it("switches to charts tab on click", async () => {
+    const user = userEvent.setup();
+    render(PortfolioDetail, { props: defaultProps });
+
+    await user.click(screen.getByRole("tab", { name: "Charts" }));
+
+    const chartsTab = screen.getByRole("tab", { name: "Charts" });
+    expect(chartsTab).toHaveAttribute("aria-selected", "true");
+    expect(screen.queryByRole("heading", { name: "Add Holding" })).not.toBeInTheDocument();
   });
 });

@@ -37,6 +37,7 @@ vi.mock("../../../wailsjs/go/backend/App", () => ({
   EvaluateChecklist: (...args: unknown[]) => mockEvaluateChecklist(...args),
   ToggleManualCheck: (...args: unknown[]) => mockToggleManualCheck(...args),
   ResetChecklist: (...args: unknown[]) => mockResetChecklist(...args),
+  GetHoldingSectors: vi.fn(() => Promise.resolve({})),
 }));
 
 function makeBrokerage(
