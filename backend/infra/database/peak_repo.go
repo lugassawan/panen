@@ -4,8 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
-	"strings"
 
 	"github.com/lugassawan/panen/backend/domain/shared"
 	"github.com/lugassawan/panen/backend/domain/trailingstop"
@@ -66,16 +64,14 @@ func (r *PeakRepo) ListByHoldingIDs(
 		return nil, nil
 	}
 
-	placeholders := make([]string, len(holdingIDs))
 	args := make([]any, len(holdingIDs))
 	for i, id := range holdingIDs {
-		placeholders[i] = "?"
 		args[i] = id
 	}
 
-	query := fmt.Sprintf(
-		`SELECT id, holding_id, peak_price, updated_at FROM holding_peaks WHERE holding_id IN (%s)`,
-		strings.Join(placeholders, ","),
+	query := buildINQuery(
+		`SELECT id, holding_id, peak_price, updated_at FROM holding_peaks WHERE holding_id IN`,
+		len(holdingIDs),
 	)
 
 	rows, err := r.db.QueryContext(ctx, query, args...)

@@ -1,4 +1,5 @@
 <script lang="ts">
+import { untrack } from "svelte";
 import Button from "../../lib/components/Button.svelte";
 import Input from "../../lib/components/Input.svelte";
 import type { DeploymentSettingsResponse } from "../../lib/types";
@@ -13,9 +14,9 @@ let {
   onClose: () => void;
 } = $props();
 
-let normal = $state(String(settings.normal));
-let crash = $state(String(settings.crash));
-let extreme = $state(String(settings.extreme));
+let normal = $state(untrack(() => String(settings.normal)));
+let crash = $state(untrack(() => String(settings.crash)));
+let extreme = $state(untrack(() => String(settings.extreme)));
 
 const sum = $derived(Number(normal) + Number(crash) + Number(extreme));
 const isValid = $derived(sum === 100);

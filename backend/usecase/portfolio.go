@@ -236,34 +236,46 @@ func (s *PortfolioService) GetDetail(
 
 	result := make([]*HoldingWithValuation, len(holdings))
 	for i, h := range holdings {
-		hwv := &HoldingWithValuation{Holding: h}
-
-		data, err := s.stockData.GetByTicker(ctx, h.Ticker)
-		if err == nil {
-			hwv.StockData = data
-			input := valuation.ValuationInput{
-				Ticker:      data.Ticker,
-				Price:       data.Price,
-				EPS:         data.EPS,
-				BVPS:        data.BVPS,
-				PBV:         data.PBV,
-				PER:         data.PER,
-				RiskProfile: valuation.RiskProfile(p.RiskProfile),
-			}
-			val, valErr := valuation.Evaluate(input)
-			if valErr == nil {
-				hwv.Valuation = val
-			}
-
-			if isValue {
-				hwv.TrailingStop = s.computeTrailingStop(ctx, h, data, p.RiskProfile, peakMap)
-			}
-		}
-
-		result[i] = hwv
+		result[i] = s.enrichHolding(ctx, h, p.RiskProfile, isValue, peakMap)
 	}
 
 	return p, result, nil
+}
+
+func (s *PortfolioService) enrichHolding(
+	ctx context.Context,
+	h *portfolio.Holding,
+	riskProfile portfolio.RiskProfile,
+	isValue bool,
+	peakMap map[string]*trailingstop.HoldingPeak,
+) *HoldingWithValuation {
+	hwv := &HoldingWithValuation{Holding: h}
+
+	data, err := s.stockData.GetByTicker(ctx, h.Ticker)
+	if err != nil {
+		return hwv
+	}
+
+	hwv.StockData = data
+	input := valuation.ValuationInput{
+		Ticker:      data.Ticker,
+		Price:       data.Price,
+		EPS:         data.EPS,
+		BVPS:        data.BVPS,
+		PBV:         data.PBV,
+		PER:         data.PER,
+		RiskProfile: valuation.RiskProfile(riskProfile),
+	}
+	val, valErr := valuation.Evaluate(input)
+	if valErr == nil {
+		hwv.Valuation = val
+	}
+
+	if isValue {
+		hwv.TrailingStop = s.computeTrailingStop(ctx, h, data, riskProfile, peakMap)
+	}
+
+	return hwv
 }
 
 func (s *PortfolioService) computeTrailingStop(

@@ -1,4 +1,5 @@
 <script lang="ts">
+import { untrack } from "svelte";
 import { CreateBrokerageAccount, UpdateBrokerageAccount } from "../../wailsjs/go/backend/App";
 import Button from "../lib/components/Button.svelte";
 import Input from "../lib/components/Input.svelte";
@@ -19,12 +20,12 @@ let {
 
 let isEdit = $derived(existingAccount != null);
 
-let name = $state(existingAccount?.brokerName ?? "");
-let brokerCode = $state(existingAccount?.brokerCode ?? "");
-let buyFee = $state(existingAccount?.buyFeePct ?? 0.15);
-let sellFee = $state(existingAccount?.sellFeePct ?? 0.15);
-let sellTax = $state(existingAccount?.sellTaxPct ?? 0.1);
-let isManualFee = $state(existingAccount?.isManualFee ?? false);
+let name = $state(untrack(() => existingAccount?.brokerName ?? ""));
+let brokerCode = $state(untrack(() => existingAccount?.brokerCode ?? ""));
+let buyFee = $state(untrack(() => existingAccount?.buyFeePct ?? 0.15));
+let sellFee = $state(untrack(() => existingAccount?.sellFeePct ?? 0.15));
+let sellTax = $state(untrack(() => existingAccount?.sellTaxPct ?? 0.1));
+let isManualFee = $state(untrack(() => existingAccount?.isManualFee ?? false));
 let loading = $state(false);
 let error = $state<string | null>(null);
 

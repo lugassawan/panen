@@ -1,4 +1,5 @@
 <script lang="ts">
+import { ChevronDown } from "lucide-svelte";
 import type { Snippet } from "svelte";
 
 let {
@@ -20,13 +21,18 @@ let {
 } = $props();
 </script>
 
-<select
-  {id}
-  bind:value
-  {disabled}
-  aria-label={ariaLabel}
-  {onchange}
-  class="w-full rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary outline-none focus:border-green-700 disabled:opacity-60 focus-ring {extraClass}"
->
-  {@render children()}
-</select>
+<div class="relative">
+  <select
+    {id}
+    bind:value
+    {disabled}
+    aria-label={ariaLabel}
+    {onchange}
+    class="w-full appearance-none rounded border border-border-default bg-bg-elevated py-2 pr-8 pl-3 text-sm text-text-primary outline-none transition-colors transition-fast hover:border-border-strong focus:border-green-700 disabled:opacity-60 focus-ring {extraClass}"
+  >
+    {@render children()}
+  </select>
+  <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-text-tertiary">
+    <ChevronDown size={16} strokeWidth={2} />
+  </div>
+</div>
