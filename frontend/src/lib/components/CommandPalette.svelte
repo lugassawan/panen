@@ -129,6 +129,7 @@ function handleKeydown(e: KeyboardEvent) {
               ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
               : 'text-text-secondary hover:bg-bg-tertiary hover:text-text-primary'}"
             onclick={() => select(item)}
+            onkeydown={(e: KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(item); } }}
             onmouseenter={() => { activeIndex = i; }}
           >
             <span class="flex items-center gap-3">
