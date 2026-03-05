@@ -224,6 +224,45 @@ func newChecklistEvaluationResponse(eval *usecase.ChecklistEvaluation) *Checklis
 	}
 }
 
+func newScreenerItemResponse(r *usecase.ScreenResult) *ScreenerItemResponse {
+	resp := &ScreenerItemResponse{
+		Ticker: r.Ticker,
+		Sector: r.Sector,
+		Passed: r.Passed,
+		Score:  r.Score,
+	}
+	if r.StockData != nil {
+		resp.Price = &r.StockData.Price
+		resp.ROE = &r.StockData.ROE
+		resp.DER = &r.StockData.DER
+		resp.EPS = &r.StockData.EPS
+		resp.PBV = &r.StockData.PBV
+		resp.PER = &r.StockData.PER
+		resp.DividendYield = &r.StockData.DividendYield
+		fetchedAt := formatDTO(r.StockData.FetchedAt)
+		resp.FetchedAt = &fetchedAt
+	}
+	if r.Valuation != nil {
+		resp.GrahamNumber = &r.Valuation.GrahamNumber
+		resp.EntryPrice = &r.Valuation.EntryPrice
+		resp.ExitTarget = &r.Valuation.ExitTarget
+		verdict := string(r.Valuation.Verdict)
+		resp.Verdict = &verdict
+	}
+	checks := make([]ScreenerCheckResponse, len(r.Checks))
+	for i, c := range r.Checks {
+		checks[i] = ScreenerCheckResponse{
+			Key:    c.Key,
+			Label:  c.Label,
+			Status: string(c.Status),
+			Value:  c.Value,
+			Limit:  c.Limit,
+		}
+	}
+	resp.Checks = checks
+	return resp
+}
+
 func formatDTO(t time.Time) string {
 	return t.UTC().Format(timeLayout)
 }

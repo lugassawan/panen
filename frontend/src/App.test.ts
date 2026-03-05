@@ -23,6 +23,9 @@ vi.mock("../wailsjs/go/backend/App", () => ({
   RemoveFromWatchlist: vi.fn(() => Promise.resolve()),
   GetWatchlistItems: vi.fn(() => Promise.resolve([])),
   GetPresetItems: vi.fn(() => Promise.resolve([])),
+  RunScreen: vi.fn(() => Promise.resolve([])),
+  ListScreenerIndices: vi.fn(() => Promise.resolve([])),
+  ListScreenerSectors: vi.fn(() => Promise.resolve([])),
   TriggerRefresh: vi.fn(() => Promise.resolve()),
   GetRefreshStatus: vi.fn(() => Promise.resolve({ state: "idle", lastRefresh: "" })),
   GetRefreshSettings: vi.fn(() =>
@@ -64,18 +67,19 @@ vi.mock("./lib/stores/theme.svelte", () => ({
 }));
 
 describe("App navigation", () => {
-  it("renders sidebar with 7 nav items", () => {
+  it("renders sidebar with 8 nav items", () => {
     render(App);
     const nav = screen.getByRole("navigation", { name: /main/i });
     const buttons = within(nav).getAllByRole("button");
-    expect(buttons).toHaveLength(7);
+    expect(buttons).toHaveLength(8);
     expect(buttons[0]).toHaveTextContent("Stock Lookup");
     expect(buttons[1]).toHaveTextContent("Watchlist");
-    expect(buttons[2]).toHaveTextContent("Portfolio");
-    expect(buttons[3]).toHaveTextContent("Payday");
-    expect(buttons[4]).toHaveTextContent("Crash Playbook");
-    expect(buttons[5]).toHaveTextContent("Brokerage");
-    expect(buttons[6]).toHaveTextContent("Settings");
+    expect(buttons[2]).toHaveTextContent("Screener");
+    expect(buttons[3]).toHaveTextContent("Portfolio");
+    expect(buttons[4]).toHaveTextContent("Payday");
+    expect(buttons[5]).toHaveTextContent("Crash Playbook");
+    expect(buttons[6]).toHaveTextContent("Brokerage");
+    expect(buttons[7]).toHaveTextContent("Settings");
   });
 
   it("starts on Stock Lookup page by default", () => {
@@ -89,6 +93,17 @@ describe("App navigation", () => {
     const nav = screen.getByRole("navigation", { name: /main/i });
     const buttons = within(nav).getAllByRole("button");
     expect(buttons[0]).toHaveAttribute("aria-current", "page");
+  });
+
+  it("switches to Screener page when clicking Screener nav", async () => {
+    const user = userEvent.setup();
+    render(App);
+
+    const nav = screen.getByRole("navigation", { name: /main/i });
+    await user.click(within(nav).getByText("Screener"));
+
+    expect(await screen.findByText("Stock Screener")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Stock ticker")).not.toBeInTheDocument();
   });
 
   it("switches to Portfolio page when clicking Portfolio nav", async () => {
@@ -143,7 +158,7 @@ describe("App navigation", () => {
 
     const nav = screen.getByRole("navigation", { name: /main/i });
     const buttons = within(nav).getAllByRole("button");
-    const [lookupBtn, , portfolioBtn] = buttons;
+    const [lookupBtn, , , portfolioBtn] = buttons;
 
     expect(lookupBtn).toHaveAttribute("aria-current", "page");
     expect(portfolioBtn).not.toHaveAttribute("aria-current");

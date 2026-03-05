@@ -30,6 +30,7 @@ type App struct {
 	*presenter.UpdateHandler
 	*presenter.PaydayHandler
 	*presenter.CrashPlaybookHandler
+	*presenter.ScreenerHandler
 	db      *database.DB
 	refresh *usecase.RefreshService
 }
@@ -72,7 +73,14 @@ func (a *App) Startup(ctx context.Context) {
 
 	stocks := usecase.NewStockService(stockRepo, yahoo)
 	peakRepo := database.NewPeakRepo(conn)
-	portfolios := usecase.NewPortfolioService(portfolioRepo, holdingRepo, buyTxnRepo, brokerageRepo, stockRepo, peakRepo)
+	portfolios := usecase.NewPortfolioService(
+		portfolioRepo,
+		holdingRepo,
+		buyTxnRepo,
+		brokerageRepo,
+		stockRepo,
+		peakRepo,
+	)
 	brokerages := usecase.NewBrokerageService(brokerageRepo, portfolioRepo)
 
 	profileID, err := ensureDefaultUser(ctx, userRepo)
@@ -93,6 +101,9 @@ func (a *App) Startup(ctx context.Context) {
 		indexRegistry,
 		sectorRegistry,
 	)
+
+	screenerSvc := usecase.NewScreenerService(stockRepo, indexRegistry, sectorRegistry)
+	a.ScreenerHandler = presenter.NewScreenerHandler(ctx, screenerSvc)
 
 	settingsRepo := database.NewSettingsRepo(conn)
 	tickerCollector := database.NewTickerCollector(conn)

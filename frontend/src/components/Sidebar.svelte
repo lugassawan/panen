@@ -3,6 +3,7 @@ import {
   Bookmark,
   Briefcase,
   CalendarDays,
+  Filter,
   Landmark,
   Search,
   Settings,
@@ -17,6 +18,7 @@ let { currentPage, onNavigate }: { currentPage: Page; onNavigate: (page: Page) =
 const navItems: { page: Page; label: string; icon: Component }[] = [
   { page: "lookup", label: "Stock Lookup", icon: Search },
   { page: "watchlist", label: "Watchlist", icon: Bookmark },
+  { page: "screener", label: "Screener", icon: Filter },
   { page: "portfolio", label: "Portfolio", icon: Briefcase },
   { page: "payday", label: "Payday", icon: CalendarDays },
   { page: "crashplaybook", label: "Crash Playbook", icon: Shield },

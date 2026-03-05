@@ -6,6 +6,7 @@ import BrokeragePage from "./pages/brokerage/BrokeragePage.svelte";
 import CrashPlaybookPage from "./pages/crashplaybook/CrashPlaybookPage.svelte";
 import PaydayPage from "./pages/payday/PaydayPage.svelte";
 import PortfolioPage from "./pages/portfolio/PortfolioPage.svelte";
+import ScreenerPage from "./pages/screener/ScreenerPage.svelte";
 import SettingsPage from "./pages/settings/SettingsPage.svelte";
 import StockLookupPage from "./pages/stock/StockLookupPage.svelte";
 import WatchlistPage from "./pages/watchlist/WatchlistPage.svelte";
@@ -21,6 +22,8 @@ let currentPage = $state<Page>("lookup");
       <StockLookupPage />
     {:else if currentPage === "watchlist"}
       <WatchlistPage />
+    {:else if currentPage === "screener"}
+      <ScreenerPage />
     {:else if currentPage === "portfolio"}
       <PortfolioPage />
     {:else if currentPage === "payday"}
