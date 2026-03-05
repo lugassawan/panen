@@ -10,6 +10,7 @@ import (
 	"github.com/lugassawan/panen/backend/domain/portfolio"
 	"github.com/lugassawan/panen/backend/domain/shared"
 	"github.com/lugassawan/panen/backend/domain/stock"
+	"github.com/lugassawan/panen/backend/domain/trailingstop"
 	"github.com/lugassawan/panen/backend/usecase"
 )
 
@@ -224,6 +225,38 @@ func (m *mockStockRepo) ListAllTickers(_ context.Context) ([]string, error) {
 	return nil, nil
 }
 
+// mockPeakRepo is an in-memory trailingstop.PeakRepository for presenter tests.
+type mockPeakRepo struct {
+	items map[string]*trailingstop.HoldingPeak
+}
+
+func newMockPeakRepo() *mockPeakRepo {
+	return &mockPeakRepo{items: make(map[string]*trailingstop.HoldingPeak)}
+}
+
+func (r *mockPeakRepo) Upsert(_ context.Context, peak *trailingstop.HoldingPeak) error {
+	r.items[peak.HoldingID] = peak
+	return nil
+}
+
+func (r *mockPeakRepo) GetByHoldingID(_ context.Context, holdingID string) (*trailingstop.HoldingPeak, error) {
+	hp, ok := r.items[holdingID]
+	if !ok {
+		return nil, shared.ErrNotFound
+	}
+	return hp, nil
+}
+
+func (r *mockPeakRepo) ListByHoldingIDs(_ context.Context, holdingIDs []string) ([]*trailingstop.HoldingPeak, error) {
+	var result []*trailingstop.HoldingPeak
+	for _, id := range holdingIDs {
+		if hp, ok := r.items[id]; ok {
+			result = append(result, hp)
+		}
+	}
+	return result, nil
+}
+
 // --- helper to build a portfolio handler with mocks ---
 
 func newTestPortfolioHandler() (
@@ -234,8 +267,9 @@ func newTestPortfolioHandler() (
 	buyTxnRepo := &mockBuyTxnRepo{}
 	brokerageRepo := newMockBrokerageRepo()
 	stockRepo := newMockStockRepo()
+	peakRepo := newMockPeakRepo()
 
-	svc := usecase.NewPortfolioService(portfolioRepo, holdingRepo, buyTxnRepo, brokerageRepo, stockRepo)
+	svc := usecase.NewPortfolioService(portfolioRepo, holdingRepo, buyTxnRepo, brokerageRepo, stockRepo, peakRepo)
 	ctx := context.Background()
 	handler := NewPortfolioHandler(ctx, svc)
 

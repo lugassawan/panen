@@ -12,6 +12,7 @@ import (
 	"github.com/lugassawan/panen/backend/domain/settings"
 	"github.com/lugassawan/panen/backend/domain/shared"
 	"github.com/lugassawan/panen/backend/domain/stock"
+	"github.com/lugassawan/panen/backend/domain/trailingstop"
 )
 
 // mockStockRepo is an in-memory stock.Repository for testing.
@@ -628,4 +629,43 @@ func (r *mockCashFlowRepo) Delete(_ context.Context, id string) error {
 		}
 	}
 	return shared.ErrNotFound
+}
+
+// mockPeakRepo is an in-memory trailingstop.PeakRepository for testing.
+type mockPeakRepo struct {
+	mu    sync.Mutex
+	items map[string]*trailingstop.HoldingPeak // keyed by holdingID
+}
+
+func newMockPeakRepo() *mockPeakRepo {
+	return &mockPeakRepo{items: make(map[string]*trailingstop.HoldingPeak)}
+}
+
+func (r *mockPeakRepo) Upsert(_ context.Context, peak *trailingstop.HoldingPeak) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.items[peak.HoldingID] = peak
+	return nil
+}
+
+func (r *mockPeakRepo) GetByHoldingID(_ context.Context, holdingID string) (*trailingstop.HoldingPeak, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	hp, ok := r.items[holdingID]
+	if !ok {
+		return nil, shared.ErrNotFound
+	}
+	return hp, nil
+}
+
+func (r *mockPeakRepo) ListByHoldingIDs(_ context.Context, holdingIDs []string) ([]*trailingstop.HoldingPeak, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	var result []*trailingstop.HoldingPeak
+	for _, id := range holdingIDs {
+		if hp, ok := r.items[id]; ok {
+			result = append(result, hp)
+		}
+	}
+	return result, nil
 }
