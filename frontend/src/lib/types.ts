@@ -107,6 +107,7 @@ export type Verdict = "UNDERVALUED" | "FAIR" | "OVERVALUED";
 export type Page =
   | "lookup"
   | "watchlist"
+  | "screener"
   | "portfolio"
   | "payday"
   | "crashplaybook"
@@ -236,6 +237,34 @@ export interface WatchlistItemResponse {
   entryPrice?: number;
   exitTarget?: number;
   verdict?: string;
+  fetchedAt?: string;
+}
+
+export interface ScreenerCheckResponse {
+  key: string;
+  label: string;
+  status: "PASS" | "FAIL";
+  value: number;
+  limit: number;
+}
+
+export interface ScreenerItemResponse {
+  ticker: string;
+  sector: string;
+  price?: number;
+  roe?: number;
+  der?: number;
+  eps?: number;
+  pbv?: number;
+  per?: number;
+  dividendYield?: number;
+  grahamNumber?: number;
+  entryPrice?: number;
+  exitTarget?: number;
+  verdict?: string;
+  checks: ScreenerCheckResponse[];
+  passed: boolean;
+  score: number;
   fetchedAt?: string;
 }
 
