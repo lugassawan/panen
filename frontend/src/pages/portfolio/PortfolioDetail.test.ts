@@ -8,6 +8,44 @@ vi.mock("../../../wailsjs/go/backend/App", () => ({
   GetHoldingSectors: vi.fn(() => Promise.resolve({ BBCA: "Financials" })),
 }));
 
+vi.mock("chart.js", () => {
+  class MockChart {
+    static register = vi.fn();
+    destroy = vi.fn();
+  }
+  return {
+    Chart: MockChart,
+    BarController: {},
+    BarElement: {},
+    CategoryScale: {},
+    LinearScale: {},
+    Tooltip: {},
+    ArcElement: {},
+    DoughnutController: {},
+    Legend: {},
+  };
+});
+
+vi.mock("../../lib/chartColors.svelte", () => ({
+  chartColors: () => ({
+    profit: "#1b7d4e",
+    loss: "#c4342d",
+    textPrimary: "#1a1a1a",
+    textSecondary: "#4b5060",
+    textMuted: "#9ca3af",
+    borderDefault: "#e0dbd2",
+    bgElevated: "#ffffff",
+  }),
+  defaultChartOptions: () => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: { duration: 200 },
+    plugins: {},
+    scales: { x: {}, y: {} },
+  }),
+  accentPalette: (n: number) => Array.from({ length: n }, () => "#1b6b4a"),
+}));
+
 import type { PortfolioDetailResponse } from "../../lib/types";
 import PortfolioDetail from "./PortfolioDetail.svelte";
 
