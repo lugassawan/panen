@@ -215,4 +215,23 @@ describe("PriceHistoryChart", () => {
     await user.click(screen.getByLabelText("Graham"));
     expect(screen.getByLabelText("Graham")).not.toBeChecked();
   });
+
+  it("hides individual toggle when its value is zero", async () => {
+    render(PriceHistoryChart, {
+      props: {
+        tickers: ["BBCA"],
+        valuations: {
+          BBCA: { grahamNumber: 0, entryPrice: 7500, exitTarget: 11000 },
+        },
+      },
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole("group", { name: "Valuation zones" })).toBeInTheDocument();
+    });
+
+    expect(screen.queryByLabelText("Graham")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Entry Price")).toBeInTheDocument();
+    expect(screen.getByLabelText("Exit Target")).toBeInTheDocument();
+  });
 });

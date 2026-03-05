@@ -314,18 +314,24 @@ $effect(() => {
 
   {#if currentValuation}
     <div class="mb-3 flex flex-wrap gap-3 text-xs" role="group" aria-label="Valuation zones">
-      <label class="flex items-center gap-1.5 text-text-secondary">
-        <input type="checkbox" bind:checked={showGraham} class="accent-[#9333ea] focus-ring" />
-        Graham
-      </label>
-      <label class="flex items-center gap-1.5 text-text-secondary">
-        <input type="checkbox" bind:checked={showEntry} class="accent-[#16a34a] focus-ring" />
-        Entry Price
-      </label>
-      <label class="flex items-center gap-1.5 text-text-secondary">
-        <input type="checkbox" bind:checked={showExit} class="accent-[#dc2626] focus-ring" />
-        Exit Target
-      </label>
+      {#if currentValuation.grahamNumber > 0}
+        <label class="flex items-center gap-1.5 text-text-secondary">
+          <input type="checkbox" bind:checked={showGraham} class="focus-ring" style:accent-color={valuationZoneColors().graham} />
+          Graham
+        </label>
+      {/if}
+      {#if currentValuation.entryPrice > 0}
+        <label class="flex items-center gap-1.5 text-text-secondary">
+          <input type="checkbox" bind:checked={showEntry} class="focus-ring" style:accent-color={valuationZoneColors().entry} />
+          Entry Price
+        </label>
+      {/if}
+      {#if currentValuation.exitTarget > 0}
+        <label class="flex items-center gap-1.5 text-text-secondary">
+          <input type="checkbox" bind:checked={showExit} class="focus-ring" style:accent-color={valuationZoneColors().exit} />
+          Exit Target
+        </label>
+      {/if}
     </div>
   {/if}
 
