@@ -221,9 +221,10 @@ func (s *PortfolioService) GetDetail(
 		return nil, nil, err
 	}
 
+	isValue := p.Mode == portfolio.ModeValue
+
 	// Batch-fetch existing peaks for VALUE mode portfolios.
 	peakMap := make(map[string]*trailingstop.HoldingPeak)
-	isValue := p.Mode == portfolio.ModeValue
 	if isValue && len(holdings) > 0 {
 		holdingIDs := make([]string, len(holdings))
 		for i, h := range holdings {
@@ -237,9 +238,18 @@ func (s *PortfolioService) GetDetail(
 		}
 	}
 
+	// Pre-fetch stock data for all holdings (avoids N+1 in dividend metrics).
+	stockMap := make(map[string]*stock.Data)
+	for _, h := range holdings {
+		data, dataErr := s.stockData.GetByTicker(ctx, h.Ticker)
+		if dataErr == nil {
+			stockMap[h.Ticker] = data
+		}
+	}
+
 	result := make([]*HoldingWithValuation, len(holdings))
 	for i, h := range holdings {
-		result[i] = s.enrichHolding(ctx, h, p.RiskProfile, isValue, peakMap, holdings)
+		result[i] = s.enrichHolding(ctx, h, p.RiskProfile, isValue, peakMap, holdings, stockMap)
 	}
 
 	return p, result, nil
@@ -252,11 +262,12 @@ func (s *PortfolioService) enrichHolding(
 	isValue bool,
 	peakMap map[string]*trailingstop.HoldingPeak,
 	allHoldings []*portfolio.Holding,
+	stockMap map[string]*stock.Data,
 ) *HoldingWithValuation {
 	hwv := &HoldingWithValuation{Holding: h}
 
-	data, err := s.stockData.GetByTicker(ctx, h.Ticker)
-	if err != nil {
+	data := stockMap[h.Ticker]
+	if data == nil {
 		return hwv
 	}
 
@@ -278,7 +289,7 @@ func (s *PortfolioService) enrichHolding(
 	if isValue {
 		hwv.TrailingStop = s.computeTrailingStop(ctx, h, data, riskProfile, peakMap)
 	} else {
-		hwv.DividendMetrics = s.computeDividendMetrics(ctx, h, data, val, riskProfile, allHoldings)
+		hwv.DividendMetrics = computeDividendMetrics(h, data, val, riskProfile, allHoldings, stockMap)
 	}
 
 	return hwv
@@ -339,13 +350,13 @@ func (s *PortfolioService) computeTrailingStop(
 	}
 }
 
-func (s *PortfolioService) computeDividendMetrics(
-	ctx context.Context,
+func computeDividendMetrics(
 	h *portfolio.Holding,
 	data *stock.Data,
 	val *valuation.ValuationResult,
 	riskProfile portfolio.RiskProfile,
 	allHoldings []*portfolio.Holding,
+	stockMap map[string]*stock.Data,
 ) *dividend.DividendMetrics {
 	thresholds := checklist.ThresholdsForRisk(riskProfile)
 
@@ -353,11 +364,11 @@ func (s *PortfolioService) computeDividendMetrics(
 	yoc := dividend.YieldOnCost(annualDPS, h.AvgBuyPrice)
 	projectedYoC := dividend.ProjectedYoC(annualDPS, h.AvgBuyPrice, h.Lots, data.Price, 1)
 
-	// Compute portfolio-level yield from all holdings with available stock data.
+	// Compute portfolio-level yield from pre-fetched stock data.
 	var yieldItems []dividend.PortfolioYieldItem
 	for _, oh := range allHoldings {
-		ohData, err := s.stockData.GetByTicker(ctx, oh.Ticker)
-		if err != nil {
+		ohData := stockMap[oh.Ticker]
+		if ohData == nil {
 			continue
 		}
 		dps := dividend.DeriveAnnualDPS(ohData.Price, ohData.DividendYield)
