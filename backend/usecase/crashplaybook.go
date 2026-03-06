@@ -89,13 +89,9 @@ func NewCrashPlaybookService(
 
 // GetMarketStatus returns the current IHSG-based market condition.
 func (s *CrashPlaybookService) GetMarketStatus(ctx context.Context) (*crashplaybook.MarketStatus, error) {
-	s.mu.Lock()
-	if s.marketCache != nil && time.Since(s.marketCache.FetchedAt) < marketCacheTTL {
-		cached := *s.marketCache
-		s.mu.Unlock()
-		return &cached, nil
+	if cached := s.cachedMarketStatus(); cached != nil {
+		return cached, nil
 	}
-	s.mu.Unlock()
 
 	data, err := s.stockData.GetByTickerAndSource(ctx, ihsgTicker, s.provider.Source())
 	if err != nil && !errors.Is(err, shared.ErrNotFound) {
@@ -105,6 +101,9 @@ func (s *CrashPlaybookService) GetMarketStatus(ctx context.Context) (*crashplayb
 	if data == nil || time.Since(data.FetchedAt) >= marketCacheTTL {
 		price, fetchErr := s.provider.FetchPrice(ctx, ihsgTicker)
 		if fetchErr != nil {
+			// Stale-data fallback: if we have old IHSG data, serve it rather than
+			// failing. Market status is advisory, so stale data is preferable to
+			// an error that blocks the entire crash playbook page.
 			if data != nil {
 				return s.buildMarketStatus(data), nil
 			}
@@ -303,6 +302,16 @@ func SuggestedRefreshInterval(condition crashplaybook.MarketCondition) int {
 	default:
 		return 720
 	}
+}
+
+func (s *CrashPlaybookService) cachedMarketStatus() *crashplaybook.MarketStatus {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.marketCache != nil && time.Since(s.marketCache.FetchedAt) < marketCacheTTL {
+		cached := *s.marketCache
+		return &cached
+	}
+	return nil
 }
 
 func (s *CrashPlaybookService) readDeployPcts(ctx context.Context) [3]float64 {
