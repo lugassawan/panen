@@ -394,6 +394,13 @@
   }
 }
 
+/* Focus border — semantic border color for focused inputs */
+@utility focus-border {
+  &:focus-visible {
+    border-color: var(--border-strong);
+  }
+}
+
 /* Skeleton loading animation */
 @utility skeleton {
   background: linear-gradient(

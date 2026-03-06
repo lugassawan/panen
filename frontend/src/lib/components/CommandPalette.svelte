@@ -13,6 +13,7 @@ import {
 import type { Component } from "svelte";
 import { t } from "../../i18n";
 import { commandPalette } from "../stores/command-palette.svelte";
+import { mode } from "../stores/mode.svelte";
 import type { Page } from "../types";
 
 let { onNavigate }: { onNavigate: (page: Page) => void } = $props();
@@ -129,7 +130,7 @@ function handleKeydown(e: KeyboardEvent) {
             role="option"
             aria-selected={i === activeIndex}
             class="flex items-center justify-between px-4 py-2.5 text-sm cursor-pointer transition-fast {i === activeIndex
-              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+              ? mode.config.activeHighlight
               : 'text-text-secondary hover:bg-bg-tertiary hover:text-text-primary'}"
             onclick={() => select(item)}
             onkeydown={(e: KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(item); } }}

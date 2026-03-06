@@ -22,17 +22,21 @@ export interface ModeConfig {
   accentLight: string;
   badgeClass: string;
   containerClass: string;
+  activeHighlight: string;
+  tabActiveClass: string;
 }
 
 type ModeStyle = Omit<ModeConfig, "label">;
 
-const MODE_CONFIG: Record<InvestmentMode, ModeStyle> = {
+export const MODE_CONFIG: Record<InvestmentMode, ModeStyle> = {
   value: {
     emoji: "\u{1F4C8}",
     accent: "var(--color-green-700)",
     accentLight: "var(--color-green-100)",
     badgeClass: "bg-green-100 text-green-700",
     containerClass: "mode-value",
+    activeHighlight: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+    tabActiveClass: "bg-green-700 text-text-inverse",
   },
   dividend: {
     emoji: "\u{1F4B0}",
@@ -40,6 +44,8 @@ const MODE_CONFIG: Record<InvestmentMode, ModeStyle> = {
     accentLight: "var(--color-gold-100)",
     badgeClass: "bg-gold-100 text-gold-700",
     containerClass: "mode-dividend",
+    activeHighlight: "bg-gold-100 text-gold-800 dark:bg-gold-900/30 dark:text-gold-400",
+    tabActiveClass: "bg-gold-500 text-text-inverse",
   },
 };
 
