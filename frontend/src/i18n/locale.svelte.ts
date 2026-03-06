@@ -28,8 +28,12 @@ export function detectLocale(): Locale {
 
 function loadLocale(): Locale {
   if (!browser) return "en";
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored === "en" || stored === "id") return stored;
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored === "en" || stored === "id") return stored;
+  } catch {
+    // localStorage may be unavailable in test environments
+  }
   return detectLocale();
 }
 

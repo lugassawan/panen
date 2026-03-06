@@ -1,4 +1,18 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("../i18n", () => ({
+  t: (key: string) => {
+    const translations: Record<string, string> = {
+      "indicator.buyZone": "Buy Zone",
+      "indicator.averageUp": "Average Up",
+      "indicator.hold": "Hold",
+      "indicator.overvalued": "Overvalued",
+      "indicator.unknown": "Unknown",
+    };
+    return translations[key] ?? key;
+  },
+}));
+
 import { getDividendIndicatorDisplay } from "./dividend-indicator";
 
 describe("getDividendIndicatorDisplay", () => {

@@ -10,20 +10,21 @@ import {
   Shield,
 } from "lucide-svelte";
 import type { Component } from "svelte";
+import { t } from "../i18n";
 import SyncIndicator from "../lib/components/SyncIndicator.svelte";
 import type { Page } from "../lib/types";
 
 let { currentPage, onNavigate }: { currentPage: Page; onNavigate: (page: Page) => void } = $props();
 
-const navItems: { page: Page; label: string; icon: Component }[] = [
-  { page: "lookup", label: "Stock Lookup", icon: Search },
-  { page: "watchlist", label: "Watchlist", icon: Bookmark },
-  { page: "screener", label: "Screener", icon: Filter },
-  { page: "portfolio", label: "Portfolio", icon: Briefcase },
-  { page: "payday", label: "Payday", icon: CalendarDays },
-  { page: "crashplaybook", label: "Crash Playbook", icon: Shield },
-  { page: "brokerage", label: "Brokerage", icon: Landmark },
-  { page: "settings", label: "Settings", icon: Settings },
+const navItems: { page: Page; labelKey: string; icon: Component }[] = [
+  { page: "lookup", labelKey: "nav.lookup", icon: Search },
+  { page: "watchlist", labelKey: "nav.watchlist", icon: Bookmark },
+  { page: "screener", labelKey: "nav.screener", icon: Filter },
+  { page: "portfolio", labelKey: "nav.portfolio", icon: Briefcase },
+  { page: "payday", labelKey: "nav.payday", icon: CalendarDays },
+  { page: "crashplaybook", labelKey: "nav.crashPlaybook", icon: Shield },
+  { page: "brokerage", labelKey: "nav.brokerage", icon: Landmark },
+  { page: "settings", labelKey: "nav.settings", icon: Settings },
 ];
 </script>
 
@@ -50,7 +51,7 @@ const navItems: { page: Page; label: string; icon: Component }[] = [
           aria-current={currentPage === item.page ? "page" : undefined}
         >
           <item.icon size={20} strokeWidth={1.5} class="shrink-0" />
-          {item.label}
+          {t(item.labelKey)}
         </button>
       </li>
     {/each}

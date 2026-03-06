@@ -1,5 +1,15 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("../../i18n", () => ({
+  t: (key: string) => {
+    const translations: Record<string, string> = {
+      "mode.value": "Value",
+      "mode.dividend": "Dividend",
+    };
+    return translations[key] ?? key;
+  },
+}));
+
 describe("mode store", () => {
   afterEach(() => {
     vi.resetModules();

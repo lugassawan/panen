@@ -1,6 +1,46 @@
 import { render, screen, within } from "@testing-library/svelte";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
+
+vi.mock("./i18n", () => ({
+  locale: { current: "en" },
+  t: (key: string, params?: Record<string, string | number>) => {
+    const keys: Record<string, string> = {
+      "nav.lookup": "Stock Lookup",
+      "nav.watchlist": "Watchlist",
+      "nav.screener": "Screener",
+      "nav.portfolio": "Portfolio",
+      "nav.payday": "Payday",
+      "nav.crashPlaybook": "Crash Playbook",
+      "nav.brokerage": "Brokerage",
+      "nav.settings": "Settings",
+      "nav.searchPages": "Search pages...",
+      "nav.noResults": "No results found",
+      "settings.title": "Settings",
+      "settings.language": "Language",
+      "settings.english": "English",
+      "settings.indonesian": "Bahasa Indonesia",
+      "settings.theme": "Theme",
+      "settings.dataRefresh": "Data Refresh",
+      "settings.autoRefresh": "Auto Refresh",
+      "settings.autoRefreshTooltip":
+        "Automatically refresh stock data in the background at the configured interval",
+      "settings.refreshInterval": "Refresh Interval",
+      "settings.refreshNow": "Refresh Now",
+      "settings.syncing": "Syncing...",
+      "settings.about": "About",
+      "settings.version": "Version",
+      "settings.checkForUpdates": "Check for Updates",
+      "settings.settingsSaved": "Settings saved",
+    };
+    let value = keys[key] ?? key;
+    if (params) {
+      value = value.replace(/\{(\w+)\}/g, (_, name) => String(params[name] ?? `{${name}}`));
+    }
+    return value;
+  },
+}));
+
 import App from "./App.svelte";
 
 vi.mock("../wailsjs/go/backend/App", () => ({
@@ -138,7 +178,6 @@ describe("App navigation", () => {
 
     expect(screen.getByLabelText("Language")).toBeInTheDocument();
     expect(screen.getByText("Theme")).toBeInTheDocument();
-    expect(screen.getByText("Language selection coming in a future update")).toBeInTheDocument();
   });
 
   it("returns to Stock Lookup when clicking Lookup nav from another page", async () => {

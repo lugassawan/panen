@@ -11,6 +11,8 @@
  *   <span style:color={mode.accentColor}>Active</span>
  */
 
+import { t } from "../../i18n";
+
 export type InvestmentMode = "value" | "dividend";
 
 export interface ModeConfig {
@@ -52,7 +54,8 @@ function createModeStore() {
 
     /** Full config for the active mode */
     get config(): ModeConfig {
-      return MODE_CONFIG[active];
+      const base = MODE_CONFIG[active];
+      return { ...base, label: t(`mode.${active}`) };
     },
 
     /** Whether value mode is active */

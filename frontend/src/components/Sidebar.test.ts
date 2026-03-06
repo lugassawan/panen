@@ -2,6 +2,25 @@ import { render, screen } from "@testing-library/svelte";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
+vi.mock("../i18n", () => ({
+  locale: { current: "en" },
+  t: (key: string) => {
+    const keys: Record<string, string> = {
+      "nav.lookup": "Stock Lookup",
+      "nav.watchlist": "Watchlist",
+      "nav.screener": "Screener",
+      "nav.portfolio": "Portfolio",
+      "nav.payday": "Payday",
+      "nav.crashPlaybook": "Crash Playbook",
+      "nav.brokerage": "Brokerage",
+      "nav.settings": "Settings",
+      "nav.searchPages": "Search pages...",
+      "nav.noResults": "No results found",
+    };
+    return keys[key] ?? key;
+  },
+}));
+
 vi.mock("../../wailsjs/runtime/runtime", () => ({
   EventsOn: vi.fn(),
 }));

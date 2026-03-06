@@ -1,9 +1,10 @@
 <script lang="ts">
+import { t } from "../../i18n";
 import { formatRelativeTime } from "../format";
 
 let {
   date,
-  label = "Last updated",
+  label = t("format.lastUpdated"),
   class: className = "",
 }: {
   date: string | Date;
