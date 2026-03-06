@@ -47,8 +47,16 @@ function resolve(key: string, translations: Translations): string | undefined {
   return typeof current === "string" ? current : undefined;
 }
 
+function applyLang(loc: Locale) {
+  if (browser) {
+    document.documentElement.lang = loc;
+  }
+}
+
 function createLocaleStore() {
-  let active = $state<Locale>(loadLocale());
+  const initial = loadLocale();
+  let active = $state<Locale>(initial);
+  applyLang(initial);
 
   return {
     get current(): Locale {
@@ -60,6 +68,7 @@ function createLocaleStore() {
       if (browser) {
         localStorage.setItem(STORAGE_KEY, loc);
       }
+      applyLang(loc);
     },
 
     toggle() {

@@ -4,8 +4,20 @@ function intlLocale(): string {
   return locale.current === "id" ? "id-ID" : "en-US";
 }
 
+const cache = new Map<string, Intl.NumberFormat>();
+
+function getFormatter(options: Intl.NumberFormatOptions): Intl.NumberFormat {
+  const key = `${intlLocale()}:${JSON.stringify(options)}`;
+  let fmt = cache.get(key);
+  if (!fmt) {
+    fmt = new Intl.NumberFormat(intlLocale(), options);
+    cache.set(key, fmt);
+  }
+  return fmt;
+}
+
 export function formatRupiah(value: number): string {
-  return new Intl.NumberFormat(intlLocale(), {
+  return getFormatter({
     style: "currency",
     currency: "IDR",
     minimumFractionDigits: 0,
@@ -14,7 +26,7 @@ export function formatRupiah(value: number): string {
 }
 
 export function formatDecimal(value: number, digits = 2): string {
-  return new Intl.NumberFormat(intlLocale(), {
+  return getFormatter({
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
   }).format(value);
