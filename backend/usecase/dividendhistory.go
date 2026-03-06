@@ -2,7 +2,7 @@ package usecase
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"sync"
 
 	"github.com/lugassawan/panen/backend/domain/dividend"
@@ -134,7 +134,7 @@ func (s *DividendHistoryService) GetDividendIncomeSummary(
 	for _, h := range holdings {
 		events, err := s.GetDividendHistory(ctx, h.Ticker)
 		if err != nil {
-			log.Printf("warn: failed to fetch dividend history for %s: %v", h.Ticker, err)
+			slog.Warn("failed to fetch dividend history", "ticker", h.Ticker, logKeyErr, err)
 			continue
 		}
 
@@ -189,7 +189,7 @@ func (s *DividendHistoryService) GetDividendCalendar(
 	for _, h := range holdings {
 		events, err := s.GetDividendHistory(ctx, h.Ticker)
 		if err != nil {
-			log.Printf("warn: failed to fetch dividend history for %s: %v", h.Ticker, err)
+			slog.Warn("failed to fetch dividend history", "ticker", h.Ticker, logKeyErr, err)
 			continue
 		}
 

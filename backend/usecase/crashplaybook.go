@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"math"
 	"strconv"
 	"sync"
@@ -119,7 +119,7 @@ func (s *CrashPlaybookService) GetMarketStatus(ctx context.Context) (*crashplayb
 			Source:     s.provider.Source(),
 		}
 		if upsertErr := s.stockData.Upsert(ctx, data); upsertErr != nil {
-			log.Printf("warn: failed to persist IHSG data: %v", upsertErr)
+			slog.Warn("failed to persist IHSG data", logKeyErr, upsertErr)
 		}
 	}
 
