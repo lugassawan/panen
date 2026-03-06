@@ -40,5 +40,5 @@ let {
   aria-label={ariaLabel}
   {oninput}
   {onchange}
-  class="w-full rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary outline-none focus-border focus-ring {extraClass}"
+  class="w-full rounded border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary outline-none transition-fast hover:border-border-strong focus-border disabled:opacity-60 focus-ring {extraClass}"
 />
