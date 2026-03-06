@@ -17,9 +17,7 @@ const tabs: { id: InvestmentMode; label: string; emoji: string }[] = [
       onclick={() => mode.set(tab.id)}
       class="flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-fast focus-ring
         {mode.current === tab.id
-          ? tab.id === 'value'
-            ? 'bg-green-700 text-text-inverse'
-            : 'bg-gold-500 text-text-inverse'
+          ? mode.config.tabActiveClass
           : 'text-text-secondary hover:text-text-primary'}"
     >
       <span aria-hidden="true">{tab.emoji}</span> {tab.label}
