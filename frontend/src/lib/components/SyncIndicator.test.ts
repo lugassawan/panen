@@ -2,6 +2,23 @@ import { cleanup, render, screen } from "@testing-library/svelte";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("../../i18n", () => ({
+  locale: { current: "en" },
+  t: (key: string, params?: Record<string, string | number>) => {
+    const keys: Record<string, string> = {
+      "format.notSynced": "Not synced yet",
+      "format.minutesAgo": "{count}m ago",
+      "sync.syncing": "Syncing {ticker}",
+      "sync.retry": "Retry",
+    };
+    let value = keys[key] ?? key;
+    if (params) {
+      value = value.replace(/\{(\w+)\}/g, (_, name) => String(params[name] ?? `{${name}}`));
+    }
+    return value;
+  },
+}));
+
 const { mockTriggerRefresh, mockSync } = vi.hoisted(() => ({
   mockTriggerRefresh: vi.fn(() => Promise.resolve()),
   mockSync: {

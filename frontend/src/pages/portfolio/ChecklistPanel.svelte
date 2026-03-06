@@ -5,6 +5,7 @@ import {
   ResetChecklist,
   ToggleManualCheck,
 } from "../../../wailsjs/go/backend/App";
+import { t } from "../../i18n";
 import Button from "../../lib/components/Button.svelte";
 import { toastStore } from "../../lib/stores/toast.svelte";
 import type { ActionType, ChecklistEvaluationResponse, CheckResultResponse } from "../../lib/types";
@@ -72,7 +73,7 @@ $effect(() => {
       role="status"
     >
       <LoaderCircle size={20} strokeWidth={2} class="animate-spin" />
-      <span>Evaluating checklist…</span>
+      <span>{t("checklist.evaluating")}</span>
     </div>
   {:else if error}
     <div
@@ -87,7 +88,7 @@ $effect(() => {
       <h4
         class="mb-2 text-xs font-semibold uppercase tracking-wider text-text-muted"
       >
-        Auto Checks
+        {t("checklist.autoChecks")}
       </h4>
       <div class="space-y-2">
         {#each evaluation.checks.filter((c) => c.type === "AUTO") as check}
@@ -117,7 +118,7 @@ $effect(() => {
         <h4
           class="mb-2 text-xs font-semibold uppercase tracking-wider text-text-muted"
         >
-          Manual Checks
+          {t("checklist.manualChecks")}
         </h4>
         <div class="space-y-2">
           {#each evaluation.checks.filter((c) => c.type === "MANUAL") as check}
@@ -151,14 +152,13 @@ $effect(() => {
           : 'text-text-secondary'}"
       >
         {#if evaluation.allPassed}
-          All checks passed
+          {t("checklist.allPassed")}
         {:else}
-          {evaluation.checks.filter((c) => c.status === "PASS").length} / {evaluation
-            .checks.length} checks passed
+          {t("checklist.checksPassed", { passed: evaluation.checks.filter((c) => c.status === "PASS").length, total: evaluation.checks.length })}
         {/if}
       </p>
       <Button variant="ghost" size="sm" onclick={handleReset}>
-        Reset
+        {t("checklist.reset")}
       </Button>
     </div>
 

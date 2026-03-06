@@ -1,6 +1,79 @@
 import { render, screen, within } from "@testing-library/svelte";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
+
+vi.mock("./i18n", () => ({
+  locale: { current: "en" },
+  t: (key: string, params?: Record<string, string | number>) => {
+    const keys: Record<string, string> = {
+      "nav.lookup": "Stock Lookup",
+      "nav.watchlist": "Watchlist",
+      "nav.screener": "Screener",
+      "nav.portfolio": "Portfolio",
+      "nav.payday": "Payday",
+      "nav.crashPlaybook": "Crash Playbook",
+      "nav.brokerage": "Brokerage",
+      "nav.settings": "Settings",
+      "nav.searchPages": "Search pages...",
+      "nav.noResults": "No results found",
+      "settings.title": "Settings",
+      "settings.language": "Language",
+      "settings.english": "English",
+      "settings.indonesian": "Bahasa Indonesia",
+      "settings.theme": "Theme",
+      "settings.dataRefresh": "Data Refresh",
+      "settings.autoRefresh": "Auto Refresh",
+      "settings.autoRefreshTooltip":
+        "Automatically refresh stock data in the background at the configured interval",
+      "settings.refreshInterval": "Refresh Interval",
+      "settings.refreshNow": "Refresh Now",
+      "settings.syncing": "Syncing...",
+      "settings.about": "About",
+      "settings.version": "Version",
+      "settings.checkForUpdates": "Check for Updates",
+      "settings.settingsSaved": "Settings saved",
+      "screener.title": "Stock Screener",
+      "screener.subtitle": "Screen stocks against fundamental criteria by risk profile",
+      "screener.configurePrompt": "Configure and run a screen",
+      "screener.configureDescription":
+        'Select a universe, choose a risk profile, and click "Run Screen" to discover stocks.',
+      "screener.universe": "Universe",
+      "screener.index": "Index",
+      "screener.selectIndex": "Select index...",
+      "screener.riskProfile": "Risk Profile",
+      "screener.conservative": "Conservative",
+      "screener.moderate": "Moderate",
+      "screener.aggressive": "Aggressive",
+      "screener.conservativeThresholds": "ROE > 15%, DER < 0.8",
+      "screener.moderateThresholds": "ROE > 12%, DER < 1.0",
+      "screener.aggressiveThresholds": "ROE > 8%, DER < 1.5",
+      "screener.runScreen": "Run Screen",
+      "screener.sectorFilter": "Sector Filter",
+      "screener.allSectors": "All sectors",
+      "screener.sector": "Sector",
+      "screener.custom": "Custom",
+      "portfolio.title": "Portfolios",
+      "portfolio.loading": "Loading portfolio...",
+      "portfolio.setupBrokerage": "Set Up Your Brokerage",
+      "portfolio.newPortfolio": "New Portfolio",
+      "portfolio.createPortfolio": "Create Your Portfolio",
+      "brokerage.title": "Brokerage Accounts",
+      "brokerage.addAccount": "Add Account",
+      "brokerage.loading": "Loading accounts...",
+      "brokerage.noAccounts": "No brokerage accounts yet",
+      "brokerage.noAccountsDesc":
+        "Add your first brokerage account to start tracking fees and managing portfolios.",
+      "common.retry": "Retry",
+      "common.loading": "Loading...",
+    };
+    let value = keys[key] ?? key;
+    if (params) {
+      value = value.replace(/\{(\w+)\}/g, (_, name) => String(params[name] ?? `{${name}}`));
+    }
+    return value;
+  },
+}));
+
 import App from "./App.svelte";
 
 vi.mock("../wailsjs/go/backend/App", () => ({
@@ -138,7 +211,6 @@ describe("App navigation", () => {
 
     expect(screen.getByLabelText("Language")).toBeInTheDocument();
     expect(screen.getByText("Theme")).toBeInTheDocument();
-    expect(screen.getByText("Language selection coming in a future update")).toBeInTheDocument();
   });
 
   it("returns to Stock Lookup when clicking Lookup nav from another page", async () => {

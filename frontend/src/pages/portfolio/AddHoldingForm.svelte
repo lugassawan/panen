@@ -1,5 +1,6 @@
 <script lang="ts">
 import { AddHolding } from "../../../wailsjs/go/backend/App";
+import { t } from "../../i18n";
 import Input from "../../lib/components/Input.svelte";
 
 let { portfolioId, onAdded }: { portfolioId: string; onAdded: () => void } = $props();
@@ -13,19 +14,19 @@ let error = $state<string | null>(null);
 
 async function submit() {
   error = null;
-  const t = ticker.trim().toUpperCase();
-  if (!t) {
-    error = "Ticker is required";
+  const normalizedTicker = ticker.trim().toUpperCase();
+  if (!normalizedTicker) {
+    error = t("holding.tickerRequired");
     return;
   }
   if (buyPrice <= 0) {
-    error = "Buy price must be greater than 0";
+    error = t("holding.buyPriceError");
     return;
   }
 
   loading = true;
   try {
-    await AddHolding(portfolioId, t, buyPrice, lots, date);
+    await AddHolding(portfolioId, normalizedTicker, buyPrice, lots, date);
     ticker = "";
     buyPrice = 0;
     lots = 1;
@@ -47,12 +48,12 @@ async function submit() {
 >
 	<div class="w-28">
 		<label for="holding-ticker" class="mb-1 block text-sm text-text-secondary">
-			Ticker
+			{t("holding.ticker")}
 		</label>
 		<Input
 			id="holding-ticker"
 			bind:value={ticker}
-			placeholder="e.g. BBCA"
+			placeholder={t("holding.tickerPlaceholder")}
 			class="uppercase placeholder:normal-case placeholder:text-text-muted"
 		/>
 	</div>
@@ -62,7 +63,7 @@ async function submit() {
 			for="holding-buy-price"
 			class="mb-1 block text-sm text-text-secondary"
 		>
-			Buy Price
+			{t("holding.buyPrice")}
 		</label>
 		<Input
 			id="holding-buy-price"
@@ -74,7 +75,7 @@ async function submit() {
 
 	<div class="w-20">
 		<label for="holding-lots" class="mb-1 block text-sm text-text-secondary">
-			Lots
+			{t("holding.lots")}
 		</label>
 		<Input
 			id="holding-lots"
@@ -86,7 +87,7 @@ async function submit() {
 
 	<div>
 		<label for="holding-date" class="mb-1 block text-sm text-text-secondary">
-			Date
+			{t("holding.date")}
 		</label>
 		<Input
 			id="holding-date"
@@ -100,7 +101,7 @@ async function submit() {
 		disabled={loading}
 		class="rounded bg-green-700 px-5 py-2 text-sm font-medium text-text-inverse hover:bg-green-800 disabled:opacity-50 focus-ring transition-fast"
 	>
-		{loading ? "Adding…" : "Add Holding"}
+		{loading ? t("holding.adding") : t("holding.addHolding")}
 	</button>
 
 	{#if error}

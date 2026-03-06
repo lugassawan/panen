@@ -10,6 +10,7 @@ import {
   SaveCrashCapital,
   SaveDeploymentSettings,
 } from "../../../wailsjs/go/backend/App";
+import { t } from "../../i18n";
 import Button from "../../lib/components/Button.svelte";
 import Select from "../../lib/components/Select.svelte";
 import Tooltip from "../../lib/components/Tooltip.svelte";
@@ -147,24 +148,24 @@ $effect(() => {
 </script>
 
 <div class="p-6">
-  <h1 class="font-display text-2xl font-bold text-text-primary">Crash Playbook</h1>
-  <p class="mt-1 text-sm text-text-secondary">Pre-calculated crash response levels for your holdings.</p>
+  <h1 class="font-display text-2xl font-bold text-text-primary">{t("crashPlaybook.title")}</h1>
+  <p class="mt-1 text-sm text-text-secondary">{t("crashPlaybook.subtitle")}</p>
 
   {#if state === "loading"}
     <div class="flex items-center justify-center gap-2 py-16 text-text-secondary" role="status">
       <LoaderCircle size={20} strokeWidth={2} class="animate-spin" />
-      <span class="text-sm">Loading crash playbook...</span>
+      <span class="text-sm">{t("crashPlaybook.loading")}</span>
     </div>
   {:else if state === "error"}
     <div class="mt-6 rounded-lg border border-negative bg-negative-bg p-4">
       <p class="text-sm text-negative">{error}</p>
       <div class="mt-3">
-        <Button variant="secondary" size="sm" onclick={loadPortfolios}>Retry</Button>
+        <Button variant="secondary" size="sm" onclick={loadPortfolios}>{t("common.retry")}</Button>
       </div>
     </div>
   {:else if state === "empty"}
     <div class="mt-6 text-center text-sm text-text-secondary">
-      No portfolios found. Create a portfolio first.
+      {t("crashPlaybook.noPortfolios")}
     </div>
   {:else if state === "ready" && playbook}
     <div class="mt-4">
@@ -181,7 +182,7 @@ $effect(() => {
 
     {#if playbook.market.condition !== "NORMAL"}
       <div class="mt-2 text-xs text-text-secondary">
-        Refresh interval: every {Math.floor(playbook.refreshMin / 60)}h (auto-adjusted)
+        {t("crashPlaybook.refreshInterval", { hours: String(Math.floor(playbook.refreshMin / 60)) })}
       </div>
     {/if}
 
@@ -193,7 +194,7 @@ $effect(() => {
       </div>
     {:else}
       <div class="mt-6 text-center text-sm text-text-secondary">
-        No holdings with stock data. Add holdings to your portfolio first.
+        {t("crashPlaybook.noHoldings")}
       </div>
     {/if}
 

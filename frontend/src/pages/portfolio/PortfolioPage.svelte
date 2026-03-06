@@ -8,6 +8,7 @@ import {
   ListPortfolios,
 } from "../../../wailsjs/go/backend/App";
 import ConfirmDialog from "../../components/ConfirmDialog.svelte";
+import { t } from "../../i18n";
 import { toastStore } from "../../lib/stores/toast.svelte";
 import type {
   ActionType,
@@ -108,7 +109,7 @@ load();
   {#if state === "loading"}
     <div class="flex items-center justify-center gap-2 py-12 text-text-secondary" role="status">
       <LoaderCircle size={20} strokeWidth={2} class="animate-spin" />
-      <span>Loading portfolio…</span>
+      <span>{t("portfolio.loading")}</span>
     </div>
   {:else if state === "error"}
     <div class="rounded border border-negative/20 bg-negative-bg px-4 py-3 text-sm text-negative" role="alert">
@@ -127,7 +128,7 @@ load();
     />
   {:else if state === "create-portfolio"}
     <div class="mx-auto max-w-lg">
-      <h2 class="mb-6 text-xl font-semibold text-text-primary">Create Your Portfolio</h2>
+      <h2 class="mb-6 text-xl font-semibold text-text-primary">{t("portfolio.createPortfolio")}</h2>
       <div class="rounded border border-border-default bg-bg-elevated p-6">
         <PortfolioForm
           brokerageAcctId={brokerageAcctId ?? ""}
@@ -151,7 +152,7 @@ load();
     />
   {:else if state === "edit-portfolio" && editingPortfolio}
     <div class="mx-auto max-w-lg">
-      <h3 class="mb-4 text-lg font-semibold text-text-primary">Edit Portfolio</h3>
+      <h3 class="mb-4 text-lg font-semibold text-text-primary">{t("portfolio.editPortfolio")}</h3>
       <div class="rounded border border-border-default bg-bg-elevated p-6">
         <PortfolioForm
           existingPortfolio={editingPortfolio}
@@ -187,12 +188,12 @@ load();
           checklistAction = null;
           state = "view";
         }}
-        aria-label="Back to portfolio"
+        aria-label={t("portfolio.backToPortfolio")}
       >
         <ArrowLeft size={20} strokeWidth={2} />
       </button>
       <h2 class="text-xl font-semibold text-text-primary">
-        {checklistTicker} Checklist
+        {t("portfolio.checklist", { ticker: checklistTicker })}
       </h2>
     </div>
 
@@ -216,8 +217,8 @@ load();
 
 {#if deletingPortfolio}
   <ConfirmDialog
-    title="Delete Portfolio"
-    confirmLabel="Delete"
+    title={t("portfolio.deletePortfolio")}
+    confirmLabel={t("common.delete")}
     confirmVariant="danger"
     loading={deleteLoading}
     onConfirm={confirmDelete}
@@ -227,7 +228,7 @@ load();
     }}
   >
     <p>Are you sure you want to delete <strong>{deletingPortfolio.name}</strong>?</p>
-    <p class="mt-1">This action cannot be undone.</p>
+    <p class="mt-1">{t("common.cannotUndo")}</p>
     {#if deleteError}
       <div class="mt-3 rounded border border-negative/20 bg-negative-bg px-3 py-2 text-sm text-negative" role="alert">
         {deleteError}

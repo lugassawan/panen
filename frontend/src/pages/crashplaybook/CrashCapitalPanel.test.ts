@@ -33,8 +33,8 @@ describe("CrashCapitalPanel", () => {
     render(CrashCapitalPanel, {
       props: { capital: makeCapital(), plan: makePlan(), onSave: vi.fn(), onOpenSettings: vi.fn() },
     });
-    expect(document.body.textContent).toContain("3.000.000");
-    expect(document.body.textContent).toContain("4.000.000");
+    expect(document.body.textContent).toContain("3,000,000");
+    expect(document.body.textContent).toContain("4,000,000");
   });
 
   it("shows Deployment Settings link", () => {

@@ -1,6 +1,56 @@
 import { render, screen, waitFor } from "@testing-library/svelte";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("../../i18n", () => ({
+  t: (key: string, params?: Record<string, string | number>) => {
+    const translations: Record<string, string> = {
+      "nav.settings": "Settings",
+      "settings.title": "Settings",
+      "settings.theme": "Theme",
+      "settings.language": "Language",
+      "settings.english": "English",
+      "settings.indonesian": "Bahasa Indonesia",
+      "settings.dataRefresh": "Data Refresh",
+      "settings.autoRefresh": "Auto Refresh",
+      "settings.autoRefreshTooltip":
+        "Automatically refresh stock data in the background at the configured interval",
+      "settings.refreshInterval": "Refresh Interval",
+      "settings.every3Hours": "Every 3 hours",
+      "settings.every6Hours": "Every 6 hours",
+      "settings.every12Hours": "Every 12 hours",
+      "settings.every24Hours": "Every 24 hours",
+      "settings.lastRefreshed": "Last refreshed:",
+      "settings.refreshNow": "Refresh Now",
+      "settings.syncing": "Syncing...",
+      "settings.about": "About",
+      "settings.version": "Version",
+      "settings.checkForUpdates": "Check for Updates",
+      "settings.upToDate": "You're up to date.",
+      "settings.settingsSaved": "Settings saved",
+      "settings.loadError": "Failed to load settings: {error}",
+      "settings.saveError": "Failed to save settings: {error}",
+      "settings.updateError": "Failed to check for updates: {error}",
+      "settings.updateAvailable": "Panen {version} is available.",
+      "settings.viewRelease": "View Release",
+      "common.loading": "Loading...",
+      "format.lastUpdated": "Last updated",
+      "format.notSynced": "Not synced yet",
+    };
+    let value = translations[key] ?? key;
+    if (params) {
+      value = value.replace(/\{(\w+)\}/g, (_, name) => String(params[name] ?? `{${name}}`));
+    }
+    return value;
+  },
+  locale: {
+    get current() {
+      return "en";
+    },
+    set() {},
+    toggle() {},
+  },
+}));
+
 // Mock Wails runtime to avoid EventsOn error from SyncIndicator/sync store.
 vi.mock("../../../wailsjs/runtime/runtime", () => ({
   EventsOn: vi.fn(),

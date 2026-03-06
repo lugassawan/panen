@@ -1,5 +1,6 @@
 <script lang="ts">
 import { Pencil, Plus, Trash2 } from "lucide-svelte";
+import { t } from "../../i18n";
 import Button from "../../lib/components/Button.svelte";
 import { formatRupiah } from "../../lib/format";
 import type { PortfolioResponse } from "../../lib/types";
@@ -21,11 +22,11 @@ const MODE_BADGE: Record<string, string> = {
 </script>
 
 <div class="mb-6 flex items-center justify-between">
-  <h2 class="text-xl font-semibold text-text-primary">Portfolios</h2>
+  <h2 class="text-xl font-semibold text-text-primary">{t("portfolio.title")}</h2>
   {#if portfolios.length < 2}
     <Button onclick={onCreate}>
       <Plus size={16} strokeWidth={2} />
-      New Portfolio
+      {t("portfolio.newPortfolio")}
     </Button>
   {/if}
 </div>
@@ -44,22 +45,22 @@ const MODE_BADGE: Record<string, string> = {
         <div class="flex items-center gap-2">
           <p class="font-medium text-text-primary">{portfolio.name}</p>
           <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {MODE_BADGE[portfolio.mode]}" data-testid="mode-badge">
-            {portfolio.mode === "VALUE" ? "Value" : "Dividend"}
+            {portfolio.mode === "VALUE" ? t("mode.value") : t("mode.dividend")}
           </span>
         </div>
         <div class="mt-1 flex gap-4 text-sm text-text-secondary">
-          <span>Risk: {portfolio.riskProfile.charAt(0) + portfolio.riskProfile.slice(1).toLowerCase()}</span>
-          <span>Capital: <span class="font-mono">{formatRupiah(portfolio.capital)}</span></span>
+          <span>{t("portfolio.risk")} {portfolio.riskProfile.charAt(0) + portfolio.riskProfile.slice(1).toLowerCase()}</span>
+          <span>{t("portfolio.capital")} <span class="font-mono">{formatRupiah(portfolio.capital)}</span></span>
         </div>
       </button>
       <div class="flex gap-2">
         <Button variant="ghost" size="sm" onclick={() => onEdit(portfolio)}>
           <Pencil size={14} strokeWidth={2} />
-          Edit
+          {t("common.edit")}
         </Button>
         <Button variant="ghost" size="sm" onclick={() => onDelete(portfolio)}>
           <Trash2 size={14} strokeWidth={2} />
-          Delete
+          {t("common.delete")}
         </Button>
       </div>
     </div>

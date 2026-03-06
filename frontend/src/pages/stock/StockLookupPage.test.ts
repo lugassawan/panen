@@ -56,8 +56,8 @@ describe("StockLookupPage", () => {
     await user.click(screen.getByRole("button", { name: /Lookup/i }));
 
     expect(await screen.findByText(/Undervalued/)).toBeInTheDocument();
-    expect(screen.getByText(/Rp\s*9\.250/)).toBeInTheDocument();
-    expect(screen.getByTestId("graham-number")).toHaveTextContent("Rp");
+    expect(screen.getByText(/IDR\s*9,250/)).toBeInTheDocument();
+    expect(screen.getByTestId("graham-number")).toHaveTextContent("IDR");
   });
 
   it("shows loading state during fetch", async () => {

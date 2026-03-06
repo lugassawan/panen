@@ -1,6 +1,7 @@
 <script lang="ts">
 import { untrack } from "svelte";
 import { CreateBrokerageAccount, UpdateBrokerageAccount } from "../../wailsjs/go/backend/App";
+import { t } from "../i18n";
 import Button from "../lib/components/Button.svelte";
 import Input from "../lib/components/Input.svelte";
 import Select from "../lib/components/Select.svelte";
@@ -64,7 +65,7 @@ let feesDisabled = $derived(!isManualFee && brokerCode !== "" && brokerCode !== 
 async function submit() {
   error = null;
   if (!name.trim()) {
-    error = "Broker name is required";
+    error = t("brokerage.brokerRequired");
     return;
   }
 
@@ -109,27 +110,27 @@ async function submit() {
 >
   {#if brokerConfigs.length > 0}
     <div>
-      <label for="broker-select" class="mb-1 block text-sm text-text-secondary">Broker</label>
+      <label for="broker-select" class="mb-1 block text-sm text-text-secondary">{t("brokerage.broker")}</label>
       <Select
         id="broker-select"
         bind:value={brokerCode}
         onchange={(e) => onBrokerSelect(e.currentTarget.value)}
       >
-        <option value="">Select a broker…</option>
+        <option value="">{t("brokerage.selectBroker")}</option>
         {#each brokerConfigs as config}
           <option value={config.code}>{config.name} ({config.code})</option>
         {/each}
-        <option value="OTHER">Other (manual)</option>
+        <option value="OTHER">{t("brokerage.otherManual")}</option>
       </Select>
     </div>
   {/if}
 
   <div>
-    <label for="broker-name" class="mb-1 block text-sm text-text-secondary">Broker Name</label>
+    <label for="broker-name" class="mb-1 block text-sm text-text-secondary">{t("brokerage.brokerName")}</label>
     <Input
       id="broker-name"
       bind:value={name}
-      placeholder="e.g. Ajaib, Stockbit, IPOT"
+      placeholder={t("brokerage.brokerPlaceholder")}
       disabled={brokerCode !== "" && brokerCode !== "OTHER"}
       class="placeholder:text-text-muted disabled:opacity-60"
     />
@@ -137,7 +138,7 @@ async function submit() {
 
   <div class="grid grid-cols-3 gap-4">
     <div>
-      <label for="buy-fee" class="mb-1 block text-sm text-text-secondary">Buy Fee %</label>
+      <label for="buy-fee" class="mb-1 block text-sm text-text-secondary">{t("brokerage.buyFee")}</label>
       <Input
         id="buy-fee"
         type="number"
@@ -149,7 +150,7 @@ async function submit() {
       />
     </div>
     <div>
-      <label for="sell-fee" class="mb-1 block text-sm text-text-secondary">Sell Fee %</label>
+      <label for="sell-fee" class="mb-1 block text-sm text-text-secondary">{t("brokerage.sellFee")}</label>
       <Input
         id="sell-fee"
         type="number"
@@ -161,7 +162,7 @@ async function submit() {
       />
     </div>
     <div>
-      <label for="sell-tax" class="mb-1 block text-sm text-text-secondary">Sell Tax %</label>
+      <label for="sell-tax" class="mb-1 block text-sm text-text-secondary">{t("brokerage.sellTax")}</label>
       <Input
         id="sell-tax"
         type="number"
@@ -182,7 +183,7 @@ async function submit() {
         onchange={(e) => onManualFeeToggle(e.currentTarget.checked)}
         class="rounded border-border-default focus-ring"
       />
-      Custom fees
+      {t("brokerage.customFees")}
     </label>
   {/if}
 
@@ -197,13 +198,13 @@ async function submit() {
 
   <div class="flex gap-3">
     {#if onCancel}
-      <Button variant="secondary" onclick={onCancel}>Cancel</Button>
+      <Button variant="secondary" onclick={onCancel}>{t("common.cancel")}</Button>
     {/if}
     <Button type="submit" {loading}>
       {#if loading}
-        {isEdit ? "Saving…" : "Creating…"}
+        {isEdit ? t("brokerage.saving") : t("brokerage.creating")}
       {:else}
-        {isEdit ? "Save Changes" : "Create Account"}
+        {isEdit ? t("brokerage.saveChanges") : t("brokerage.createAccount")}
       {/if}
     </Button>
   </div>

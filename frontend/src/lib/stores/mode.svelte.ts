@@ -11,6 +11,8 @@
  *   <span style:color={mode.accentColor}>Active</span>
  */
 
+import { t } from "../../i18n";
+
 export type InvestmentMode = "value" | "dividend";
 
 export interface ModeConfig {
@@ -22,9 +24,10 @@ export interface ModeConfig {
   containerClass: string;
 }
 
-const MODE_CONFIG: Record<InvestmentMode, ModeConfig> = {
+type ModeStyle = Omit<ModeConfig, "label">;
+
+const MODE_CONFIG: Record<InvestmentMode, ModeStyle> = {
   value: {
-    label: "Value",
     emoji: "\u{1F4C8}",
     accent: "var(--color-green-700)",
     accentLight: "var(--color-green-100)",
@@ -32,7 +35,6 @@ const MODE_CONFIG: Record<InvestmentMode, ModeConfig> = {
     containerClass: "mode-value",
   },
   dividend: {
-    label: "Dividend",
     emoji: "\u{1F4B0}",
     accent: "var(--color-gold-500)",
     accentLight: "var(--color-gold-100)",
@@ -52,7 +54,8 @@ function createModeStore() {
 
     /** Full config for the active mode */
     get config(): ModeConfig {
-      return MODE_CONFIG[active];
+      const base = MODE_CONFIG[active];
+      return { ...base, label: t(`mode.${active}`) };
     },
 
     /** Whether value mode is active */

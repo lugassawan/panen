@@ -1,4 +1,5 @@
 <script lang="ts">
+import { t } from "../../i18n";
 import { ACTION_LABELS } from "../../lib/action";
 import { formatPercent, formatRupiah } from "../../lib/format";
 import type { ActionType, SuggestionResponse } from "../../lib/types";
@@ -21,31 +22,31 @@ const isBuy = $derived(
   data-testid="suggestion-card"
 >
   <h4 class="mb-3 text-sm font-semibold text-green-700 dark:text-green-400">
-    Trade Suggestion: {ACTION_LABELS[suggestion.action as ActionType]}
+    {t("suggestion.title", { action: ACTION_LABELS[suggestion.action as ActionType] })}
   </h4>
 
   <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-    <div class="text-text-secondary">Ticker</div>
+    <div class="text-text-secondary">{t("suggestion.ticker")}</div>
     <div class="font-mono font-medium text-right">{suggestion.ticker}</div>
 
-    <div class="text-text-secondary">Lots</div>
+    <div class="text-text-secondary">{t("suggestion.lots")}</div>
     <div class="font-mono text-right">{suggestion.lots}</div>
 
-    <div class="text-text-secondary">Price/Share</div>
+    <div class="text-text-secondary">{t("suggestion.pricePerShare")}</div>
     <div class="font-mono text-right">{formatRupiah(suggestion.pricePerShare)}</div>
 
-    <div class="text-text-secondary">Gross {isBuy ? "Cost" : "Proceeds"}</div>
+    <div class="text-text-secondary">{isBuy ? t("suggestion.grossCost") : t("suggestion.grossProceeds")}</div>
     <div class="font-mono text-right">{formatRupiah(suggestion.grossCost)}</div>
 
-    <div class="text-text-secondary">Fee</div>
+    <div class="text-text-secondary">{t("suggestion.fee")}</div>
     <div class="font-mono text-right">{formatRupiah(suggestion.fee)}</div>
 
     {#if suggestion.tax > 0}
-      <div class="text-text-secondary">Tax</div>
+      <div class="text-text-secondary">{t("suggestion.tax")}</div>
       <div class="font-mono text-right">{formatRupiah(suggestion.tax)}</div>
     {/if}
 
-    <div class="text-text-secondary font-medium">Net {isBuy ? "Cost" : "Proceeds"}</div>
+    <div class="text-text-secondary font-medium">{isBuy ? t("suggestion.netCost") : t("suggestion.netProceeds")}</div>
     <div class="font-mono font-medium text-right">{formatRupiah(suggestion.netCost)}</div>
   </div>
 
@@ -53,10 +54,10 @@ const isBuy = $derived(
     <div
       class="mt-3 border-t border-green-700/10 pt-3 grid grid-cols-2 gap-x-6 gap-y-2 text-sm"
     >
-      <div class="text-text-secondary">New Avg Price</div>
+      <div class="text-text-secondary">{t("suggestion.newAvgPrice")}</div>
       <div class="font-mono text-right">{formatRupiah(suggestion.newAvgBuyPrice)}</div>
 
-      <div class="text-text-secondary">New Position</div>
+      <div class="text-text-secondary">{t("suggestion.newPosition")}</div>
       <div class="font-mono text-right">
         {suggestion.newPositionLots} lots ({formatPercent(suggestion.newPositionPct)})
       </div>
@@ -65,7 +66,7 @@ const isBuy = $derived(
     <div
       class="mt-3 border-t border-green-700/10 pt-3 grid grid-cols-2 gap-x-6 gap-y-2 text-sm"
     >
-      <div class="text-text-secondary">Capital Gain</div>
+      <div class="text-text-secondary">{t("suggestion.capitalGain")}</div>
       <div
         class="font-mono text-right {suggestion.capitalGainPct >= 0
           ? 'text-profit'

@@ -1,5 +1,6 @@
 <script lang="ts">
 import { PackageOpen } from "lucide-svelte";
+import { t } from "../../i18n";
 import Button from "../../lib/components/Button.svelte";
 import EmptyState from "../../lib/components/EmptyState.svelte";
 import Tooltip from "../../lib/components/Tooltip.svelte";
@@ -20,25 +21,25 @@ let { holdings, onChecklist }: Props = $props();
 {#if holdings.length === 0}
   <EmptyState
     icon={PackageOpen}
-    title="No holdings yet"
-    description="Add your first holding to this portfolio using the form below."
+    title={t("holding.noHoldings")}
+    description={t("holding.noHoldingsDesc")}
   />
 {:else}
   <div class="overflow-x-auto rounded border border-border-default">
     <table class="w-full text-sm" aria-label="Holdings">
       <thead class="border-b border-border-default bg-bg-secondary">
         <tr>
-          <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-text-muted">Ticker</th>
-          <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-text-muted">Avg Buy Price</th>
-          <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-text-muted">Lots</th>
-          <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-text-muted">Current Price</th>
-          <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-text-muted">P/L %</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-text-muted">{t("holding.ticker")}</th>
+          <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-text-muted">{t("holding.avgBuyPrice")}</th>
+          <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-text-muted">{t("holding.lots")}</th>
+          <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-text-muted">{t("holding.currentPrice")}</th>
+          <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-text-muted">{t("holding.plPercent")}</th>
           <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-text-muted">
-            <Tooltip text="Stock valuation verdict based on Graham analysis and risk profile">
-              <span class="underline decoration-dotted cursor-help">Verdict</span>
+            <Tooltip text={t("holding.verdictTooltip")}>
+              <span class="underline decoration-dotted cursor-help">{t("holding.verdict")}</span>
             </Tooltip>
           </th>
-          <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-text-muted">Action</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-text-muted">{t("holding.action")}</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-border-default">
@@ -84,7 +85,7 @@ let { holdings, onChecklist }: Props = $props();
                 size="sm"
                 onclick={() => onChecklist(holding.ticker)}
               >
-                Checklist
+                {t("holding.checklistButton")}
               </Button>
             </td>
           </tr>

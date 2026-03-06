@@ -10,6 +10,7 @@ import {
   Shield,
 } from "lucide-svelte";
 import type { Component } from "svelte";
+import { t } from "../../i18n";
 import { commandPalette } from "../stores/command-palette.svelte";
 import type { Page } from "../types";
 
@@ -21,25 +22,25 @@ let inputEl = $state<HTMLInputElement | null>(null);
 
 interface CommandItem {
   id: Page;
-  label: string;
+  labelKey: string;
   icon: Component;
   shortcut: string;
 }
 
 const commands: CommandItem[] = [
-  { id: "lookup", label: "Stock Lookup", icon: Search, shortcut: "1" },
-  { id: "watchlist", label: "Watchlist", icon: Bookmark, shortcut: "2" },
-  { id: "screener", label: "Screener", icon: Filter, shortcut: "3" },
-  { id: "portfolio", label: "Portfolio", icon: Briefcase, shortcut: "4" },
-  { id: "payday", label: "Payday", icon: CalendarDays, shortcut: "5" },
-  { id: "crashplaybook", label: "Crash Playbook", icon: Shield, shortcut: "6" },
-  { id: "brokerage", label: "Brokerage", icon: Landmark, shortcut: "7" },
-  { id: "settings", label: "Settings", icon: Settings, shortcut: "8" },
+  { id: "lookup", labelKey: "nav.lookup", icon: Search, shortcut: "1" },
+  { id: "watchlist", labelKey: "nav.watchlist", icon: Bookmark, shortcut: "2" },
+  { id: "screener", labelKey: "nav.screener", icon: Filter, shortcut: "3" },
+  { id: "portfolio", labelKey: "nav.portfolio", icon: Briefcase, shortcut: "4" },
+  { id: "payday", labelKey: "nav.payday", icon: CalendarDays, shortcut: "5" },
+  { id: "crashplaybook", labelKey: "nav.crashPlaybook", icon: Shield, shortcut: "6" },
+  { id: "brokerage", labelKey: "nav.brokerage", icon: Landmark, shortcut: "7" },
+  { id: "settings", labelKey: "nav.settings", icon: Settings, shortcut: "8" },
 ];
 
 let filtered = $derived(
   query.trim()
-    ? commands.filter((c) => c.label.toLowerCase().includes(query.toLowerCase()))
+    ? commands.filter((c) => t(c.labelKey).toLowerCase().includes(query.toLowerCase()))
     : commands,
 );
 
@@ -103,10 +104,10 @@ function handleKeydown(e: KeyboardEvent) {
           bind:this={inputEl}
           bind:value={query}
           type="text"
-          placeholder="Search pages..."
+          placeholder={t("nav.searchPages")}
           class="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-muted outline-none"
           role="combobox"
-          aria-label="Search pages"
+          aria-label={t("nav.searchPages")}
           aria-expanded="true"
           aria-haspopup="listbox"
           aria-autocomplete="list"
@@ -134,7 +135,7 @@ function handleKeydown(e: KeyboardEvent) {
           >
             <span class="flex items-center gap-3">
               <Icon size={16} strokeWidth={1.5} aria-hidden="true" />
-              {item.label}
+              {t(item.labelKey)}
             </span>
             <kbd class="rounded border border-border-default bg-bg-secondary px-1.5 py-0.5 text-xs text-text-muted">
               {"\u2318"}{item.shortcut}
@@ -143,7 +144,7 @@ function handleKeydown(e: KeyboardEvent) {
         {/each}
         {#if filtered.length === 0}
           <li class="px-4 py-6 text-center text-sm text-text-muted">
-            No results found
+            {t("nav.noResults")}
           </li>
         {/if}
       </ul>

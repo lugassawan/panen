@@ -8,6 +8,7 @@ import {
   ListWatchlists,
   RemoveFromWatchlist,
 } from "../../../wailsjs/go/backend/App";
+import { t } from "../../i18n";
 import Badge from "../../lib/components/Badge.svelte";
 import Tooltip from "../../lib/components/Tooltip.svelte";
 import { formatPercent, formatRupiah } from "../../lib/format";
@@ -171,13 +172,13 @@ load();
   <div class="flex w-56 flex-col overflow-y-auto border-r border-border-default bg-bg-secondary">
     <!-- Preset Indices Section -->
     <div class="px-3 pt-4 pb-2">
-      <p class="mb-1.5 px-1 text-xs font-semibold uppercase tracking-wider text-text-muted">Preset Indices</p>
+      <p class="mb-1.5 px-1 text-xs font-semibold uppercase tracking-wider text-text-muted">{t("watchlist.presetIndices")}</p>
       {#if state === "loading"}
         <div class="flex items-center justify-center py-4 text-text-muted" role="status">
           <LoaderCircle size={16} strokeWidth={2} class="animate-spin" />
         </div>
       {:else if indexNames.length === 0}
-        <p class="px-1 py-2 text-xs text-text-muted italic">No indices available</p>
+        <p class="px-1 py-2 text-xs text-text-muted italic">{t("watchlist.noIndices")}</p>
       {:else}
         <ul role="list">
           {#each indexNames as name}
@@ -202,13 +203,13 @@ load();
     <!-- My Watchlists Section -->
     <div class="flex-1 px-3 pt-3 pb-4">
       <div class="mb-1.5 flex items-center justify-between px-1">
-        <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">My Watchlists</p>
+        <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">{t("watchlist.myWatchlists")}</p>
         {#if !showCreateForm}
           <button
             type="button"
             class="rounded p-0.5 text-text-muted transition-fast focus-ring hover:bg-bg-tertiary hover:text-text-primary"
             onclick={() => { showCreateForm = true; }}
-            aria-label="New Watchlist"
+            aria-label={t("watchlist.newWatchlist")}
           >
             <Plus size={14} strokeWidth={2} />
           </button>
@@ -227,7 +228,7 @@ load();
           <LoaderCircle size={16} strokeWidth={2} class="animate-spin" />
         </div>
       {:else if state === "list" && watchlists.length === 0 && !showCreateForm}
-        <p class="px-1 py-2 text-xs italic text-text-muted">No watchlists yet</p>
+        <p class="px-1 py-2 text-xs italic text-text-muted">{t("watchlist.noWatchlists")}</p>
       {:else if state === "list"}
         <ul role="list">
           {#each watchlists as wl}
@@ -263,9 +264,9 @@ load();
       <!-- Empty state: nothing selected -->
       <div class="flex flex-1 items-center justify-center py-24 text-center">
         <div>
-          <p class="mb-1 font-medium text-text-primary">Select a watchlist or index</p>
+          <p class="mb-1 font-medium text-text-primary">{t("watchlist.selectWatchlist")}</p>
           <p class="text-sm text-text-secondary">
-            Choose a preset index or one of your watchlists from the left panel.
+            {t("watchlist.selectWatchlistDesc")}
           </p>
         </div>
       </div>
@@ -284,7 +285,7 @@ load();
       {#if itemsState === "loading"}
         <div class="flex flex-1 items-center justify-center gap-2 py-16 text-text-secondary" role="status">
           <LoaderCircle size={20} strokeWidth={2} class="animate-spin" />
-          <span>Loading items…</span>
+          <span>{t("watchlist.loadingItems")}</span>
         </div>
       {:else if itemsState === "error"}
         <div class="mx-6 mt-4 rounded border border-negative/20 bg-negative-bg px-4 py-3 text-sm text-negative" role="alert">
@@ -293,7 +294,7 @@ load();
       {:else if itemsState === "loaded"}
         <!-- Sector Filter Chips -->
         {#if sectors.length > 0}
-          <div class="flex flex-wrap gap-2 border-b border-border-default px-6 py-3" role="group" aria-label="Filter by sector">
+          <div class="flex flex-wrap gap-2 border-b border-border-default px-6 py-3" role="group" aria-label={t("watchlist.filterBySector")}>
             <button
               type="button"
               class="rounded-full border px-3 py-1 text-xs font-medium transition-fast focus-ring {activeSector === ''
@@ -302,7 +303,7 @@ load();
               onclick={() => selectSector("")}
               aria-pressed={activeSector === ''}
             >
-              All
+              {t("watchlist.allSectors")}
             </button>
             {#each sectors as sector}
               <button
@@ -321,18 +322,18 @@ load();
 
         {#if removeError}
           <div class="mx-6 mt-4 rounded border border-negative/20 bg-negative-bg px-4 py-3 text-sm text-negative" role="alert">
-            Failed to remove ticker: {removeError}
+            {t("watchlist.removeError", { error: removeError ?? "" })}
           </div>
         {/if}
         {#if filteredItems.length === 0}
           <div class="flex flex-1 items-center justify-center py-16 text-center">
             <div>
-              <p class="mb-1 font-medium text-text-primary">No items found</p>
+              <p class="mb-1 font-medium text-text-primary">{t("watchlist.noItems")}</p>
               <p class="text-sm text-text-secondary">
                 {#if activeType === "watchlist"}
-                  Use the input above to add tickers to this watchlist.
+                  {t("watchlist.addTickerHint")}
                 {:else}
-                  This index has no available items.
+                  {t("watchlist.indexEmptyHint")}
                 {/if}
               </p>
             </div>
@@ -343,14 +344,14 @@ load();
             <table class="w-full text-sm" aria-label="Watchlist items">
               <thead class="border-b border-border-default bg-bg-secondary">
                 <tr>
-                  <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-text-muted">Ticker</th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-text-muted">Sector</th>
-                  <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-text-muted">Price</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-text-muted">{t("watchlist.ticker")}</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-text-muted">{t("watchlist.sector")}</th>
+                  <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-text-muted">{t("watchlist.price")}</th>
                   <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-text-muted">ROE</th>
                   <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-text-muted">DER</th>
                   <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-text-muted">EPS</th>
                   <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-text-muted">Div Yield</th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-text-muted">Verdict</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-text-muted">{t("watchlist.verdict")}</th>
                   {#if activeType === "watchlist"}
                     <th class="px-4 py-3"></th>
                   {/if}

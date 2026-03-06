@@ -21,7 +21,7 @@ describe("StockPlaybookCard", () => {
   it("renders ticker and current price", () => {
     render(StockPlaybookCard, { props: { stock: makeStock(), onDiagnostic: vi.fn() } });
     expect(screen.getByText("BBCA")).toBeTruthy();
-    expect(document.body.textContent).toContain("8.500");
+    expect(document.body.textContent).toContain("8,500");
   });
 
   it("renders 3 response levels", () => {

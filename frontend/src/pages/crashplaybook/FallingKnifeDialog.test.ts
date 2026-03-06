@@ -25,7 +25,7 @@ describe("FallingKnifeDialog", () => {
         onClose: vi.fn(),
       },
     });
-    expect(screen.getByText("BBCA")).toBeTruthy();
+    expect(screen.getByText(/BBCA/)).toBeTruthy();
     expect(screen.getByText("Inconclusive")).toBeTruthy();
   });
 

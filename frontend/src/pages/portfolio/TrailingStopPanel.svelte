@@ -1,5 +1,6 @@
 <script lang="ts">
 import { AlertTriangle, Check, ShieldAlert, TrendingDown } from "lucide-svelte";
+import { t } from "../../i18n";
 import { formatRupiah } from "../../lib/format";
 import type { TrailingStopResponse } from "../../lib/types";
 
@@ -17,26 +18,26 @@ let {
   <div class="mb-3 flex items-center gap-2">
     {#if trailingStop.triggered}
       <ShieldAlert size={16} strokeWidth={2} class="text-loss" />
-      <h4 class="text-sm font-semibold text-loss">Trailing Stop Triggered</h4>
+      <h4 class="text-sm font-semibold text-loss">{t("trailingStop.triggered")}</h4>
     {:else}
       <TrendingDown size={16} strokeWidth={2} class="text-text-muted" />
-      <h4 class="text-sm font-semibold text-text-primary">Trailing Stop</h4>
+      <h4 class="text-sm font-semibold text-text-primary">{t("trailingStop.title")}</h4>
     {/if}
   </div>
 
   <div class="grid grid-cols-3 gap-4">
     <div>
-      <p class="text-xs text-text-muted">Peak Price</p>
+      <p class="text-xs text-text-muted">{t("trailingStop.peakPrice")}</p>
       <p class="font-mono text-sm text-text-primary">{formatRupiah(trailingStop.peakPrice)}</p>
     </div>
     <div>
-      <p class="text-xs text-text-muted">Stop Level</p>
+      <p class="text-xs text-text-muted">{t("trailingStop.stopLevel")}</p>
       <p class="font-mono text-sm {trailingStop.triggered ? 'text-loss' : 'text-text-primary'}">
         {formatRupiah(trailingStop.stopPrice)}
       </p>
     </div>
     <div>
-      <p class="text-xs text-text-muted">Stop %</p>
+      <p class="text-xs text-text-muted">{t("trailingStop.stopPercent")}</p>
       <p class="font-mono text-sm text-text-secondary">-{trailingStop.stopPercentage}%</p>
     </div>
   </div>
@@ -45,7 +46,7 @@ let {
     <div class="mt-4 border-t border-border-default pt-3">
       <div class="mb-2 flex items-center gap-1.5">
         <AlertTriangle size={14} strokeWidth={2} class="text-loss" />
-        <p class="text-xs font-semibold text-text-muted">Fundamental Warnings</p>
+        <p class="text-xs font-semibold text-text-muted">{t("trailingStop.fundamentalWarnings")}</p>
       </div>
       <ul class="space-y-1">
         {#each trailingStop.fundamentalExits as exit}
@@ -66,6 +67,6 @@ let {
   {/if}
 
   <p class="mt-3 text-xs text-text-muted">
-    Set trailing stops manually in your broker. These levels are suggestions only.
+    {t("trailingStop.disclaimer")}
   </p>
 </div>

@@ -2,6 +2,7 @@
 import { BarController, BarElement, CategoryScale, Chart, LinearScale, Tooltip } from "chart.js";
 import { TrendingUp } from "lucide-svelte";
 import { GetDGR } from "../../../wailsjs/go/backend/App";
+import { t } from "../../i18n";
 import { chartColors, defaultChartOptions } from "../../lib/chartColors.svelte";
 import EmptyState from "../../lib/components/EmptyState.svelte";
 import Select from "../../lib/components/Select.svelte";
@@ -111,10 +112,10 @@ $effect(() => {
 
 <div data-testid="dgr-chart" class="rounded border border-border-default bg-bg-elevated p-4">
   <div class="mb-3 flex items-center justify-between gap-3">
-    <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">Dividend Growth Rate</p>
+    <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">{t("chart.dividendGrowthRate")}</p>
     {#if tickers.length > 1}
       <div class="w-32">
-        <Select bind:value={selectedTicker} aria-label="Select ticker for DGR">
+        <Select bind:value={selectedTicker} aria-label={t("chart.selectTickerDgr")}>
           {#each tickers as ticker}
             <option value={ticker}>{ticker}</option>
           {/each}
@@ -126,20 +127,20 @@ $effect(() => {
   </div>
 
   {#if !selectedTicker}
-    <EmptyState icon={TrendingUp} title="Select a ticker" description="Choose a holding to view its dividend growth rate." />
+    <EmptyState icon={TrendingUp} title={t("chart.selectTickerEmpty")} description={t("chart.selectTickerDgrDesc")} />
   {:else if loading}
     <div class="flex items-center justify-center py-12">
-      <p class="text-sm text-text-muted">Loading DGR data…</p>
+      <p class="text-sm text-text-muted">{t("chart.loadingDgr")}</p>
     </div>
   {:else if error}
     <div class="rounded border border-border-default bg-bg-elevated p-6 text-center">
       <p class="text-sm text-loss">{error}</p>
     </div>
   {:else if dgrData.length === 0}
-    <EmptyState icon={TrendingUp} title="No DGR data" description="No dividend history available to compute growth rates." />
+    <EmptyState icon={TrendingUp} title={t("chart.noDgrData")} description={t("chart.noDgrDataDesc")} />
   {:else}
     <div class="relative" style="height: 240px">
-      <canvas bind:this={canvas} aria-label="Dividend growth rate bar chart for {selectedTicker}"></canvas>
+      <canvas bind:this={canvas} aria-label={t("chart.dgrAria", { ticker: selectedTicker })}></canvas>
     </div>
   {/if}
 </div>

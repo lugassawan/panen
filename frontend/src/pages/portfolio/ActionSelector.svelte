@@ -1,5 +1,6 @@
 <script lang="ts">
 import { AvailableActions } from "../../../wailsjs/go/backend/App";
+import { t } from "../../i18n";
 import { ACTION_LABELS } from "../../lib/action";
 import type { ActionType } from "../../lib/types";
 
@@ -45,7 +46,7 @@ loadActions();
 
 <div class="flex flex-wrap gap-2" role="group" aria-label="Action types">
   {#if loading}
-    <span class="text-sm text-text-secondary">Loading actions…</span>
+    <span class="text-sm text-text-secondary">{t("holding.loadingActions")}</span>
   {:else if error}
     <span class="text-sm text-negative" role="alert">{error}</span>
   {:else}

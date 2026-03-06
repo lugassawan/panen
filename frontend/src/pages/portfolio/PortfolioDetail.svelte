@@ -1,5 +1,6 @@
 <script lang="ts">
 import { ArrowLeft } from "lucide-svelte";
+import { t } from "../../i18n";
 import Button from "../../lib/components/Button.svelte";
 import Tooltip from "../../lib/components/Tooltip.svelte";
 import { formatPercent, formatRupiah } from "../../lib/format";
@@ -70,30 +71,30 @@ let overallPL = $derived(calcOverallPL(detail.holdings));
     type="button"
     class="rounded p-1 text-text-secondary hover:bg-bg-tertiary hover:text-text-primary focus-ring transition-fast"
     onclick={onBack}
-    aria-label="Back to list"
+    aria-label={t("portfolio.backToList")}
   >
     <ArrowLeft size={20} strokeWidth={2} aria-hidden="true" />
   </button>
   <h2 class="text-xl font-semibold text-text-primary">{detail.portfolio.name}</h2>
   <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {MODE_BADGE[detail.portfolio.mode]}">
-    {detail.portfolio.mode === "VALUE" ? "Value" : "Dividend"}
+    {detail.portfolio.mode === "VALUE" ? t("mode.value") : t("mode.dividend")}
   </span>
 </div>
 
 <!-- Summary Bar -->
 <div class="mb-6 grid {detail.portfolio.mode === 'DIVIDEND' ? 'grid-cols-4' : 'grid-cols-3'} gap-4">
   <div class="rounded border border-border-default bg-bg-elevated p-4" data-testid="total-invested">
-    <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">Total Invested</p>
+    <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">{t("portfolio.totalInvested")}</p>
     <p class="mt-1 text-lg font-medium">{formatRupiah(totalInvested)}</p>
   </div>
   <div class="rounded border border-border-default bg-bg-elevated p-4" data-testid="current-value">
-    <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">Current Value</p>
+    <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">{t("portfolio.currentValue")}</p>
     <p class="mt-1 text-lg font-medium">{formatRupiah(currentValue)}</p>
   </div>
   <div class="rounded border border-border-default bg-bg-elevated p-4" data-testid="overall-pl">
     <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">
-      <Tooltip text="Unrealized profit/loss across all holdings based on current market prices">
-        <span class="underline decoration-dotted cursor-help">Overall P/L</span>
+      <Tooltip text={t("portfolio.plTooltip")}>
+        <span class="underline decoration-dotted cursor-help">{t("portfolio.overallPl")}</span>
       </Tooltip>
     </p>
     <p class="mt-1 text-lg font-medium font-mono {overallPL >= 0 ? 'text-profit' : 'text-loss'}">
@@ -104,8 +105,8 @@ let overallPL = $derived(calcOverallPL(detail.holdings));
     {@const portfolioYield = detail.holdings.find((h) => h.dividendMetrics)?.dividendMetrics?.portfolioYield ?? 0}
     <div class="rounded border border-border-default bg-bg-elevated p-4" data-testid="portfolio-yield">
       <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">
-        <Tooltip text="Weighted average dividend yield across all holdings in this portfolio">
-          <span class="underline decoration-dotted cursor-help">Portfolio Yield</span>
+        <Tooltip text={t("portfolio.portfolioYieldTooltip")}>
+          <span class="underline decoration-dotted cursor-help">{t("portfolio.portfolioYield")}</span>
         </Tooltip>
       </p>
       <p class="mt-1 text-lg font-medium font-mono text-text-primary">
@@ -128,7 +129,7 @@ let overallPL = $derived(calcOverallPL(detail.holdings));
       onclick={() => (activeTab = tab)}
       onkeydown={handleTabKeydown}
     >
-      {tab}
+      {t(`portfolio.${tab}Tab`)}
     </button>
   {/each}
 </div>
@@ -137,7 +138,7 @@ let overallPL = $derived(calcOverallPL(detail.holdings));
   <div id="panel-holdings" role="tabpanel">
     <!-- Add Holding -->
     <div class="mb-6 rounded border border-border-default bg-bg-elevated p-4">
-      <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">Add Holding</h3>
+      <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">{t("portfolio.addHolding")}</h3>
       <AddHoldingForm portfolioId={detail.portfolio.id} onAdded={onHoldingAdded} />
     </div>
 
@@ -149,7 +150,7 @@ let overallPL = $derived(calcOverallPL(detail.holdings));
     <!-- Trailing Stops (VALUE mode only) -->
     {#if detail.portfolio.mode === "VALUE" && detail.holdings.some((h) => h.trailingStop)}
       <div class="mb-6">
-        <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">Trailing Stops</h3>
+        <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">{t("portfolio.trailingStops")}</h3>
         <div class="space-y-3">
           {#each detail.holdings as holding}
             {#if holding.trailingStop}
@@ -166,7 +167,7 @@ let overallPL = $derived(calcOverallPL(detail.holdings));
     <!-- Dividend Metrics (DIVIDEND mode only) -->
     {#if detail.portfolio.mode === "DIVIDEND" && detail.holdings.some((h) => h.dividendMetrics)}
       <div class="mb-6">
-        <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">Dividend Metrics</h3>
+        <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">{t("portfolio.dividendMetrics")}</h3>
         <div class="space-y-3">
           {#each detail.holdings as holding}
             {#if holding.dividendMetrics}

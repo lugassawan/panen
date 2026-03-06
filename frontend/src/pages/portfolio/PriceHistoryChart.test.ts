@@ -89,7 +89,7 @@ describe("PriceHistoryChart", () => {
       props: { tickers: ["BBCA"] },
     });
 
-    expect(screen.getByText(/Loading price history/)).toBeInTheDocument();
+    expect(screen.getByText(/Loading chart data/)).toBeInTheDocument();
   });
 
   it("shows time range pills after data loads", async () => {
@@ -157,7 +157,7 @@ describe("PriceHistoryChart", () => {
 
     await waitFor(() => {
       expect(screen.getByRole("group", { name: "Valuation zones" })).toBeInTheDocument();
-      expect(screen.getByLabelText("Graham")).toBeInTheDocument();
+      expect(screen.getByLabelText("Graham Number")).toBeInTheDocument();
       expect(screen.getByLabelText("Entry Price")).toBeInTheDocument();
       expect(screen.getByLabelText("Exit Target")).toBeInTheDocument();
     });
@@ -174,7 +174,7 @@ describe("PriceHistoryChart", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Graham")).toBeChecked();
+      expect(screen.getByLabelText("Graham Number")).toBeChecked();
       expect(screen.getByLabelText("Entry Price")).toBeChecked();
       expect(screen.getByLabelText("Exit Target")).toBeChecked();
     });
@@ -209,11 +209,11 @@ describe("PriceHistoryChart", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Graham")).toBeChecked();
+      expect(screen.getByLabelText("Graham Number")).toBeChecked();
     });
 
-    await user.click(screen.getByLabelText("Graham"));
-    expect(screen.getByLabelText("Graham")).not.toBeChecked();
+    await user.click(screen.getByLabelText("Graham Number"));
+    expect(screen.getByLabelText("Graham Number")).not.toBeChecked();
   });
 
   it("hides individual toggle when its value is zero", async () => {
@@ -230,7 +230,7 @@ describe("PriceHistoryChart", () => {
       expect(screen.getByRole("group", { name: "Valuation zones" })).toBeInTheDocument();
     });
 
-    expect(screen.queryByLabelText("Graham")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Graham Number")).not.toBeInTheDocument();
     expect(screen.getByLabelText("Entry Price")).toBeInTheDocument();
     expect(screen.getByLabelText("Exit Target")).toBeInTheDocument();
   });

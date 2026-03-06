@@ -1,4 +1,5 @@
 <script lang="ts">
+import { t } from "../../i18n";
 import Input from "../../lib/components/Input.svelte";
 import Select from "../../lib/components/Select.svelte";
 import type { RiskProfile } from "../../lib/types";
@@ -25,10 +26,22 @@ let {
   onrun: () => void;
 } = $props();
 
-const riskProfiles: { value: RiskProfile; label: string; thresholds: string }[] = [
-  { value: "CONSERVATIVE", label: "Conservative", thresholds: "ROE > 15%, DER < 0.8" },
-  { value: "MODERATE", label: "Moderate", thresholds: "ROE > 12%, DER < 1.0" },
-  { value: "AGGRESSIVE", label: "Aggressive", thresholds: "ROE > 8%, DER < 1.5" },
+const riskProfiles: { value: RiskProfile; labelKey: string; thresholdsKey: string }[] = [
+  {
+    value: "CONSERVATIVE",
+    labelKey: "screener.conservative",
+    thresholdsKey: "screener.conservativeThresholds",
+  },
+  {
+    value: "MODERATE",
+    labelKey: "screener.moderate",
+    thresholdsKey: "screener.moderateThresholds",
+  },
+  {
+    value: "AGGRESSIVE",
+    labelKey: "screener.aggressive",
+    thresholdsKey: "screener.aggressiveThresholds",
+  },
 ];
 </script>
 
@@ -36,19 +49,19 @@ const riskProfiles: { value: RiskProfile; label: string; thresholds: string }[] 
   <!-- Row 1: Universe selection -->
   <div class="flex flex-wrap items-end gap-3">
     <div class="w-36">
-      <label for="universe-type" class="mb-1 block text-xs font-medium text-text-secondary">Universe</label>
+      <label for="universe-type" class="mb-1 block text-xs font-medium text-text-secondary">{t("screener.universe")}</label>
       <Select id="universe-type" bind:value={universeType} onchange={() => { universeName = ""; }}>
-        <option value="INDEX">Index</option>
-        <option value="SECTOR">Sector</option>
-        <option value="CUSTOM">Custom</option>
+        <option value="INDEX">{t("screener.index")}</option>
+        <option value="SECTOR">{t("screener.sector")}</option>
+        <option value="CUSTOM">{t("screener.custom")}</option>
       </Select>
     </div>
 
     {#if universeType === "INDEX"}
       <div class="w-44">
-        <label for="universe-name" class="mb-1 block text-xs font-medium text-text-secondary">Index</label>
+        <label for="universe-name" class="mb-1 block text-xs font-medium text-text-secondary">{t("screener.index")}</label>
         <Select id="universe-name" bind:value={universeName}>
-          <option value="">Select index...</option>
+          <option value="">{t("screener.selectIndex")}</option>
           {#each indices as idx}
             <option value={idx}>{idx}</option>
           {/each}
@@ -56,9 +69,9 @@ const riskProfiles: { value: RiskProfile; label: string; thresholds: string }[] 
       </div>
     {:else if universeType === "SECTOR"}
       <div class="w-44">
-        <label for="universe-name" class="mb-1 block text-xs font-medium text-text-secondary">Sector</label>
+        <label for="universe-name" class="mb-1 block text-xs font-medium text-text-secondary">{t("screener.sector")}</label>
         <Select id="universe-name" bind:value={universeName}>
-          <option value="">Select sector...</option>
+          <option value="">{t("screener.selectSector")}</option>
           {#each sectors as sector}
             <option value={sector}>{sector}</option>
           {/each}
@@ -66,16 +79,16 @@ const riskProfiles: { value: RiskProfile; label: string; thresholds: string }[] 
       </div>
     {:else}
       <div class="flex-1 min-w-48">
-        <label for="custom-tickers" class="mb-1 block text-xs font-medium text-text-secondary">Tickers (comma-separated)</label>
-        <Input id="custom-tickers" bind:value={customTickers} placeholder="BBCA,BMRI,TLKM" />
+        <label for="custom-tickers" class="mb-1 block text-xs font-medium text-text-secondary">{t("screener.tickersLabel")}</label>
+        <Input id="custom-tickers" bind:value={customTickers} placeholder={t("screener.tickersPlaceholder")} />
       </div>
     {/if}
 
     {#if universeType !== "SECTOR"}
       <div class="w-44">
-        <label for="sector-filter" class="mb-1 block text-xs font-medium text-text-secondary">Sector Filter</label>
+        <label for="sector-filter" class="mb-1 block text-xs font-medium text-text-secondary">{t("screener.sectorFilter")}</label>
         <Select id="sector-filter" bind:value={sectorFilter}>
-          <option value="">All sectors</option>
+          <option value="">{t("screener.allSectors")}</option>
           {#each sectors as sector}
             <option value={sector}>{sector}</option>
           {/each}
@@ -87,7 +100,7 @@ const riskProfiles: { value: RiskProfile; label: string; thresholds: string }[] 
   <!-- Row 2: Risk profile + Run button -->
   <div class="flex items-end gap-4">
     <div>
-      <p class="mb-1 text-xs font-medium text-text-secondary">Risk Profile</p>
+      <p class="mb-1 text-xs font-medium text-text-secondary">{t("screener.riskProfile")}</p>
       <div class="flex gap-1" role="radiogroup" aria-label="Risk profile">
         {#each riskProfiles as rp}
           <button
@@ -98,9 +111,9 @@ const riskProfiles: { value: RiskProfile; label: string; thresholds: string }[] 
               ? 'border-green-700 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
               : 'border-border-default bg-bg-elevated text-text-secondary hover:bg-bg-tertiary hover:text-text-primary'}"
             onclick={() => { riskProfile = rp.value; }}
-            title={rp.thresholds}
+            title={t(rp.thresholdsKey)}
           >
-            {rp.label}
+            {t(rp.labelKey)}
           </button>
         {/each}
       </div>
@@ -112,7 +125,7 @@ const riskProfiles: { value: RiskProfile; label: string; thresholds: string }[] 
       disabled={loading || (universeType !== "CUSTOM" && !universeName)}
       onclick={onrun}
     >
-      {loading ? "Screening..." : "Run Screen"}
+      {loading ? t("screener.screening") : t("screener.runScreen")}
     </button>
   </div>
 </div>

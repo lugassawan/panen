@@ -2,6 +2,7 @@
 import { BarController, BarElement, CategoryScale, Chart, LinearScale, Tooltip } from "chart.js";
 import { Wallet } from "lucide-svelte";
 import { GetDividendIncomeSummary } from "../../../wailsjs/go/backend/App";
+import { t } from "../../i18n";
 import { accentPalette, chartColors, defaultChartOptions } from "../../lib/chartColors.svelte";
 import EmptyState from "../../lib/components/EmptyState.svelte";
 import { formatRupiah } from "../../lib/format";
@@ -115,27 +116,27 @@ $effect(() => {
 
 <div data-testid="dividend-income-chart" class="rounded border border-border-default bg-bg-elevated p-4">
   <div class="mb-3 flex items-center justify-between">
-    <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">Dividend Income</p>
+    <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">{t("chart.dividendIncome")}</p>
     {#if summary}
       <p class="text-sm font-mono font-medium text-gold-600">
-        {formatRupiah(summary.totalAnnualIncome)}<span class="text-text-muted font-body">/yr</span>
+        {formatRupiah(summary.totalAnnualIncome)}<span class="text-text-muted font-body">{t("chart.perYear")}</span>
       </p>
     {/if}
   </div>
 
   {#if loading}
     <div class="flex items-center justify-center py-12">
-      <p class="text-sm text-text-muted">Loading income data…</p>
+      <p class="text-sm text-text-muted">{t("chart.loadingIncome")}</p>
     </div>
   {:else if error}
     <div class="rounded border border-border-default bg-bg-elevated p-6 text-center">
       <p class="text-sm text-loss">{error}</p>
     </div>
   {:else if !summary || summary.monthlyBreakdown.length === 0}
-    <EmptyState icon={Wallet} title="No income data" description="No dividend history available for holdings in this portfolio." />
+    <EmptyState icon={Wallet} title={t("chart.noIncomeData")} description={t("chart.noIncomeDataDesc")} />
   {:else}
     <div class="relative" style="height: 240px">
-      <canvas bind:this={canvas} aria-label="Monthly dividend income bar chart"></canvas>
+      <canvas bind:this={canvas} aria-label={t("chart.monthlyDividendAria")}></canvas>
     </div>
 
     {#if summary.perStock.length > 0}
@@ -143,8 +144,8 @@ $effect(() => {
         <table class="w-full text-sm">
           <thead>
             <tr class="text-text-muted text-xs uppercase">
-              <th class="text-left pb-2">Ticker</th>
-              <th class="text-right pb-2">Income/yr</th>
+              <th class="text-left pb-2">{t("holding.ticker")}</th>
+              <th class="text-right pb-2">{t("chart.incomePerYear")}</th>
               <th class="text-right pb-2">DY</th>
               <th class="text-right pb-2">Lots</th>
             </tr>

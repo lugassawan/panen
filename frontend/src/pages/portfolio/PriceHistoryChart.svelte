@@ -12,6 +12,7 @@ import {
 import annotationPlugin from "chartjs-plugin-annotation";
 import { TrendingUp } from "lucide-svelte";
 import { GetPriceHistory } from "../../../wailsjs/go/backend/App";
+import { t } from "../../i18n";
 import {
   accentPalette,
   chartColors,
@@ -133,7 +134,7 @@ $effect(() => {
         borderDash: [6, 4],
         label: {
           display: true,
-          content: `Graham ${formatRupiah(val.grahamNumber)}`,
+          content: `${t("lookup.grahamNumber")} ${formatRupiah(val.grahamNumber)}`,
           position: "start",
           backgroundColor: `${zoneColors.graham}cc`,
           color: "#fff",
@@ -153,7 +154,7 @@ $effect(() => {
         borderDash: [6, 4],
         label: {
           display: true,
-          content: `Entry ${formatRupiah(val.entryPrice)}`,
+          content: `${t("lookup.entryPrice")} ${formatRupiah(val.entryPrice)}`,
           position: "start",
           backgroundColor: `${zoneColors.entry}cc`,
           color: "#fff",
@@ -180,7 +181,7 @@ $effect(() => {
         borderDash: [6, 4],
         label: {
           display: true,
-          content: `Exit ${formatRupiah(val.exitTarget)}`,
+          content: `${t("lookup.exitTarget")} ${formatRupiah(val.exitTarget)}`,
           position: "start",
           backgroundColor: `${zoneColors.exit}cc`,
           color: "#fff",
@@ -234,16 +235,18 @@ $effect(() => {
               if (!val || !items[0]) return [];
               const lines: string[] = [];
               if (graham && val.grahamNumber > 0)
-                lines.push(`Graham: ${formatRupiah(val.grahamNumber)}`);
-              if (entry && val.entryPrice > 0) lines.push(`Entry: ${formatRupiah(val.entryPrice)}`);
-              if (exit && val.exitTarget > 0) lines.push(`Exit: ${formatRupiah(val.exitTarget)}`);
+                lines.push(`${t("lookup.grahamNumber")}: ${formatRupiah(val.grahamNumber)}`);
+              if (entry && val.entryPrice > 0)
+                lines.push(`${t("lookup.entryPrice")}: ${formatRupiah(val.entryPrice)}`);
+              if (exit && val.exitTarget > 0)
+                lines.push(`${t("lookup.exitTarget")}: ${formatRupiah(val.exitTarget)}`);
               const price = items[0].parsed.y;
               if (entry && val.entryPrice > 0 && price <= val.entryPrice) {
-                lines.push("Zone: Undervalued");
+                lines.push(t("verdict.undervalued"));
               } else if (exit && val.exitTarget > 0 && price >= val.exitTarget) {
-                lines.push("Zone: Overvalued");
+                lines.push(t("verdict.overvalued"));
               } else if ((entry && val.entryPrice > 0) || (exit && val.exitTarget > 0)) {
-                lines.push("Zone: Fair Value");
+                lines.push(t("verdict.fairValue"));
               }
               return lines;
             },
@@ -278,13 +281,13 @@ $effect(() => {
 
 <div data-testid="price-history-chart" class="rounded border border-border-default bg-bg-elevated p-4">
   <div class="mb-3 flex items-center justify-between gap-3">
-    <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">Price History</p>
+    <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">{t("chart.priceHistory")}</p>
     <div class="flex items-center gap-2">
       {#if tickers.length > 1}
         <div class="w-32">
           <Select
             bind:value={selectedTicker}
-            aria-label="Select ticker"
+            aria-label={t("chart.selectTicker")}
           >
             {#each tickers as ticker}
               <option value={ticker}>{ticker}</option>
@@ -313,43 +316,43 @@ $effect(() => {
   </div>
 
   {#if currentValuation}
-    <div class="mb-3 flex flex-wrap gap-3 text-xs" role="group" aria-label="Valuation zones">
+    <div class="mb-3 flex flex-wrap gap-3 text-xs" role="group" aria-label={t("chart.valuationZones")}>
       {#if currentValuation.grahamNumber > 0}
         <label class="flex items-center gap-1.5 text-text-secondary">
           <input type="checkbox" bind:checked={showGraham} class="focus-ring" style:accent-color={valuationZoneColors().graham} />
-          Graham
+          {t("lookup.grahamNumber")}
         </label>
       {/if}
       {#if currentValuation.entryPrice > 0}
         <label class="flex items-center gap-1.5 text-text-secondary">
           <input type="checkbox" bind:checked={showEntry} class="focus-ring" style:accent-color={valuationZoneColors().entry} />
-          Entry Price
+          {t("lookup.entryPrice")}
         </label>
       {/if}
       {#if currentValuation.exitTarget > 0}
         <label class="flex items-center gap-1.5 text-text-secondary">
           <input type="checkbox" bind:checked={showExit} class="focus-ring" style:accent-color={valuationZoneColors().exit} />
-          Exit Target
+          {t("lookup.exitTarget")}
         </label>
       {/if}
     </div>
   {/if}
 
   {#if !selectedTicker}
-    <EmptyState icon={TrendingUp} title="Select a ticker" description="Choose a holding to view its price history." />
+    <EmptyState icon={TrendingUp} title={t("chart.selectTickerEmpty")} description={t("chart.selectTickerEmptyDesc")} />
   {:else if loading}
     <div class="flex items-center justify-center py-12">
-      <p class="text-sm text-text-muted">Loading price history…</p>
+      <p class="text-sm text-text-muted">{t("chart.loadingChart")}</p>
     </div>
   {:else if error}
     <div class="rounded border border-border-default bg-bg-elevated p-6 text-center">
       <p class="text-sm text-loss">{error}</p>
     </div>
   {:else if filteredPoints.length === 0}
-    <EmptyState icon={TrendingUp} title="No price data" description="No historical price data available for this ticker." />
+    <EmptyState icon={TrendingUp} title={t("chart.noPriceData")} description={t("chart.noPriceDataDesc")} />
   {:else}
     <div class="relative" style="height: 300px">
-      <canvas bind:this={canvas} aria-label="Price history line chart for {selectedTicker}"></canvas>
+      <canvas bind:this={canvas} aria-label="{t('chart.priceHistory')} — {selectedTicker}"></canvas>
     </div>
   {/if}
 </div>

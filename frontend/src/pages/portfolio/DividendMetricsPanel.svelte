@@ -1,5 +1,6 @@
 <script lang="ts">
 import { Coins } from "lucide-svelte";
+import { t } from "../../i18n";
 import { getDividendIndicatorDisplay } from "../../lib/dividend-indicator";
 import { formatDecimal, formatPercent, formatRupiah } from "../../lib/format";
 import type { DividendMetricsResponse } from "../../lib/types";
@@ -32,19 +33,19 @@ const display = $derived(getDividendIndicatorDisplay(dividendMetrics.indicator))
 
   <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
     <div>
-      <p class="text-xs text-text-muted">Annual DPS</p>
+      <p class="text-xs text-text-muted">{t("dividendMetrics.annualDps")}</p>
       <p class="font-mono text-sm text-text-primary">{formatRupiah(dividendMetrics.annualDPS)}</p>
     </div>
     <div>
-      <p class="text-xs text-text-muted">Yield on Cost</p>
+      <p class="text-xs text-text-muted">{t("dividendMetrics.yieldOnCost")}</p>
       <p class="font-mono text-sm text-text-primary">{formatPercent(dividendMetrics.yieldOnCost)}</p>
     </div>
     <div>
-      <p class="text-xs text-text-muted">Projected YoC</p>
+      <p class="text-xs text-text-muted">{t("dividendMetrics.projectedYoc")}</p>
       <p class="font-mono text-sm text-text-secondary">{formatPercent(dividendMetrics.projectedYoC)}</p>
     </div>
     <div>
-      <p class="text-xs text-text-muted">Portfolio Yield</p>
+      <p class="text-xs text-text-muted">{t("dividendMetrics.portfolioYield")}</p>
       <p class="font-mono text-sm text-text-secondary">{formatDecimal(dividendMetrics.portfolioYield)}%</p>
     </div>
   </div>

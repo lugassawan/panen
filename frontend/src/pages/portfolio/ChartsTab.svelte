@@ -1,5 +1,6 @@
 <script lang="ts">
 import { GetHoldingSectors } from "../../../wailsjs/go/backend/App";
+import { t } from "../../i18n";
 import { holdingWeights, sectorWeights } from "../../lib/portfolio";
 import type {
   HoldingDetailResponse,
@@ -62,7 +63,7 @@ $effect(() => {
 
 {#if loading}
   <div class="flex items-center justify-center py-12">
-    <p class="text-sm text-text-muted">Loading chart data…</p>
+    <p class="text-sm text-text-muted">{t("chart.loadingChart")}</p>
   </div>
 {:else if error}
   <div class="rounded border border-border-default bg-bg-elevated p-6 text-center">

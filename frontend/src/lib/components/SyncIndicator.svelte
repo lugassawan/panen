@@ -1,6 +1,7 @@
 <script lang="ts">
 import { AlertTriangle, Check, LoaderCircle } from "lucide-svelte";
 import { TriggerRefresh } from "../../../wailsjs/go/backend/App";
+import { t } from "../../i18n";
 import { formatRelativeTime } from "../format";
 import { sync } from "../stores/sync.svelte";
 
@@ -21,7 +22,7 @@ async function retry() {
     <div class="flex items-center gap-2">
       <LoaderCircle size={14} class="animate-spin text-green-700 shrink-0" />
       <span class="text-xs text-text-secondary truncate">
-        Syncing {sync.currentTicker ?? "..."}
+        {t("sync.syncing", { ticker: sync.currentTicker ?? "..." })}
         {#if sync.progress}
           <span class="font-mono">({sync.progress.index + 1}/{sync.progress.total})</span>
         {/if}
@@ -38,14 +39,14 @@ async function retry() {
   {:else if sync.hasError}
     <div class="flex items-center gap-2">
       <AlertTriangle size={14} class="text-negative shrink-0" />
-      <span class="text-xs text-negative truncate">{sync.errorMessage ?? "Sync failed"}</span>
+      <span class="text-xs text-negative truncate">{sync.errorMessage ?? t("sync.syncFailed")}</span>
     </div>
     <button
       onclick={retry}
       disabled={retrying}
       class="mt-1 text-xs text-green-700 hover:text-green-800 transition-fast focus-ring rounded"
     >
-      {retrying ? "Retrying..." : "Retry"}
+      {retrying ? t("sync.retrying") : t("sync.retry")}
     </button>
   {:else}
     <div class="flex items-center gap-2">

@@ -1,7 +1,7 @@
 <script lang="ts">
 import { AlertTriangle } from "lucide-svelte";
+import { t } from "../../i18n";
 import Alert from "../../lib/components/Alert.svelte";
-import { formatPercent } from "../../lib/format";
 import type { SectorWeight } from "../../lib/types";
 
 const THRESHOLD = 30;
@@ -22,7 +22,7 @@ let concentrated = $derived(sectorWeights.filter((s) => s.pct > THRESHOLD));
         <Alert variant="warning">
           <div class="flex items-center gap-2">
             <AlertTriangle size={16} strokeWidth={2} aria-hidden="true" />
-            <span>High concentration: <strong>{sector.sector}</strong> represents {formatPercent(sector.pct)} of your portfolio (threshold: {THRESHOLD}%)</span>
+            <span>{t("sectorWarnings.highConcentration", { sector: sector.sector, pct: sector.pct.toFixed(2), threshold: THRESHOLD })}</span>
           </div>
         </Alert>
       {/each}

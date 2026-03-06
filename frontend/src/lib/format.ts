@@ -1,22 +1,32 @@
-const rupiahFormatter = new Intl.NumberFormat("id-ID", {
-  style: "currency",
-  currency: "IDR",
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-});
+import { locale, t } from "../i18n";
 
-export function formatRupiah(value: number): string {
-  return rupiahFormatter.format(value);
+function intlLocale(): string {
+  return locale.current === "id" ? "id-ID" : "en-US";
 }
 
-const decimal2Formatter = new Intl.NumberFormat("id-ID", {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
+const cache = new Map<string, Intl.NumberFormat>();
+
+function getFormatter(options: Intl.NumberFormatOptions): Intl.NumberFormat {
+  const key = `${intlLocale()}:${JSON.stringify(options)}`;
+  let fmt = cache.get(key);
+  if (!fmt) {
+    fmt = new Intl.NumberFormat(intlLocale(), options);
+    cache.set(key, fmt);
+  }
+  return fmt;
+}
+
+export function formatRupiah(value: number): string {
+  return getFormatter({
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+}
 
 export function formatDecimal(value: number, digits = 2): string {
-  if (digits === 2) return decimal2Formatter.format(value);
-  return new Intl.NumberFormat("id-ID", {
+  return getFormatter({
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
   }).format(value);
@@ -27,15 +37,25 @@ export function formatPercent(value: number, digits = 2): string {
 }
 
 export function formatRelativeTime(isoString: string): string {
-  if (!isoString) return "Not synced yet";
+  if (!isoString) return t("format.notSynced");
   const date = new Date(isoString);
   const now = Date.now();
   const diffMs = now - date.getTime();
   const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return "just now";
-  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffMin < 1) return t("format.justNow");
+  if (diffMin < 60) return t("format.minutesAgo", { count: diffMin });
   const diffHrs = Math.floor(diffMin / 60);
-  if (diffHrs < 24) return `${diffHrs}h ago`;
+  if (diffHrs < 24) return t("format.hoursAgo", { count: diffHrs });
   const diffDays = Math.floor(diffHrs / 24);
-  return `${diffDays}d ago`;
+  return t("format.daysAgo", { count: diffDays });
+}
+
+export function formatDate(isoString: string): string {
+  if (!isoString) return "";
+  const date = new Date(isoString);
+  return new Intl.DateTimeFormat(intlLocale(), {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(date);
 }

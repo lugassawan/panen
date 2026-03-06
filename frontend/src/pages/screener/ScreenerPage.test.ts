@@ -105,7 +105,7 @@ describe("ScreenerPage", () => {
 
     expect(await screen.findByText("BBCA")).toBeInTheDocument();
     expect(screen.getByText("TLKM")).toBeInTheDocument();
-    expect(screen.getByText("2 stocks screened")).toBeInTheDocument();
+    expect(screen.getByText("2 stock(s) screened")).toBeInTheDocument();
     expect(screen.getByText("1 pass")).toBeInTheDocument();
     expect(screen.getByText("1 fail")).toBeInTheDocument();
   });
