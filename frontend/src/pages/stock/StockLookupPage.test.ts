@@ -4,9 +4,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { StockValuationResponse } from "../../lib/types";
 import StockLookupPage from "./StockLookupPage.svelte";
 
+vi.mock("../../../wailsjs/runtime/runtime", () => ({
+  EventsOn: vi.fn(),
+}));
+
 const mockLookupStock = vi.fn();
 vi.mock("../../../wailsjs/go/backend/App", () => ({
   LookupStock: (...args: unknown[]) => mockLookupStock(...args),
+  GetAlertCount: vi.fn(() => Promise.resolve(0)),
+  GetActiveAlerts: vi.fn(() => Promise.resolve([])),
+  GetAlertsByTicker: vi.fn(() => Promise.resolve([])),
+  AcknowledgeAlert: vi.fn(() => Promise.resolve()),
 }));
 
 function makeResponse(overrides: Partial<StockValuationResponse> = {}): StockValuationResponse {

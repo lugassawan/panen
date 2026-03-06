@@ -131,6 +131,7 @@ export type Page =
   | "portfolio"
   | "payday"
   | "crashplaybook"
+  | "alerts"
   | "brokerage"
   | "settings";
 
@@ -418,4 +419,21 @@ export interface ChecklistEvaluationResponse {
   checks: CheckResultResponse[];
   allPassed: boolean;
   suggestion?: SuggestionResponse;
+}
+
+export type AlertSeverity = "MINOR" | "WARNING" | "CRITICAL";
+
+export type AlertStatus = "ACTIVE" | "ACKNOWLEDGED" | "RESOLVED";
+
+export interface FundamentalAlertResponse {
+  id: string;
+  ticker: string;
+  metric: string;
+  severity: AlertSeverity;
+  oldValue: number;
+  newValue: number;
+  changePct: number;
+  status: AlertStatus;
+  detectedAt: string;
+  resolvedAt?: string;
 }

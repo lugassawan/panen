@@ -1,5 +1,6 @@
 <script lang="ts">
 import {
+  Bell,
   Bookmark,
   Briefcase,
   CalendarDays,
@@ -34,8 +35,9 @@ const commands: CommandItem[] = [
   { id: "portfolio", labelKey: "nav.portfolio", icon: Briefcase, shortcut: "4" },
   { id: "payday", labelKey: "nav.payday", icon: CalendarDays, shortcut: "5" },
   { id: "crashplaybook", labelKey: "nav.crashPlaybook", icon: Shield, shortcut: "6" },
-  { id: "brokerage", labelKey: "nav.brokerage", icon: Landmark, shortcut: "7" },
-  { id: "settings", labelKey: "nav.settings", icon: Settings, shortcut: "8" },
+  { id: "alerts", labelKey: "nav.alerts", icon: Bell, shortcut: "7" },
+  { id: "brokerage", labelKey: "nav.brokerage", icon: Landmark, shortcut: "8" },
+  { id: "settings", labelKey: "nav.settings", icon: Settings, shortcut: "9" },
 ];
 
 let filtered = $derived(

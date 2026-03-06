@@ -12,6 +12,7 @@ vi.mock("./i18n", () => ({
       "nav.portfolio": "Portfolio",
       "nav.payday": "Payday",
       "nav.crashPlaybook": "Crash Playbook",
+      "nav.alerts": "Alerts",
       "nav.brokerage": "Brokerage",
       "nav.settings": "Settings",
       "nav.searchPages": "Search pages...",
@@ -110,6 +111,10 @@ vi.mock("../wailsjs/go/backend/App", () => ({
   ),
   UpdateRefreshSettings: vi.fn(() => Promise.resolve()),
   GetHoldingSectors: vi.fn(() => Promise.resolve({})),
+  GetAlertCount: vi.fn(() => Promise.resolve(0)),
+  GetActiveAlerts: vi.fn(() => Promise.resolve([])),
+  GetAlertsByTicker: vi.fn(() => Promise.resolve([])),
+  AcknowledgeAlert: vi.fn(() => Promise.resolve()),
 }));
 
 vi.mock("../wailsjs/runtime/runtime", () => ({
@@ -141,19 +146,20 @@ vi.mock("./lib/stores/theme.svelte", () => ({
 }));
 
 describe("App navigation", () => {
-  it("renders sidebar with 8 nav items", () => {
+  it("renders sidebar with 9 nav items", () => {
     render(App);
     const nav = screen.getByRole("navigation", { name: /main/i });
     const buttons = within(nav).getAllByRole("button");
-    expect(buttons).toHaveLength(8);
+    expect(buttons).toHaveLength(9);
     expect(buttons[0]).toHaveTextContent("Stock Lookup");
     expect(buttons[1]).toHaveTextContent("Watchlist");
     expect(buttons[2]).toHaveTextContent("Screener");
     expect(buttons[3]).toHaveTextContent("Portfolio");
     expect(buttons[4]).toHaveTextContent("Payday");
     expect(buttons[5]).toHaveTextContent("Crash Playbook");
-    expect(buttons[6]).toHaveTextContent("Brokerage");
-    expect(buttons[7]).toHaveTextContent("Settings");
+    expect(buttons[6]).toHaveTextContent("Alerts");
+    expect(buttons[7]).toHaveTextContent("Brokerage");
+    expect(buttons[8]).toHaveTextContent("Settings");
   });
 
   it("starts on Stock Lookup page by default", () => {

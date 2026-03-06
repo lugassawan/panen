@@ -12,6 +12,7 @@ vi.mock("../i18n", () => ({
       "nav.portfolio": "Portfolio",
       "nav.payday": "Payday",
       "nav.crashPlaybook": "Crash Playbook",
+      "nav.alerts": "Alerts",
       "nav.brokerage": "Brokerage",
       "nav.settings": "Settings",
       "nav.searchPages": "Search pages...",
@@ -27,6 +28,10 @@ vi.mock("../../wailsjs/runtime/runtime", () => ({
 
 vi.mock("../../wailsjs/go/backend/App", () => ({
   TriggerRefresh: vi.fn(),
+  GetAlertCount: vi.fn(() => Promise.resolve(0)),
+  GetActiveAlerts: vi.fn(() => Promise.resolve([])),
+  GetAlertsByTicker: vi.fn(() => Promise.resolve([])),
+  AcknowledgeAlert: vi.fn(() => Promise.resolve()),
 }));
 
 import Sidebar from "./Sidebar.svelte";
@@ -43,6 +48,7 @@ describe("Sidebar", () => {
     expect(screen.getByRole("button", { name: /Portfolio/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Payday/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Crash Playbook/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Alerts/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Brokerage/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Settings/i })).toBeInTheDocument();
   });
