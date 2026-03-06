@@ -16,7 +16,14 @@ type PaydayHandler struct {
 
 // NewPaydayHandler creates a new PaydayHandler.
 func NewPaydayHandler(ctx context.Context, payday *usecase.PaydayService) *PaydayHandler {
-	return &PaydayHandler{ctx: ctx, payday: payday}
+	h := &PaydayHandler{}
+	h.Bind(ctx, payday)
+	return h
+}
+
+func (h *PaydayHandler) Bind(ctx context.Context, payday *usecase.PaydayService) {
+	h.ctx = ctx
+	h.payday = payday
 }
 
 // GetPaydayDay returns the configured payday day.

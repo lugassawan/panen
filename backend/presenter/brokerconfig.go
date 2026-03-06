@@ -9,7 +9,13 @@ type BrokerConfigHandler struct {
 
 // NewBrokerConfigHandler creates a new BrokerConfigHandler.
 func NewBrokerConfigHandler(configs []*brokerconfig.BrokerConfig) *BrokerConfigHandler {
-	return &BrokerConfigHandler{configs: configs}
+	h := &BrokerConfigHandler{}
+	h.Bind(configs)
+	return h
+}
+
+func (h *BrokerConfigHandler) Bind(configs []*brokerconfig.BrokerConfig) {
+	h.configs = configs
 }
 
 // ListBrokerConfigs returns all known broker configurations.

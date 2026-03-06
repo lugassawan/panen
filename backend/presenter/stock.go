@@ -15,7 +15,14 @@ type StockHandler struct {
 
 // NewStockHandler creates a new StockHandler.
 func NewStockHandler(ctx context.Context, stocks *usecase.StockService) *StockHandler {
-	return &StockHandler{ctx: ctx, stocks: stocks}
+	h := &StockHandler{}
+	h.Bind(ctx, stocks)
+	return h
+}
+
+func (h *StockHandler) Bind(ctx context.Context, stocks *usecase.StockService) {
+	h.ctx = ctx
+	h.stocks = stocks
 }
 
 // LookupStock fetches or refreshes stock data and returns valuation results.

@@ -18,7 +18,15 @@ type BrokerageHandler struct {
 func NewBrokerageHandler(
 	ctx context.Context, profileID string, brokerages *usecase.BrokerageService,
 ) *BrokerageHandler {
-	return &BrokerageHandler{ctx: ctx, profileID: profileID, brokerages: brokerages}
+	h := &BrokerageHandler{}
+	h.Bind(ctx, profileID, brokerages)
+	return h
+}
+
+func (h *BrokerageHandler) Bind(ctx context.Context, profileID string, brokerages *usecase.BrokerageService) {
+	h.ctx = ctx
+	h.profileID = profileID
+	h.brokerages = brokerages
 }
 
 // ListBrokerageAccounts returns all brokerage accounts for the current user.

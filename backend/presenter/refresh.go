@@ -39,7 +39,15 @@ func NewRefreshHandler(
 	refresh *usecase.RefreshService,
 	settings settings.Repository,
 ) *RefreshHandler {
-	return &RefreshHandler{ctx: ctx, refresh: refresh, settings: settings}
+	h := &RefreshHandler{}
+	h.Bind(ctx, refresh, settings)
+	return h
+}
+
+func (h *RefreshHandler) Bind(ctx context.Context, refresh *usecase.RefreshService, settings settings.Repository) {
+	h.ctx = ctx
+	h.refresh = refresh
+	h.settings = settings
 }
 
 // TriggerRefresh triggers an immediate refresh of all tracked stock data.

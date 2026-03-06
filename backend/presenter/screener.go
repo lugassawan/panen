@@ -14,7 +14,14 @@ type ScreenerHandler struct {
 
 // NewScreenerHandler creates a new ScreenerHandler.
 func NewScreenerHandler(ctx context.Context, screener *usecase.ScreenerService) *ScreenerHandler {
-	return &ScreenerHandler{ctx: ctx, screener: screener}
+	h := &ScreenerHandler{}
+	h.Bind(ctx, screener)
+	return h
+}
+
+func (h *ScreenerHandler) Bind(ctx context.Context, screener *usecase.ScreenerService) {
+	h.ctx = ctx
+	h.screener = screener
 }
 
 // RunScreen executes a stock screen and returns results.

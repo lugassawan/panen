@@ -21,7 +21,19 @@ func NewCrashPlaybookHandler(
 	service *usecase.CrashPlaybookService,
 	portfolios portfolio.Repository,
 ) *CrashPlaybookHandler {
-	return &CrashPlaybookHandler{ctx: ctx, service: service, portfolios: portfolios}
+	h := &CrashPlaybookHandler{}
+	h.Bind(ctx, service, portfolios)
+	return h
+}
+
+func (h *CrashPlaybookHandler) Bind(
+	ctx context.Context,
+	service *usecase.CrashPlaybookService,
+	portfolios portfolio.Repository,
+) {
+	h.ctx = ctx
+	h.service = service
+	h.portfolios = portfolios
 }
 
 // ListAllPortfolios returns all portfolios for the portfolio selector.

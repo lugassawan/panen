@@ -14,12 +14,19 @@ type AlertHandler struct {
 
 // NewAlertHandler creates a new AlertHandler.
 func NewAlertHandler(ctx context.Context, alerts *usecase.AlertService) *AlertHandler {
-	return &AlertHandler{ctx: ctx, alerts: alerts}
+	h := &AlertHandler{}
+	h.Bind(ctx, alerts)
+	return h
+}
+
+func (h *AlertHandler) Bind(ctx context.Context, alerts *usecase.AlertService) {
+	h.ctx = ctx
+	h.alerts = alerts
 }
 
 // GetActiveAlerts returns all active fundamental alerts.
 func (h *AlertHandler) GetActiveAlerts() ([]FundamentalAlertResponse, error) {
-	if h == nil {
+	if h.alerts == nil {
 		return nil, nil
 	}
 	alerts, err := h.alerts.GetActiveAlerts(h.ctx)
@@ -35,7 +42,7 @@ func (h *AlertHandler) GetActiveAlerts() ([]FundamentalAlertResponse, error) {
 
 // GetAlertsByTicker returns all alerts for a given ticker.
 func (h *AlertHandler) GetAlertsByTicker(ticker string) ([]FundamentalAlertResponse, error) {
-	if h == nil {
+	if h.alerts == nil {
 		return nil, nil
 	}
 	alerts, err := h.alerts.GetAlertsByTicker(h.ctx, ticker)
@@ -51,7 +58,7 @@ func (h *AlertHandler) GetAlertsByTicker(ticker string) ([]FundamentalAlertRespo
 
 // AcknowledgeAlert marks an alert as acknowledged.
 func (h *AlertHandler) AcknowledgeAlert(id string) error {
-	if h == nil {
+	if h.alerts == nil {
 		return nil
 	}
 	return h.alerts.AcknowledgeAlert(h.ctx, id)
@@ -59,7 +66,7 @@ func (h *AlertHandler) AcknowledgeAlert(id string) error {
 
 // GetAlertCount returns the number of active alerts.
 func (h *AlertHandler) GetAlertCount() (int, error) {
-	if h == nil {
+	if h.alerts == nil {
 		return 0, nil
 	}
 	return h.alerts.GetActiveCount(h.ctx)

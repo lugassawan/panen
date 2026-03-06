@@ -15,7 +15,14 @@ type ChecklistHandler struct {
 
 // NewChecklistHandler creates a new ChecklistHandler.
 func NewChecklistHandler(ctx context.Context, checklists *usecase.ChecklistService) *ChecklistHandler {
-	return &ChecklistHandler{ctx: ctx, checklists: checklists}
+	h := &ChecklistHandler{}
+	h.Bind(ctx, checklists)
+	return h
+}
+
+func (h *ChecklistHandler) Bind(ctx context.Context, checklists *usecase.ChecklistService) {
+	h.ctx = ctx
+	h.checklists = checklists
 }
 
 // EvaluateChecklist evaluates a checklist for a holding.
