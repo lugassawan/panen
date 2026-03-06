@@ -3,6 +3,7 @@ import { Pencil, Plus, Trash2 } from "lucide-svelte";
 import { t } from "../../i18n";
 import Button from "../../lib/components/Button.svelte";
 import { formatRupiah } from "../../lib/format";
+import { MODE_BADGE } from "../../lib/mode-styles";
 import type { PortfolioResponse } from "../../lib/types";
 
 interface Props {
@@ -14,11 +15,6 @@ interface Props {
 }
 
 let { portfolios, onView, onEdit, onDelete, onCreate }: Props = $props();
-
-const MODE_BADGE: Record<string, string> = {
-  VALUE: "bg-green-100 text-green-700",
-  DIVIDEND: "bg-gold-100 text-gold-700",
-};
 </script>
 
 <div class="mb-6 flex items-center justify-between">

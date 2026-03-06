@@ -4,6 +4,7 @@ import { t } from "../../i18n";
 import Button from "../../lib/components/Button.svelte";
 import Tooltip from "../../lib/components/Tooltip.svelte";
 import { formatPercent, formatRupiah } from "../../lib/format";
+import { MODE_BADGE, TAB_ACCENT } from "../../lib/mode-styles";
 import {
   currentValue as calcCurrentValue,
   overallPL as calcOverallPL,
@@ -30,11 +31,6 @@ let { detail, onBack, onChecklist, onHoldingAdded }: Props = $props();
 type TabId = "holdings" | "charts" | "dividends";
 let activeTab = $state<TabId>("holdings");
 
-const TAB_ACCENT: Record<string, string> = {
-  VALUE: "border-green-700 text-green-700",
-  DIVIDEND: "border-gold-500 text-gold-500",
-};
-
 let TABS: TabId[] = $derived(
   detail.portfolio.mode === "DIVIDEND"
     ? ["holdings", "charts", "dividends"]
@@ -55,11 +51,6 @@ function handleTabKeydown(e: KeyboardEvent) {
   const btn = tablist?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[next];
   btn?.focus();
 }
-
-const MODE_BADGE: Record<string, string> = {
-  VALUE: "bg-green-100 text-green-700",
-  DIVIDEND: "bg-gold-100 text-gold-700",
-};
 
 let totalInvested = $derived(calcTotalInvested(detail.holdings));
 let currentValue = $derived(calcCurrentValue(detail.holdings));
