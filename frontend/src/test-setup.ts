@@ -2,9 +2,10 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/svelte";
 import { afterEach } from "vitest";
 
-// Default test locale to "id" to match original id-ID number formatting behavior.
-// Individual tests can override navigator.language as needed.
-Object.defineProperty(navigator, "language", { writable: true, value: "id-ID" });
+// Default locale to "en" for tests — all t() calls return English, and
+// formatRupiah etc. use en-US locale. Tests that were written with id-ID
+// format expectations have their own i18n mock.
+Object.defineProperty(navigator, "language", { writable: true, value: "en-US" });
 
 afterEach(() => {
   cleanup();

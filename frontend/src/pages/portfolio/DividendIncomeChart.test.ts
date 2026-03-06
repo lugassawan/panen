@@ -59,6 +59,6 @@ describe("DividendIncomeChart", () => {
 
   it("shows loading state initially", () => {
     render(DividendIncomeChart, { props: { portfolioId: "p1" } });
-    expect(screen.getByText("Loading income data…")).toBeInTheDocument();
+    expect(screen.getByText("Loading income data...")).toBeInTheDocument();
   });
 });

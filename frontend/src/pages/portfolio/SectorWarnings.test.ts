@@ -12,7 +12,7 @@ describe("SectorWarnings", () => {
     render(SectorWarnings, { props: { sectorWeights: weights } });
     expect(screen.getByRole("alert")).toBeInTheDocument();
     expect(screen.getByText(/Financials/)).toBeInTheDocument();
-    expect(screen.getByText(/75,00%/)).toBeInTheDocument();
+    expect(screen.getByText(/75\.00%/)).toBeInTheDocument();
   });
 
   it("shows no warnings when all sectors under 30%", () => {

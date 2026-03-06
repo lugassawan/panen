@@ -1,6 +1,7 @@
 <script lang="ts">
 import { untrack } from "svelte";
 import { CreatePortfolio, UpdatePortfolio } from "../../../wailsjs/go/backend/App";
+import { t } from "../../i18n";
 import Button from "../../lib/components/Button.svelte";
 import Input from "../../lib/components/Input.svelte";
 import type { Mode, PortfolioResponse, RiskProfile } from "../../lib/types";
@@ -29,22 +30,22 @@ let error = $state<string | null>(null);
 
 const modeOptions: {
   value: Mode;
-  label: string;
-  description: string;
+  labelKey: string;
+  descriptionKey: string;
   selectedClass: string;
   accentClass: string;
 }[] = [
   {
     value: "VALUE",
-    label: "Value",
-    description: "Focus on undervalued stocks with margin of safety.",
+    labelKey: "mode.value",
+    descriptionKey: "portfolioForm.valueDescription",
     selectedClass: "border-green-700/50 bg-green-50 dark:bg-green-900/20",
     accentClass: "accent-green-700",
   },
   {
     value: "DIVIDEND",
-    label: "Dividend",
-    description: "Focus on consistent dividend-paying stocks.",
+    labelKey: "mode.dividend",
+    descriptionKey: "portfolioForm.dividendDescription",
     selectedClass: "border-gold-500/50 bg-gold-50 dark:bg-gold-500/10",
     accentClass: "accent-gold-500",
   },
@@ -52,23 +53,23 @@ const modeOptions: {
 
 const riskOptions: {
   value: RiskProfile;
-  label: string;
-  description: string;
+  labelKey: string;
+  descriptionKey: string;
 }[] = [
   {
     value: "CONSERVATIVE",
-    label: "Conservative",
-    description: "Stricter margin of safety. Best for preserving capital.",
+    labelKey: "screener.conservative",
+    descriptionKey: "portfolioForm.conservativeDesc",
   },
   {
     value: "MODERATE",
-    label: "Moderate",
-    description: "Balanced approach. Best for long-term wealth building.",
+    labelKey: "screener.moderate",
+    descriptionKey: "portfolioForm.moderateDesc",
   },
   {
     value: "AGGRESSIVE",
-    label: "Aggressive",
-    description: "Lower margin of safety threshold. Best for growth-focused investors.",
+    labelKey: "screener.aggressive",
+    descriptionKey: "portfolioForm.aggressiveDesc",
   },
 ];
 
@@ -84,7 +85,7 @@ let buttonVariant = $derived<"primary" | "gold">(mode === "VALUE" ? "primary" : 
 async function submit() {
   error = null;
   if (!name.trim()) {
-    error = "Portfolio name is required";
+    error = t("portfolioForm.nameRequired");
     return;
   }
 
@@ -131,18 +132,18 @@ async function submit() {
 			for="portfolio-name"
 			class="mb-1 block text-sm text-text-secondary"
 		>
-			Portfolio Name
+			{t("portfolioForm.portfolioName")}
 		</label>
 		<Input
 			id="portfolio-name"
 			bind:value={name}
-			placeholder="e.g. Value Portfolio"
+			placeholder={t("portfolioForm.namePlaceholder")}
 			class="placeholder:text-text-muted"
 		/>
 	</div>
 
 	<fieldset>
-		<legend class="mb-2 text-sm text-text-secondary">Mode</legend>
+		<legend class="mb-2 text-sm text-text-secondary">{t("portfolioForm.mode")}</legend>
 		<div class="grid grid-cols-2 gap-3">
 			{#each modeOptions as option}
 				<label
@@ -159,21 +160,21 @@ async function submit() {
 						class="mt-0.5 {option.accentClass}"
 					/>
 					<div>
-						<span class="text-sm font-medium">{option.label}</span>
+						<span class="text-sm font-medium">{t(option.labelKey)}</span>
 						<p class="text-xs text-text-muted">
-							{option.description}
+							{t(option.descriptionKey)}
 						</p>
 					</div>
 				</label>
 			{/each}
 		</div>
 		{#if isEdit}
-			<p class="mt-1 text-xs text-text-muted">Mode cannot be changed after creation.</p>
+			<p class="mt-1 text-xs text-text-muted">{t("portfolioForm.modeCannotChange")}</p>
 		{/if}
 	</fieldset>
 
 	<fieldset>
-		<legend class="mb-2 text-sm text-text-secondary">Risk Profile</legend>
+		<legend class="mb-2 text-sm text-text-secondary">{t("portfolioForm.riskProfile")}</legend>
 		<div class="space-y-2">
 			{#each riskOptions as option}
 				<label
@@ -189,9 +190,9 @@ async function submit() {
 						class="mt-0.5 {riskAccentClass}"
 					/>
 					<div>
-						<span class="text-sm font-medium">{option.label}</span>
+						<span class="text-sm font-medium">{t(option.labelKey)}</span>
 						<p class="text-xs text-text-muted">
-							{option.description}
+							{t(option.descriptionKey)}
 						</p>
 					</div>
 				</label>
@@ -205,7 +206,7 @@ async function submit() {
 				for="capital"
 				class="mb-1 block text-sm text-text-secondary"
 			>
-				Capital
+				{t("portfolioForm.capitalLabel")}
 			</label>
 			<Input
 				id="capital"
@@ -219,7 +220,7 @@ async function submit() {
 				for="monthly-addition"
 				class="mb-1 block text-sm text-text-secondary"
 			>
-				Monthly Addition
+				{t("portfolioForm.monthlyAddition")}
 			</label>
 			<Input
 				id="monthly-addition"
@@ -233,7 +234,7 @@ async function submit() {
 				for="max-stocks"
 				class="mb-1 block text-sm text-text-secondary"
 			>
-				Max Stocks
+				{t("portfolioForm.maxStocks")}
 			</label>
 			<Input
 				id="max-stocks"
@@ -255,13 +256,13 @@ async function submit() {
 
 	<div class="flex gap-3">
 		{#if onCancel}
-			<Button variant="secondary" onclick={onCancel}>Cancel</Button>
+			<Button variant="secondary" onclick={onCancel}>{t("common.cancel")}</Button>
 		{/if}
 		<Button variant={buttonVariant} type="submit" loading={loading}>
 			{#if loading}
-				{isEdit ? "Saving…" : "Creating…"}
+				{isEdit ? t("portfolioForm.saving") : t("portfolioForm.creating")}
 			{:else}
-				{isEdit ? "Save Changes" : "Create Portfolio"}
+				{isEdit ? t("portfolioForm.saveChanges") : t("portfolioForm.createPortfolio")}
 			{/if}
 		</Button>
 	</div>

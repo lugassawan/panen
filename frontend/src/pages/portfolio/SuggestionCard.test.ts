@@ -62,7 +62,7 @@ describe("SuggestionCard", () => {
     expect(screen.getByText("Gross Proceeds")).toBeInTheDocument();
     expect(screen.getByText("Net Proceeds")).toBeInTheDocument();
     expect(screen.getByText("Capital Gain")).toBeInTheDocument();
-    expect(screen.getByText(/15,30%/)).toBeInTheDocument();
+    expect(screen.getByText(/15\.30%/)).toBeInTheDocument();
   });
 
   it("shows tax only when > 0", () => {
@@ -88,7 +88,7 @@ describe("SuggestionCard", () => {
       props: { suggestion: makeSellSuggestion({ capitalGainPct: 15.3 }) },
     });
 
-    const gainEl = screen.getByText(/15,30%/);
+    const gainEl = screen.getByText(/15\.30%/);
     expect(gainEl.className).toContain("text-profit");
   });
 
@@ -97,7 +97,7 @@ describe("SuggestionCard", () => {
       props: { suggestion: makeSellSuggestion({ capitalGainPct: -8.5 }) },
     });
 
-    const gainEl = screen.getByText(/8,50%/);
+    const gainEl = screen.getByText(/8\.50%/);
     expect(gainEl.className).toContain("text-loss");
   });
 });

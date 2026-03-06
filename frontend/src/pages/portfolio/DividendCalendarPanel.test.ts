@@ -19,6 +19,6 @@ describe("DividendCalendarPanel", () => {
 
   it("shows loading state initially", () => {
     render(DividendCalendarPanel, { props: { portfolioId: "p1" } });
-    expect(screen.getByText("Loading calendar…")).toBeInTheDocument();
+    expect(screen.getByText("Loading calendar...")).toBeInTheDocument();
   });
 });

@@ -1,6 +1,7 @@
 <script lang="ts">
 import { Calendar } from "lucide-svelte";
 import { GetDividendCalendar } from "../../../wailsjs/go/backend/App";
+import { t } from "../../i18n";
 import EmptyState from "../../lib/components/EmptyState.svelte";
 import { formatRupiah } from "../../lib/format";
 import type { DividendCalendarEntryResponse } from "../../lib/types";
@@ -76,18 +77,18 @@ $effect(() => {
 </script>
 
 <div data-testid="dividend-calendar-panel" class="rounded border border-border-default bg-bg-elevated p-4">
-  <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">Upcoming Dividends</p>
+  <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">{t("dividendCalendar.title")}</p>
 
   {#if loading}
     <div class="flex items-center justify-center py-12">
-      <p class="text-sm text-text-muted">Loading calendar…</p>
+      <p class="text-sm text-text-muted">{t("dividendCalendar.loading")}</p>
     </div>
   {:else if error}
     <div class="rounded border border-border-default bg-bg-elevated p-6 text-center">
       <p class="text-sm text-loss">{error}</p>
     </div>
   {:else if entries.length === 0}
-    <EmptyState icon={Calendar} title="No upcoming dividends" description="No projected dividend events for the next 12 months." />
+    <EmptyState icon={Calendar} title={t("dividendCalendar.noDividends")} description={t("dividendCalendar.noDividendsDesc")} />
   {:else}
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {#each grouped as group}

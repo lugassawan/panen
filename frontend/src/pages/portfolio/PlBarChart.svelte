@@ -1,6 +1,7 @@
 <script lang="ts">
 import { BarController, BarElement, CategoryScale, Chart, LinearScale, Tooltip } from "chart.js";
 import { BarChart } from "lucide-svelte";
+import { t } from "../../i18n";
 import { chartColors, defaultChartOptions } from "../../lib/chartColors.svelte";
 import EmptyState from "../../lib/components/EmptyState.svelte";
 import { formatPercent, formatRupiah } from "../../lib/format";
@@ -93,7 +94,7 @@ $effect(() => {
 
 <div data-testid="pl-bar-chart" class="rounded border border-border-default bg-bg-elevated p-4">
   <div class="mb-3 flex items-center justify-between">
-    <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">P/L by Holding</p>
+    <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">{t("chart.plByHolding")}</p>
     {#if validHoldings.length > 0}
       <div class="flex gap-1 rounded bg-bg-tertiary p-0.5 text-xs" role="group" aria-label="P/L display mode">
         <button
@@ -117,15 +118,15 @@ $effect(() => {
   </div>
 
   {#if validHoldings.length === 0}
-    <EmptyState icon={BarChart} title="No P/L data" description="Holdings need current market prices to show P/L chart." />
+    <EmptyState icon={BarChart} title={t("chart.noPlData")} description={t("chart.noPlDataDesc")} />
   {:else}
     <div class="relative" style="height: {Math.max(validHoldings.length * 36, 120)}px">
-      <canvas bind:this={canvas} aria-label="Profit and loss bar chart per holding"></canvas>
+      <canvas bind:this={canvas} aria-label={t("chart.plAriaLabel")}></canvas>
     </div>
 
     <!-- Screen reader accessible data table -->
     <table class="sr-only">
-      <caption>P/L by holding</caption>
+      <caption>{t("chart.plCaption")}</caption>
       <thead>
         <tr><th>Ticker</th><th>P/L %</th><th>P/L Rupiah</th></tr>
       </thead>

@@ -1,6 +1,7 @@
 <script lang="ts">
 import { ArcElement, Chart, DoughnutController, Legend, Tooltip } from "chart.js";
 import { PieChart } from "lucide-svelte";
+import { t } from "../../i18n";
 import { accentPalette, defaultChartOptions } from "../../lib/chartColors.svelte";
 import EmptyState from "../../lib/components/EmptyState.svelte";
 import { formatPercent, formatRupiah } from "../../lib/format";
@@ -76,16 +77,16 @@ $effect(() => {
 
 <div data-testid="composition-chart" class="rounded border border-border-default bg-bg-elevated p-4">
   <div class="mb-3 flex items-center justify-between">
-    <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">Composition</p>
+    <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">{t("chart.composition")}</p>
     {#if holdingWeights.length > 0}
-      <div class="flex gap-1 rounded bg-bg-tertiary p-0.5 text-xs" role="group" aria-label="Composition view">
+      <div class="flex gap-1 rounded bg-bg-tertiary p-0.5 text-xs" role="group" aria-label={t("chart.composition")}>
         <button
           type="button"
           class="rounded px-2 py-0.5 transition-fast focus-ring {showByHolding ? 'bg-bg-elevated text-text-primary shadow-sm' : 'text-text-secondary'}"
           onclick={() => (showByHolding = true)}
           aria-pressed={showByHolding}
         >
-          By Holding
+          {t("chart.byHolding")}
         </button>
         <button
           type="button"
@@ -93,23 +94,23 @@ $effect(() => {
           onclick={() => (showByHolding = false)}
           aria-pressed={!showByHolding}
         >
-          By Sector
+          {t("chart.bySector")}
         </button>
       </div>
     {/if}
   </div>
 
   {#if holdingWeights.length === 0}
-    <EmptyState icon={PieChart} title="No composition data" description="Add holdings to see portfolio composition." />
+    <EmptyState icon={PieChart} title={t("chart.noComposition")} description={t("chart.noCompositionDesc")} />
   {:else}
     <div class="relative" style="height: 280px">
-      <canvas bind:this={canvas} aria-label="Portfolio composition doughnut chart"></canvas>
+      <canvas bind:this={canvas} aria-label={t("chart.portfolioComposition")}></canvas>
     </div>
 
     <table class="sr-only">
-      <caption>Portfolio composition</caption>
+      <caption>{t("chart.portfolioComposition")}</caption>
       <thead>
-        <tr><th>Segment</th><th>Value</th><th>Weight</th></tr>
+        <tr><th>{t("chart.segment")}</th><th>{t("chart.value")}</th><th>{t("chart.weight")}</th></tr>
       </thead>
       <tbody>
         {#each activeData as d}
