@@ -1,6 +1,7 @@
 <script lang="ts">
 import { DeleteWatchlist } from "../../../wailsjs/go/backend/App";
 import ConfirmDialog from "../../components/ConfirmDialog.svelte";
+import { t } from "../../i18n";
 import type { WatchlistResponse } from "../../lib/types";
 
 let {
@@ -31,15 +32,15 @@ async function confirm() {
 </script>
 
 <ConfirmDialog
-  title="Delete Watchlist"
-  confirmLabel="Delete"
+  title={t("watchlist.deleteTitle")}
+  confirmLabel={t("common.delete")}
   confirmVariant="danger"
   {loading}
   onConfirm={confirm}
   {onCancel}
 >
   <p>Are you sure you want to delete <strong>{watchlist.name}</strong>?</p>
-  <p class="mt-1">This action cannot be undone.</p>
+  <p class="mt-1">{t("common.cannotUndo")}</p>
   {#if error}
     <div class="mt-3 rounded border border-negative/20 bg-negative-bg px-3 py-2 text-sm text-negative" role="alert">
       {error}

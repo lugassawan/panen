@@ -1,5 +1,6 @@
 <script lang="ts">
 import { untrack } from "svelte";
+import { t } from "../../i18n";
 import Button from "../../lib/components/Button.svelte";
 import Input from "../../lib/components/Input.svelte";
 
@@ -44,14 +45,14 @@ function handleKeydown(e: KeyboardEvent) {
     tabindex="-1"
     onkeydown={handleKeydown}
   >
-    <h3 id="payday-confirm-title" class="text-lg font-semibold text-text-primary font-display">Confirm Payday</h3>
+    <h3 id="payday-confirm-title" class="text-lg font-semibold text-text-primary font-display">{t("payday.confirmTitle")}</h3>
     <p class="mt-2 text-sm text-text-secondary">
-      Confirm the payday amount for <span class="font-medium text-text-primary">{portfolioName}</span>.
+      {t("payday.confirmMessage", { portfolioName })}
     </p>
 
     <div class="mt-4">
       <label for="confirm-amount" class="mb-1.5 block text-sm font-medium text-text-secondary">
-        Amount (IDR)
+        {t("payday.amountLabel")}
       </label>
       <Input
         id="confirm-amount"
@@ -64,8 +65,8 @@ function handleKeydown(e: KeyboardEvent) {
     </div>
 
     <div class="mt-6 flex items-center justify-end gap-3">
-      <Button variant="secondary" onclick={onCancel}>Cancel</Button>
-      <Button variant="primary" onclick={handleConfirm}>Confirm</Button>
+      <Button variant="secondary" onclick={onCancel}>{t("common.cancel")}</Button>
+      <Button variant="primary" onclick={handleConfirm}>{t("common.confirm")}</Button>
     </div>
   </div>
 </div>

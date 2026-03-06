@@ -66,7 +66,7 @@ describe("PaydayPage", () => {
 
     // Verify the expected amount appears somewhere on the page
     const container = document.body;
-    expect(container.textContent).toContain("5.000.000");
+    expect(container.textContent).toContain("5,000,000");
   });
 
   it("shows PENDING status badge", async () => {

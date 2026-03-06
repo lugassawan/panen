@@ -1,4 +1,5 @@
 <script lang="ts">
+import { t } from "../../i18n";
 import Badge from "../../lib/components/Badge.svelte";
 import Button from "../../lib/components/Button.svelte";
 import { formatRupiah } from "../../lib/format";
@@ -13,9 +14,9 @@ let {
 } = $props();
 
 const levelLabels: Record<CrashLevel, string> = {
-  NORMAL_DIP: "Normal Dip",
-  CRASH: "Crash",
-  EXTREME: "Extreme",
+  NORMAL_DIP: t("crashPlaybook.normalDip"),
+  CRASH: t("crashPlaybook.crash"),
+  EXTREME: t("crashPlaybook.extreme"),
 };
 
 const hasActiveLevel = $derived(stock.activeLevel != null);
@@ -26,14 +27,14 @@ const hasActiveLevel = $derived(stock.activeLevel != null);
     <div class="flex items-center gap-3">
       <h3 class="font-display text-base font-semibold text-text-primary">{stock.ticker}</h3>
       {#if hasActiveLevel}
-        <Badge variant="loss">Level Hit</Badge>
+        <Badge variant="loss">{t("crashPlaybook.levelHit")}</Badge>
       {/if}
     </div>
     <span class="font-mono text-sm font-medium text-text-primary">{formatRupiah(stock.currentPrice)}</span>
   </div>
 
   <div class="mt-1 text-xs text-text-secondary">
-    Entry target: <span class="font-mono">{formatRupiah(stock.entryPrice)}</span>
+    {t("crashPlaybook.entryTarget")} <span class="font-mono">{formatRupiah(stock.entryPrice)}</span>
   </div>
 
   <div class="mt-3 space-y-2">

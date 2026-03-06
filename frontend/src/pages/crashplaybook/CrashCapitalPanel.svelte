@@ -1,5 +1,6 @@
 <script lang="ts">
 import { untrack } from "svelte";
+import { t } from "../../i18n";
 import Button from "../../lib/components/Button.svelte";
 import Input from "../../lib/components/Input.svelte";
 import { formatRupiah } from "../../lib/format";
@@ -29,39 +30,39 @@ function handleSave() {
 
 <div class="rounded-lg border border-border-default bg-bg-elevated p-4">
   <div class="flex items-center justify-between">
-    <h3 class="font-display text-base font-semibold text-text-primary">Crash Capital</h3>
+    <h3 class="font-display text-base font-semibold text-text-primary">{t("crashPlaybook.crashCapital")}</h3>
     <button
       class="text-xs text-text-secondary underline transition-fast hover:text-text-primary focus-ring rounded"
       onclick={onOpenSettings}
     >
-      Deployment Settings
+      {t("crashPlaybook.deploymentSettings")}
     </button>
   </div>
 
   <div class="mt-3 flex items-end gap-3">
     <label class="flex-1">
-      <span class="block text-xs font-medium text-text-secondary mb-1">Reserved Amount (Rp)</span>
+      <span class="block text-xs font-medium text-text-secondary mb-1">{t("crashPlaybook.reservedAmount")}</span>
       <Input
         type="number"
         bind:value={amountStr}
-        placeholder="e.g. 10000000"
+        placeholder={t("crashPlaybook.reservedPlaceholder")}
       />
     </label>
-    <Button variant="primary" size="sm" onclick={handleSave}>Save</Button>
+    <Button variant="primary" size="sm" onclick={handleSave}>{t("common.save")}</Button>
   </div>
 
   {#if plan}
     <div class="mt-4 space-y-2">
       <div class="flex items-center justify-between text-sm">
-        <span class="text-text-secondary">Total Reserved</span>
+        <span class="text-text-secondary">{t("crashPlaybook.totalReserved")}</span>
         <span class="font-mono font-medium text-text-primary">{formatRupiah(plan.total)}</span>
       </div>
       <div class="flex items-center justify-between text-sm">
-        <span class="text-text-secondary">Deployed</span>
+        <span class="text-text-secondary">{t("crashPlaybook.deployed")}</span>
         <span class="font-mono font-medium text-text-primary">{formatRupiah(plan.deployed)}</span>
       </div>
       <div class="flex items-center justify-between text-sm">
-        <span class="text-text-secondary">Remaining</span>
+        <span class="text-text-secondary">{t("crashPlaybook.remaining")}</span>
         <span class="font-mono font-medium text-profit">{formatRupiah(plan.remaining)}</span>
       </div>
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+import { t } from "../../i18n";
 import Badge from "../../lib/components/Badge.svelte";
 import { formatDecimal } from "../../lib/format";
 import type { MarketStatusResponse } from "../../lib/types";
@@ -9,11 +10,11 @@ const conditionConfig: Record<
   string,
   { variant: "value" | "dividend" | "profit" | "loss" | "warning"; label: string }
 > = {
-  NORMAL: { variant: "value", label: "Normal" },
-  ELEVATED: { variant: "warning", label: "Elevated" },
-  CORRECTION: { variant: "loss", label: "Correction" },
-  CRASH: { variant: "loss", label: "Crash" },
-  RECOVERY: { variant: "profit", label: "Recovery" },
+  NORMAL: { variant: "value", label: t("marketStatus.normal") },
+  ELEVATED: { variant: "warning", label: t("marketStatus.elevated") },
+  CORRECTION: { variant: "loss", label: t("marketStatus.correction") },
+  CRASH: { variant: "loss", label: t("marketStatus.crash") },
+  RECOVERY: { variant: "profit", label: t("marketStatus.recovery") },
 };
 
 const config = $derived(conditionConfig[market.condition] ?? conditionConfig.NORMAL);
@@ -22,7 +23,7 @@ const config = $derived(conditionConfig[market.condition] ?? conditionConfig.NOR
 <section class="rounded-lg border border-border-default bg-bg-elevated p-4" aria-label="Market status">
   <div class="flex items-center justify-between">
     <div class="flex items-center gap-3">
-      <h3 class="text-sm font-medium text-text-secondary">IHSG Market Status</h3>
+      <h3 class="text-sm font-medium text-text-secondary">{t("marketStatus.title")}</h3>
       <Badge variant={config.variant}>{config.label}</Badge>
     </div>
     <div class="flex items-center gap-4 text-sm">
@@ -33,7 +34,7 @@ const config = $derived(conditionConfig[market.condition] ?? conditionConfig.NOR
     </div>
   </div>
   <div class="mt-2 flex items-center justify-between text-xs text-text-secondary">
-    <span>Peak: <span class="font-mono">{formatDecimal(market.ihsgPeak)}</span></span>
-    <span>Last fetched: {new Date(market.fetchedAt).toLocaleString("id-ID")}</span>
+    <span>{t("marketStatus.peak")} <span class="font-mono">{formatDecimal(market.ihsgPeak)}</span></span>
+    <span>{t("marketStatus.lastFetched")} {new Date(market.fetchedAt).toLocaleString("id-ID")}</span>
   </div>
 </section>

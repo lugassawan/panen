@@ -1,6 +1,7 @@
 <script lang="ts">
 import { Plus } from "lucide-svelte";
 import { AddToWatchlist } from "../../../wailsjs/go/backend/App";
+import { t } from "../../i18n";
 import Button from "../../lib/components/Button.svelte";
 import Input from "../../lib/components/Input.svelte";
 import { toastStore } from "../../lib/stores/toast.svelte";
@@ -19,13 +20,13 @@ let error = $state<string | null>(null);
 
 async function submit(e: Event) {
   e.preventDefault();
-  const t = ticker.trim().toUpperCase();
-  if (!t) return;
+  const trimmed = ticker.trim().toUpperCase();
+  if (!trimmed) return;
   loading = true;
   error = null;
   try {
-    await AddToWatchlist(watchlistId, t);
-    toastStore.add(`${t} added to watchlist`, "success");
+    await AddToWatchlist(watchlistId, trimmed);
+    toastStore.add(`${trimmed} added to watchlist`, "success");
     ticker = "";
     onAdded();
   } catch (err: unknown) {
@@ -41,7 +42,7 @@ async function submit(e: Event) {
     <div class="w-48">
       <Input
         bind:value={ticker}
-        placeholder="Add ticker (e.g. BBCA)"
+        placeholder={t("watchlist.addTickerPlaceholder")}
         aria-label="Add ticker to watchlist"
         class="py-1.5 uppercase placeholder:normal-case placeholder:text-text-muted transition-fast"
         disabled={loading}
@@ -49,7 +50,7 @@ async function submit(e: Event) {
     </div>
     <Button type="submit" size="sm" disabled={loading || !ticker.trim()} {loading}>
       <Plus size={14} strokeWidth={2} />
-      Add
+      {t("common.add")}
     </Button>
     {#if error}
       <p class="text-sm text-negative">{error}</p>

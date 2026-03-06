@@ -1,5 +1,6 @@
 <script lang="ts">
 import { CreateWatchlist } from "../../../wailsjs/go/backend/App";
+import { t } from "../../i18n";
 import Input from "../../lib/components/Input.svelte";
 
 let {
@@ -38,7 +39,7 @@ async function submit(e: Event) {
 >
   <Input
     bind:value={name}
-    placeholder="Watchlist name"
+    placeholder={t("watchlist.namePlaceholder")}
     aria-label="New watchlist name"
     class="mb-1.5 bg-bg-primary px-2 py-1 text-xs placeholder:text-text-muted"
     disabled={loading}
@@ -52,7 +53,7 @@ async function submit(e: Event) {
       disabled={loading || !name.trim()}
       class="flex-1 rounded bg-green-700 px-2 py-1 text-xs font-medium text-text-inverse transition-fast focus-ring hover:bg-green-800 disabled:pointer-events-none disabled:opacity-50"
     >
-      {loading ? "Adding…" : "Add"}
+      {loading ? t("watchlist.adding") : t("common.add")}
     </button>
     <button
       type="button"
@@ -60,7 +61,7 @@ async function submit(e: Event) {
       onclick={onCancel}
       disabled={loading}
     >
-      Cancel
+      {t("common.cancel")}
     </button>
   </div>
 </form>

@@ -8,6 +8,7 @@ import {
   SavePaydayDay,
   SkipPayday,
 } from "../../../wailsjs/go/backend/App";
+import { t } from "../../i18n";
 import Badge from "../../lib/components/Badge.svelte";
 import Button from "../../lib/components/Button.svelte";
 import Tooltip from "../../lib/components/Tooltip.svelte";
@@ -50,7 +51,7 @@ function statusBadgeVariant(
 }
 
 function modeLabel(mode: string): string {
-  return mode === "VALUE" ? "War Chest" : "DCA Fund";
+  return mode === "VALUE" ? t("payday.warChest") : t("payday.dcaFund");
 }
 
 async function load() {
@@ -129,19 +130,19 @@ $effect(() => {
 </script>
 
 <div class="p-6">
-  <h1 class="text-2xl font-bold text-text-primary font-display">Payday</h1>
-  <p class="mt-1 text-sm text-text-secondary">Track your monthly investment schedule.</p>
+  <h1 class="text-2xl font-bold text-text-primary font-display">{t("payday.title")}</h1>
+  <p class="mt-1 text-sm text-text-secondary">{t("payday.subtitle")}</p>
 
   {#if state === "loading"}
     <div class="flex items-center justify-center gap-2 py-16 text-text-secondary" role="status">
       <LoaderCircle size={20} strokeWidth={2} class="animate-spin" />
-      <span class="text-sm">Loading payday data...</span>
+      <span class="text-sm">{t("payday.loading")}</span>
     </div>
   {:else if state === "error"}
     <div class="mt-6 rounded-lg border border-negative bg-negative-bg p-4">
       <p class="text-sm text-negative">{error}</p>
       <div class="mt-3">
-        <Button variant="secondary" size="sm" onclick={load}>Retry</Button>
+        <Button variant="secondary" size="sm" onclick={load}>{t("common.retry")}</Button>
       </div>
     </div>
   {:else if state === "setup"}
@@ -151,7 +152,7 @@ $effect(() => {
       <div class="flex items-center justify-between">
         <h2 class="text-lg font-semibold text-text-primary font-display">{monthStatus.month}</h2>
         <span class="font-mono text-sm text-text-secondary">
-          Total Expected: {formatRupiah(monthStatus.totalExpected)}
+          {t("payday.totalExpected")} {formatRupiah(monthStatus.totalExpected)}
         </span>
       </div>
 
@@ -174,24 +175,24 @@ $effect(() => {
             </div>
 
             <div class="mt-2 flex items-center justify-between">
-              <Tooltip text={portfolio.mode === "VALUE" ? "Monthly capital allocation for value investing opportunities" : "Monthly allocation for dividend reinvestment (DCA)"}>
+              <Tooltip text={portfolio.mode === "VALUE" ? t("payday.warChestTooltip") : t("payday.dcaFundTooltip")}>
                 <span class="text-xs text-text-secondary underline decoration-dotted cursor-help">{modeLabel(portfolio.mode)}</span>
               </Tooltip>
               {#if portfolio.status === "DEFERRED" && portfolio.deferUntil}
-                <span class="text-xs text-warning">Deferred until {portfolio.deferUntil}</span>
+                <span class="text-xs text-warning">{t("payday.deferredUntil", { date: portfolio.deferUntil })}</span>
               {/if}
             </div>
 
             {#if portfolio.status === "PENDING"}
               <div class="mt-3 flex items-center gap-2">
                 <Button variant="primary" size="sm" onclick={() => { confirmingPortfolio = portfolio; }}>
-                  Confirm
+                  {t("common.confirm")}
                 </Button>
                 <Button variant="secondary" size="sm" onclick={() => openDeferDialog(portfolio)}>
-                  Defer
+                  {t("payday.defer")}
                 </Button>
                 <Button variant="danger" size="sm" onclick={() => handleSkip(portfolio.portfolioId)}>
-                  Skip
+                  {t("payday.skip")}
                 </Button>
               </div>
             {/if}
@@ -201,7 +202,7 @@ $effect(() => {
                 class="text-xs text-text-secondary underline transition-fast hover:text-text-primary focus-ring rounded"
                 onclick={() => toggleCashFlow(portfolio.portfolioId)}
               >
-                {expandedCashFlow === portfolio.portfolioId ? "Hide" : "Show"} Cash Flows
+                {expandedCashFlow === portfolio.portfolioId ? t("common.hide") : t("common.show")} {t("payday.cashFlows")}
               </button>
               {#if expandedCashFlow === portfolio.portfolioId}
                 <CashFlowTable portfolioId={portfolio.portfolioId} />
@@ -213,7 +214,7 @@ $effect(() => {
     </div>
   {:else if state === "dashboard"}
     <div class="mt-6 text-center text-sm text-text-secondary">
-      No portfolios found. Create a portfolio first to track your payday schedule.
+      {t("payday.noPortfolios")}
     </div>
   {/if}
 </div>
@@ -238,12 +239,12 @@ $effect(() => {
       tabindex="-1"
       onkeydown={(e) => { if (e.key === "Escape") deferringPortfolio = null; }}
     >
-      <h3 id="defer-dialog-title" class="text-lg font-semibold text-text-primary font-display">Defer Payday</h3>
+      <h3 id="defer-dialog-title" class="text-lg font-semibold text-text-primary font-display">{t("payday.defer")} {t("payday.title")}</h3>
       <p class="mt-1 text-sm text-text-secondary">
         Choose a date to defer <span class="font-medium text-text-primary">{deferringPortfolio.portfolioName}</span>.
       </p>
       <label class="mt-4 block text-sm font-medium text-text-secondary">
-        Defer Until
+        {t("payday.defer")}
         <input
           type="date"
           class="mt-1 block w-full rounded-md border border-border-default bg-bg-primary px-3 py-2 text-sm text-text-primary focus-ring"
@@ -252,9 +253,9 @@ $effect(() => {
         />
       </label>
       <div class="mt-4 flex items-center justify-end gap-3">
-        <Button variant="secondary" size="sm" onclick={() => { deferringPortfolio = null; }}>Cancel</Button>
+        <Button variant="secondary" size="sm" onclick={() => { deferringPortfolio = null; }}>{t("common.cancel")}</Button>
         <Button variant="primary" size="sm" onclick={() => handleDefer(deferringPortfolio!.portfolioId)}>
-          Defer
+          {t("payday.defer")}
         </Button>
       </div>
     </div>

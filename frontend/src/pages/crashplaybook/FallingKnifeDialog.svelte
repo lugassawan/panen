@@ -1,5 +1,6 @@
 <script lang="ts">
 import { untrack } from "svelte";
+import { t } from "../../i18n";
 import Badge from "../../lib/components/Badge.svelte";
 import Button from "../../lib/components/Button.svelte";
 import type { DiagnosticResponse, DiagnosticSignal } from "../../lib/types";
@@ -38,9 +39,9 @@ const signalConfig: Record<
   DiagnosticSignal,
   { variant: "profit" | "loss" | "warning"; label: string }
 > = {
-  OPPORTUNITY: { variant: "profit", label: "Opportunity" },
-  FALLING_KNIFE: { variant: "loss", label: "Falling Knife" },
-  INCONCLUSIVE: { variant: "warning", label: "Inconclusive" },
+  OPPORTUNITY: { variant: "profit", label: t("crashPlaybook.opportunity") },
+  FALLING_KNIFE: { variant: "loss", label: t("crashPlaybook.fallingKnife") },
+  INCONCLUSIVE: { variant: "warning", label: t("crashPlaybook.inconclusive") },
 };
 
 const signal = $derived(signalConfig[diagnostic.signal]);
@@ -64,18 +65,18 @@ function checkColor(value: boolean | null, invertMeaning = false): string {
     onkeydown={(e) => { if (e.key === "Escape") onClose(); }}
   >
     <div class="flex items-center justify-between">
-      <h3 id="fk-dialog-title" class="font-display text-lg font-semibold text-text-primary">Falling Knife Diagnostic</h3>
+      <h3 id="fk-dialog-title" class="font-display text-lg font-semibold text-text-primary">{t("crashPlaybook.fallingKnifeTitle")}</h3>
       <Badge variant={signal.variant}>{signal.label}</Badge>
     </div>
     <p class="mt-1 text-sm text-text-secondary">
-      Evaluating <span class="font-mono font-medium text-text-primary">{ticker}</span>
+      {t("crashPlaybook.evaluatingTicker", { ticker })}
     </p>
 
     <div class="mt-4 space-y-3">
       <div class="flex items-center justify-between rounded-md bg-bg-primary px-3 py-2">
-        <span class="text-sm text-text-secondary">Broad market crashed?</span>
+        <span class="text-sm text-text-secondary">{t("crashPlaybook.marketCrashed")}</span>
         <span class="font-mono text-sm font-medium {diagnostic.marketCrashed ? 'text-loss' : 'text-profit'}">
-          {diagnostic.marketCrashed ? "Yes" : "No"}
+          {diagnostic.marketCrashed ? t("common.yes") : t("common.no")}
         </span>
       </div>
 
@@ -83,9 +84,9 @@ function checkColor(value: boolean | null, invertMeaning = false): string {
         class="flex w-full items-center justify-between rounded-md bg-bg-primary px-3 py-2 transition-fast hover:bg-bg-tertiary focus-ring"
         onclick={toggleCompanyBadNews}
       >
-        <span class="text-sm text-text-secondary">Company-specific bad news?</span>
+        <span class="text-sm text-text-secondary">{t("crashPlaybook.companyNews")}</span>
         <span class="font-mono text-sm font-medium {checkColor(companyBadNews, true)}">
-          {companyBadNews === null ? "Unknown" : companyBadNews ? "Yes" : "No"}
+          {companyBadNews === null ? t("common.unknown") : companyBadNews ? t("common.yes") : t("common.no")}
         </span>
       </button>
 
@@ -93,22 +94,22 @@ function checkColor(value: boolean | null, invertMeaning = false): string {
         class="flex w-full items-center justify-between rounded-md bg-bg-primary px-3 py-2 transition-fast hover:bg-bg-tertiary focus-ring"
         onclick={toggleFundamentalsOK}
       >
-        <span class="text-sm text-text-secondary">Fundamentals still healthy?</span>
+        <span class="text-sm text-text-secondary">{t("crashPlaybook.fundamentalsHealthy")}</span>
         <span class="font-mono text-sm font-medium {checkColor(fundamentalsOK)}">
-          {fundamentalsOK === null ? "Unknown" : fundamentalsOK ? "Yes" : "No"}
+          {fundamentalsOK === null ? t("common.unknown") : fundamentalsOK ? t("common.yes") : t("common.no")}
         </span>
       </button>
 
       <div class="flex items-center justify-between rounded-md bg-bg-primary px-3 py-2">
-        <span class="text-sm text-text-secondary">Price below entry target?</span>
+        <span class="text-sm text-text-secondary">{t("crashPlaybook.belowEntry")}</span>
         <span class="font-mono text-sm font-medium {diagnostic.belowEntry ? 'text-profit' : 'text-text-secondary'}">
-          {diagnostic.belowEntry ? "Yes" : "No"}
+          {diagnostic.belowEntry ? t("common.yes") : t("common.no")}
         </span>
       </div>
     </div>
 
     <div class="mt-4 flex justify-end">
-      <Button variant="secondary" size="sm" onclick={onClose}>Close</Button>
+      <Button variant="secondary" size="sm" onclick={onClose}>{t("common.close")}</Button>
     </div>
   </div>
 </div>

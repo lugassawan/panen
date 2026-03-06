@@ -14,7 +14,7 @@ describe("ConfirmDialog", () => {
   it("renders heading and portfolio name", () => {
     render(ConfirmDialog, { props: defaultProps });
     expect(screen.getByText("Confirm Payday")).toBeInTheDocument();
-    expect(screen.getByText("Test Portfolio")).toBeInTheDocument();
+    expect(screen.getByText(/Test Portfolio/)).toBeInTheDocument();
   });
 
   it("pre-fills amount with expected value", () => {

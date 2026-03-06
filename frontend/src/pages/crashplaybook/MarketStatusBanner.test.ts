@@ -17,7 +17,7 @@ function makeMarket(overrides: Partial<MarketStatusResponse> = {}): MarketStatus
 describe("MarketStatusBanner", () => {
   it("renders IHSG price", () => {
     render(MarketStatusBanner, { props: { market: makeMarket() } });
-    expect(document.body.textContent).toContain("7.200");
+    expect(document.body.textContent).toContain("7,200");
   });
 
   it("shows Normal badge for normal condition", () => {
@@ -34,11 +34,11 @@ describe("MarketStatusBanner", () => {
 
   it("shows drawdown percentage", () => {
     render(MarketStatusBanner, { props: { market: makeMarket() } });
-    expect(document.body.textContent).toContain("-4,00%");
+    expect(document.body.textContent).toContain("-4.00%");
   });
 
   it("shows peak price", () => {
     render(MarketStatusBanner, { props: { market: makeMarket() } });
-    expect(document.body.textContent).toContain("7.500");
+    expect(document.body.textContent).toContain("7,500");
   });
 });

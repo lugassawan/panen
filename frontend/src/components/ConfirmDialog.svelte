@@ -1,10 +1,11 @@
 <script lang="ts">
 import type { Snippet } from "svelte";
+import { t } from "../i18n";
 import Button from "../lib/components/Button.svelte";
 
 let {
   title,
-  confirmLabel = "Confirm",
+  confirmLabel = t("common.confirm"),
   confirmVariant = "danger",
   loading = false,
   onConfirm,
@@ -67,7 +68,7 @@ function trapFocus(e: KeyboardEvent) {
       {@render children()}
     </div>
     <div class="flex justify-end gap-3">
-      <Button variant="secondary" onclick={onCancel} disabled={loading}>Cancel</Button>
+      <Button variant="secondary" onclick={onCancel} disabled={loading}>{t("common.cancel")}</Button>
       <Button variant={confirmVariant} onclick={onConfirm} {loading}>{confirmLabel}</Button>
     </div>
   </div>
