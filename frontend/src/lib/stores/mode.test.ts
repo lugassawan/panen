@@ -75,10 +75,14 @@ describe("mode store", () => {
     const config = mode.config;
     expect(config.label).toBe("Value");
     expect(config.accent).toBe("var(--color-green-700)");
+    expect(config.activeHighlight).toContain("bg-green-100");
+    expect(config.tabActiveClass).toContain("bg-green-700");
 
     mode.set("dividend");
     const dConfig = mode.config;
     expect(dConfig.label).toBe("Dividend");
     expect(dConfig.accent).toBe("var(--color-gold-500)");
+    expect(dConfig.activeHighlight).toContain("bg-gold-100");
+    expect(dConfig.tabActiveClass).toContain("bg-gold-500");
   });
 });
