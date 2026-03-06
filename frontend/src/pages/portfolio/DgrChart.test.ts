@@ -2,10 +2,10 @@ import { render, screen } from "@testing-library/svelte";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("../../../wailsjs/go/backend/App", () => ({
-  GetYoCProgression: vi.fn(() =>
+  GetDGR: vi.fn(() =>
     Promise.resolve([
-      { date: "2023-03-15", yoc: 2.5 },
-      { date: "2023-09-15", yoc: 5.5 },
+      { year: 2022, dps: 100, growthPct: 0 },
+      { year: 2023, dps: 120, growthPct: 20 },
     ]),
   ),
 }));
@@ -17,12 +17,10 @@ vi.mock("chart.js", () => {
   }
   return {
     Chart: MockChart,
+    BarController: {},
+    BarElement: {},
     CategoryScale: {},
-    Filler: {},
     LinearScale: {},
-    LineController: {},
-    LineElement: {},
-    PointElement: {},
     Tooltip: {},
   };
 });
@@ -46,16 +44,16 @@ vi.mock("../../lib/chartColors.svelte", () => ({
   }),
 }));
 
-import YoCProgressionChart from "./YoCProgressionChart.svelte";
+import DgrChart from "./DgrChart.svelte";
 
-describe("YoCProgressionChart", () => {
+describe("DgrChart", () => {
   it("renders the component", () => {
-    render(YoCProgressionChart, { props: { portfolioId: "p1", tickers: ["BBCA"] } });
-    expect(screen.getByTestId("yoc-progression-chart")).toBeInTheDocument();
+    render(DgrChart, { props: { tickers: ["BBCA"] } });
+    expect(screen.getByTestId("dgr-chart")).toBeInTheDocument();
   });
 
   it("shows single ticker name", () => {
-    render(YoCProgressionChart, { props: { portfolioId: "p1", tickers: ["BBCA"] } });
+    render(DgrChart, { props: { tickers: ["BBCA"] } });
     expect(screen.getByText("BBCA")).toBeInTheDocument();
   });
 });

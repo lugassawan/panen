@@ -1,9 +1,9 @@
 <script lang="ts">
 import type { HoldingDetailResponse } from "../../lib/types";
-import DGRChart from "./DGRChart.svelte";
+import DgrChart from "./DgrChart.svelte";
 import DividendCalendarPanel from "./DividendCalendarPanel.svelte";
 import DividendIncomeChart from "./DividendIncomeChart.svelte";
-import YoCProgressionChart from "./YoCProgressionChart.svelte";
+import YocProgressionChart from "./YocProgressionChart.svelte";
 
 interface Props {
   portfolioId: string;
@@ -19,8 +19,8 @@ let tickers = $derived(holdings.map((h) => h.ticker));
   <DividendIncomeChart {portfolioId} />
 
   <div class="grid gap-6 lg:grid-cols-2">
-    <DGRChart {tickers} />
-    <YoCProgressionChart {portfolioId} {tickers} />
+    <DgrChart {tickers} />
+    <YocProgressionChart {portfolioId} {tickers} />
   </div>
 
   <DividendCalendarPanel {portfolioId} />
