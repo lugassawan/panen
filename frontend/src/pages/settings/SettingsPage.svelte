@@ -8,6 +8,8 @@ import {
   TriggerRefresh,
   UpdateRefreshSettings,
 } from "../../../wailsjs/go/backend/App";
+import type { Locale } from "../../i18n";
+import { locale, t } from "../../i18n";
 import Alert from "../../lib/components/Alert.svelte";
 import Button from "../../lib/components/Button.svelte";
 import Select from "../../lib/components/Select.svelte";
@@ -53,7 +55,7 @@ async function saveSettings() {
   saveError = null;
   try {
     await UpdateRefreshSettings(autoRefreshEnabled, intervalMinutes);
-    toastStore.add("Settings saved", "success");
+    toastStore.add(t("settings.settingsSaved"), "success");
   } catch (e: unknown) {
     saveError = e instanceof Error ? e.message : String(e);
   }
@@ -87,27 +89,27 @@ function openRelease(url: string) {
 </script>
 
 <div class="mx-auto max-w-lg px-4 py-8">
-  <h2 class="mb-6 text-xl font-semibold text-text-primary">Settings</h2>
+  <h2 class="mb-6 text-xl font-semibold text-text-primary">{t("settings.title")}</h2>
 
   {#if loadError}
-    <Alert variant="negative" dismissible>Failed to load settings: {loadError}</Alert>
+    <Alert variant="negative" dismissible>{t("settings.loadError", { error: loadError })}</Alert>
   {/if}
 
   {#if saveError}
-    <Alert variant="negative" dismissible>Failed to save settings: {saveError}</Alert>
+    <Alert variant="negative" dismissible>{t("settings.saveError", { error: saveError })}</Alert>
   {/if}
 
   <div class="space-y-6">
     <div>
-      <label class="mb-1 block text-sm text-text-secondary" for="language">Language</label>
-      <Select id="language" disabled class="opacity-60">
-        <option>English</option>
-        <option>Bahasa Indonesia</option>
+      <label class="mb-1 block text-sm text-text-secondary" for="language">{t("settings.language")}</label>
+      <Select id="language" value={locale.current} onchange={(e) => locale.set(e.currentTarget.value as Locale)}>
+        <option value="en">{t("settings.english")}</option>
+        <option value="id">{t("settings.indonesian")}</option>
       </Select>
     </div>
 
     <div>
-      <p class="mb-1 text-sm text-text-secondary">Theme</p>
+      <p class="mb-1 text-sm text-text-secondary">{t("settings.theme")}</p>
       <div class="flex items-center gap-3">
         <ThemeToggle />
         <span class="text-sm text-text-tertiary capitalize">{theme.preference}</span>
@@ -115,12 +117,11 @@ function openRelease(url: string) {
     </div>
 
     <div>
-      <p class="mb-3 text-sm text-text-secondary">Data Refresh</p>
+      <p class="mb-3 text-sm text-text-secondary">{t("settings.dataRefresh")}</p>
       <div class="space-y-4 rounded-lg border border-border-default bg-bg-elevated p-4">
-        <!-- Auto Refresh Toggle -->
         <label class="flex items-center justify-between">
-          <Tooltip text="Automatically refresh stock data in the background at the configured interval">
-            <span class="text-sm text-text-primary underline decoration-dotted cursor-help">Auto Refresh</span>
+          <Tooltip text={t("settings.autoRefreshTooltip")}>
+            <span class="text-sm text-text-primary underline decoration-dotted cursor-help">{t("settings.autoRefresh")}</span>
           </Tooltip>
           <input
             type="checkbox"
@@ -130,10 +131,9 @@ function openRelease(url: string) {
           />
         </label>
 
-        <!-- Interval Select -->
         <div>
           <label class="mb-1 block text-sm text-text-tertiary" for="refresh-interval">
-            Refresh Interval
+            {t("settings.refreshInterval")}
           </label>
           <Select
             id="refresh-interval"
@@ -141,36 +141,34 @@ function openRelease(url: string) {
             onchange={() => saveSettings()}
             disabled={!autoRefreshEnabled}
           >
-            <option value={180}>Every 3 hours</option>
-            <option value={360}>Every 6 hours</option>
-            <option value={720}>Every 12 hours</option>
-            <option value={1440}>Every 24 hours</option>
+            <option value={180}>{t("settings.every3Hours")}</option>
+            <option value={360}>{t("settings.every6Hours")}</option>
+            <option value={720}>{t("settings.every12Hours")}</option>
+            <option value={1440}>{t("settings.every24Hours")}</option>
           </Select>
         </div>
 
-        <!-- Last Refreshed -->
         {#if lastRefreshedAt}
           <p class="text-xs text-text-tertiary">
-            Last refreshed: <span class="font-mono">{lastRefreshedAt}</span>
+            {t("settings.lastRefreshed")} <span class="font-mono">{lastRefreshedAt}</span>
           </p>
         {/if}
 
-        <!-- Refresh Now Button -->
         <button
           onclick={triggerRefresh}
           disabled={sync.isSyncing}
           class="w-full rounded border border-green-700 px-3 py-2 text-sm font-medium text-green-700 transition-fast hover:bg-green-100 disabled:opacity-60 focus-ring dark:hover:bg-green-900/30"
         >
-          {sync.isSyncing ? "Syncing..." : "Refresh Now"}
+          {sync.isSyncing ? t("settings.syncing") : t("settings.refreshNow")}
         </button>
       </div>
     </div>
 
     <div>
-      <p class="mb-3 text-sm text-text-secondary">About</p>
+      <p class="mb-3 text-sm text-text-secondary">{t("settings.about")}</p>
       <div class="space-y-4 rounded-lg border border-border-default bg-bg-elevated p-4">
         <div class="flex items-center justify-between">
-          <span class="text-sm text-text-primary">Version</span>
+          <span class="text-sm text-text-primary">{t("settings.version")}</span>
           <span class="font-mono text-sm text-text-secondary">{appVersion}</span>
         </div>
 
@@ -180,33 +178,31 @@ function openRelease(url: string) {
           loading={updateChecking}
           onclick={checkForUpdates}
         >
-          Check for Updates
+          {t("settings.checkForUpdates")}
         </Button>
 
         {#if updateResult}
           {#if updateResult.available}
             <Alert variant="info">
-              Panen {updateResult.latestVersion} is available.
+              {t("settings.updateAvailable", { version: updateResult.latestVersion })}
               <button
                 class="ml-1 font-medium underline underline-offset-2 hover:opacity-80"
                 onclick={() => openRelease(updateResult!.releaseURL)}
               >
-                View Release
+                {t("settings.viewRelease")}
               </button>
             </Alert>
           {:else}
-            <Alert variant="positive">You're up to date.</Alert>
+            <Alert variant="positive">{t("settings.upToDate")}</Alert>
           {/if}
         {/if}
 
         {#if updateError}
           <Alert variant="negative" dismissible>
-            Failed to check for updates: {updateError}
+            {t("settings.updateError", { error: updateError })}
           </Alert>
         {/if}
       </div>
     </div>
   </div>
-
-  <p class="mt-6 text-xs text-text-muted">Language selection coming in a future update</p>
 </div>
