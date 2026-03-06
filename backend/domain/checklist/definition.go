@@ -44,12 +44,14 @@ var thresholdsByRisk = map[portfolio.RiskProfile]Thresholds{
 
 var autoCheckDefs = map[ActionType][]CheckDefinition{
 	ActionBuy: {
+		{Key: "no_critical_alerts", Label: "No critical fundamental alerts", Type: CheckTypeAuto},
 		{Key: "roe_above_min", Label: "ROE above minimum threshold", Type: CheckTypeAuto},
 		{Key: "der_below_max", Label: "DER below maximum threshold", Type: CheckTypeAuto},
 		{Key: "price_below_entry", Label: "Price below entry target", Type: CheckTypeAuto},
 		{Key: "position_weight", Label: "Position weight within limit", Type: CheckTypeAuto},
 	},
 	ActionAverageDown: {
+		{Key: "no_critical_alerts", Label: "No critical fundamental alerts", Type: CheckTypeAuto},
 		{Key: "roe_above_min", Label: "ROE above minimum threshold", Type: CheckTypeAuto},
 		{Key: "der_below_max", Label: "DER below maximum threshold", Type: CheckTypeAuto},
 		{Key: "price_below_entry", Label: "Price below entry target", Type: CheckTypeAuto},
@@ -57,6 +59,7 @@ var autoCheckDefs = map[ActionType][]CheckDefinition{
 		{Key: "new_avg_price", Label: "New average price is lower", Type: CheckTypeAuto},
 	},
 	ActionAverageUp: {
+		{Key: "no_critical_alerts", Label: "No critical fundamental alerts", Type: CheckTypeAuto},
 		{Key: "dy_above_min", Label: "Dividend yield above minimum", Type: CheckTypeAuto},
 		{Key: "payout_sustainable", Label: "Payout ratio is sustainable", Type: CheckTypeAuto},
 		{Key: "price_below_entry", Label: "Price below entry target", Type: CheckTypeAuto},

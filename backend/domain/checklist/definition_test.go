@@ -70,9 +70,9 @@ func TestAutoCheckDefs(t *testing.T) {
 		action ActionType
 		count  int
 	}{
-		{action: ActionBuy, count: 4},
-		{action: ActionAverageDown, count: 5},
-		{action: ActionAverageUp, count: 4},
+		{action: ActionBuy, count: 5},
+		{action: ActionAverageDown, count: 6},
+		{action: ActionAverageUp, count: 5},
 		{action: ActionSellExit, count: 2},
 		{action: ActionSellStop, count: 2},
 		{action: ActionHold, count: 2},

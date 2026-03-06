@@ -8,6 +8,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/lugassawan/panen/backend/domain/alert"
 	"github.com/lugassawan/panen/backend/domain/settings"
 	"github.com/lugassawan/panen/backend/domain/shared"
 	"github.com/lugassawan/panen/backend/domain/stock"
@@ -63,6 +64,8 @@ const (
 	defaultInterval = 720 * time.Minute
 )
 
+const snapshotKeepN = 10
+
 // RefreshService manages background auto-refresh of stock data.
 type RefreshService struct {
 	stockData stock.Repository
@@ -70,6 +73,8 @@ type RefreshService struct {
 	settings  settings.Repository
 	collector TickerCollector
 	emitter   EventEmitter
+	snapshots stock.SnapshotRepository
+	alerts    alert.Repository
 
 	mu               sync.Mutex
 	status           RefreshStatus
@@ -86,6 +91,8 @@ func NewRefreshService(
 	settings settings.Repository,
 	collector TickerCollector,
 	emitter EventEmitter,
+	snapshots stock.SnapshotRepository,
+	alerts alert.Repository,
 ) *RefreshService {
 	return &RefreshService{
 		stockData: stockData,
@@ -93,6 +100,8 @@ func NewRefreshService(
 		settings:  settings,
 		collector: collector,
 		emitter:   emitter,
+		snapshots: snapshots,
+		alerts:    alerts,
 		status:    RefreshStatus{State: stateIdle},
 	}
 }
@@ -273,7 +282,20 @@ func (r *RefreshService) refresh(ctx context.Context) error {
 		LastRefresh: now.Format("2006-01-02T15:04:05Z"),
 	})
 
+	r.emitAlertCount(ctx)
+
 	return nil
+}
+
+func (r *RefreshService) emitAlertCount(ctx context.Context) {
+	if r.alerts == nil {
+		return
+	}
+	count, err := r.alerts.CountActive(ctx)
+	if err != nil {
+		return
+	}
+	r.emitter.Emit("alerts:updated", count)
 }
 
 func (r *RefreshService) refreshTicker(ctx context.Context, ticker string) RefreshProgress {
@@ -343,7 +365,77 @@ func (r *RefreshService) fetchAndUpsert(ctx context.Context, ticker string) erro
 		Source:        r.provider.Source(),
 	}
 
+	r.detectAndStoreAlerts(ctx, data)
+
 	return r.stockData.Upsert(ctx, data)
+}
+
+// detectAndStoreAlerts compares the current data with the previous snapshot,
+// detects fundamental changes, and persists alerts. Errors are non-fatal.
+func (r *RefreshService) detectAndStoreAlerts(ctx context.Context, data *stock.Data) {
+	if r.snapshots == nil || r.alerts == nil {
+		return
+	}
+
+	prev, err := r.snapshots.GetLatest(ctx, data.Ticker, data.Source)
+	if err != nil && !errors.Is(err, shared.ErrNotFound) {
+		return
+	}
+
+	// Store current as new snapshot.
+	if insertErr := r.snapshots.Insert(ctx, data); insertErr != nil {
+		return
+	}
+
+	// Detect changes if we have a previous snapshot.
+	if prev != nil {
+		detected := alert.DetectChanges(prev, data)
+		r.processDetectedAlerts(ctx, data.Ticker, detected)
+		r.autoResolveAlerts(ctx, data.Ticker, detected)
+	}
+
+	// Cleanup old snapshots.
+	_ = r.snapshots.Cleanup(ctx, data.Ticker, snapshotKeepN)
+}
+
+// processDetectedAlerts creates new alerts for detected changes,
+// skipping metrics that already have an active alert.
+func (r *RefreshService) processDetectedAlerts(ctx context.Context, ticker string, detected []*alert.FundamentalAlert) {
+	existing, err := r.alerts.GetActiveByTicker(ctx, ticker)
+	if err != nil {
+		return
+	}
+
+	activeMetrics := make(map[string]bool, len(existing))
+	for _, a := range existing {
+		activeMetrics[a.Metric] = true
+	}
+
+	for _, d := range detected {
+		if activeMetrics[d.Metric] {
+			continue
+		}
+		_ = r.alerts.Create(ctx, d)
+	}
+}
+
+// autoResolveAlerts resolves active alerts whose metric is no longer in the detected set.
+func (r *RefreshService) autoResolveAlerts(ctx context.Context, ticker string, detected []*alert.FundamentalAlert) {
+	existing, err := r.alerts.GetActiveByTicker(ctx, ticker)
+	if err != nil {
+		return
+	}
+
+	detectedMetrics := make(map[string]bool, len(detected))
+	for _, d := range detected {
+		detectedMetrics[d.Metric] = true
+	}
+
+	for _, a := range existing {
+		if !detectedMetrics[a.Metric] {
+			_ = r.alerts.Resolve(ctx, a.ID)
+		}
+	}
 }
 
 func formatDuration(d time.Duration) string {

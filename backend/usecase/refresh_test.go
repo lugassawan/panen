@@ -17,7 +17,7 @@ func newTestRefreshService(
 	collector *mockTickerCollector,
 	emitter *mockEventEmitter,
 ) *RefreshService {
-	return NewRefreshService(repo, provider, settingsRepo, collector, emitter)
+	return NewRefreshService(repo, provider, settingsRepo, collector, emitter, nil, nil)
 }
 
 func TestRefreshService(t *testing.T) {

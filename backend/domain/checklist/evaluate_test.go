@@ -460,9 +460,9 @@ func TestEvaluateAutoChecks(t *testing.T) {
 		action    ActionType
 		wantCount int
 	}{
-		{name: "BUY", action: ActionBuy, wantCount: 4},
-		{name: "AVERAGE_DOWN", action: ActionAverageDown, wantCount: 5},
-		{name: "AVERAGE_UP", action: ActionAverageUp, wantCount: 4},
+		{name: "BUY", action: ActionBuy, wantCount: 5},
+		{name: "AVERAGE_DOWN", action: ActionAverageDown, wantCount: 6},
+		{name: "AVERAGE_UP", action: ActionAverageUp, wantCount: 5},
 		{name: "SELL_EXIT", action: ActionSellExit, wantCount: 2},
 		{name: "SELL_STOP", action: ActionSellStop, wantCount: 2},
 		{name: "HOLD", action: ActionHold, wantCount: 2},

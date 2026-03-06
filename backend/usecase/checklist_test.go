@@ -34,7 +34,7 @@ func setupChecklistTest(t *testing.T) checklistTestFixture {
 	brokerageRepo := newMockBrokerageRepo()
 	stockRepo := newMockStockRepo()
 
-	svc := NewChecklistService(checklistRepo, portfolioRepo, holdingRepo, brokerageRepo, stockRepo)
+	svc := NewChecklistService(checklistRepo, portfolioRepo, holdingRepo, brokerageRepo, stockRepo, nil)
 	ctx := context.Background()
 
 	acct := &brokerage.Account{
