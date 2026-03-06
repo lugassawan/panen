@@ -18,6 +18,11 @@ import type { Page } from "../types";
 
 let { onNavigate }: { onNavigate: (page: Page) => void } = $props();
 
+const modifierKey =
+  typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.userAgent)
+    ? "\u2318"
+    : "Ctrl+";
+
 let query = $state("");
 let activeIndex = $state(0);
 let inputEl = $state<HTMLInputElement | null>(null);
@@ -141,7 +146,7 @@ function handleKeydown(e: KeyboardEvent) {
               {t(item.labelKey)}
             </span>
             <kbd class="rounded border border-border-default bg-bg-secondary px-1.5 py-0.5 text-xs text-text-muted">
-              {"\u2318"}{item.shortcut}
+              {modifierKey}{item.shortcut}
             </kbd>
           </li>
         {/each}
