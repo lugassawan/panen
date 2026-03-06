@@ -1,6 +1,7 @@
 <script lang="ts">
 import { Bell } from "lucide-svelte";
 import { t } from "../../i18n";
+import EmptyState from "../../lib/components/EmptyState.svelte";
 import { alerts } from "../../lib/stores/alerts.svelte";
 import { mode } from "../../lib/stores/mode.svelte";
 import type { AlertSeverity, FundamentalAlertResponse } from "../../lib/types";
@@ -75,10 +76,7 @@ $effect(() => {
   {#if alerts.loading}
     <p class="text-sm text-text-secondary">{t("common.loading")}</p>
   {:else if sortedAlerts.length === 0}
-    <div class="flex flex-col items-center justify-center py-16 text-center">
-      <Bell size={48} strokeWidth={1} class="text-text-tertiary mb-4" />
-      <p class="text-text-secondary">{t("alerts.empty")}</p>
-    </div>
+    <EmptyState icon={Bell} title={t("alerts.empty")} />
   {:else}
     <div class="flex flex-col gap-3">
       {#each sortedAlerts as alert (alert.id)}
