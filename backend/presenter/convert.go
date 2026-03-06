@@ -3,6 +3,7 @@ package presenter
 import (
 	"time"
 
+	"github.com/lugassawan/panen/backend/domain/alert"
 	"github.com/lugassawan/panen/backend/domain/brokerage"
 	"github.com/lugassawan/panen/backend/domain/checklist"
 	"github.com/lugassawan/panen/backend/domain/dividend"
@@ -346,4 +347,22 @@ func newCashFlowItemResponse(item usecase.CashFlowItem) CashFlowItemResponse {
 		Note:        item.Note,
 		CreatedAt:   formatDTO(item.CreatedAt),
 	}
+}
+
+func newFundamentalAlertResponse(a *alert.FundamentalAlert) FundamentalAlertResponse {
+	resp := FundamentalAlertResponse{
+		ID:         a.ID,
+		Ticker:     a.Ticker,
+		Metric:     a.Metric,
+		Severity:   string(a.Severity),
+		OldValue:   a.OldValue,
+		NewValue:   a.NewValue,
+		ChangePct:  a.ChangePct,
+		Status:     string(a.Status),
+		DetectedAt: formatDTO(a.DetectedAt),
+	}
+	if a.ResolvedAt != nil {
+		resp.ResolvedAt = formatDTO(*a.ResolvedAt)
+	}
+	return resp
 }

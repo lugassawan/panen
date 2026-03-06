@@ -2,6 +2,20 @@ package presenter
 
 const dateLayout = "2006-01-02"
 
+// FundamentalAlertResponse is the frontend-facing response for a fundamental change alert.
+type FundamentalAlertResponse struct {
+	ID         string  `json:"id"`
+	Ticker     string  `json:"ticker"`
+	Metric     string  `json:"metric"`
+	Severity   string  `json:"severity"`
+	OldValue   float64 `json:"oldValue"`
+	NewValue   float64 `json:"newValue"`
+	ChangePct  float64 `json:"changePct"`
+	Status     string  `json:"status"`
+	DetectedAt string  `json:"detectedAt"`
+	ResolvedAt string  `json:"resolvedAt,omitempty"`
+}
+
 // BandStatsResponse is the frontend-facing response for PBV/PER band statistics.
 type BandStatsResponse struct {
 	Min    float64 `json:"min"`

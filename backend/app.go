@@ -34,6 +34,7 @@ type App struct {
 	*presenter.DividendHandler
 	*presenter.PriceHistoryHandler
 	*presenter.DividendCalendarHandler
+	*presenter.AlertHandler
 	db      *database.DB
 	refresh *usecase.RefreshService
 }
@@ -120,7 +121,12 @@ func (a *App) Startup(ctx context.Context) {
 	tickerCollector := database.NewTickerCollector(conn)
 	wailsEmitter := presenter.NewWailsEmitter(ctx)
 
-	refreshSvc := usecase.NewRefreshService(stockRepo, yahoo, settingsRepo, tickerCollector, wailsEmitter)
+	snapshotRepo := database.NewSnapshotRepo(conn)
+	alertRepo := database.NewAlertRepo(conn)
+
+	refreshSvc := usecase.NewRefreshService(
+		stockRepo, yahoo, settingsRepo, tickerCollector, wailsEmitter, snapshotRepo, alertRepo,
+	)
 	a.refresh = refreshSvc
 
 	dividendSvc := usecase.NewDividendService(portfolioRepo, holdingRepo, stockRepo)
@@ -133,8 +139,13 @@ func (a *App) Startup(ctx context.Context) {
 	a.WatchlistHandler = presenter.NewWatchlistHandler(ctx, profileID, watchlistSvc)
 	a.RefreshHandler = presenter.NewRefreshHandler(ctx, refreshSvc, settingsRepo)
 
+	alertSvc := usecase.NewAlertService(alertRepo)
+	a.AlertHandler = presenter.NewAlertHandler(ctx, alertSvc)
+
 	checklistRepo := database.NewChecklistResultRepo(conn)
-	checklistSvc := usecase.NewChecklistService(checklistRepo, portfolioRepo, holdingRepo, brokerageRepo, stockRepo)
+	checklistSvc := usecase.NewChecklistService(
+		checklistRepo, portfolioRepo, holdingRepo, brokerageRepo, stockRepo, alertSvc,
+	)
 	a.ChecklistHandler = presenter.NewChecklistHandler(ctx, checklistSvc)
 
 	paydayRepo := database.NewPaydayRepo(conn)
