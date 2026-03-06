@@ -19,6 +19,9 @@ func NewAlertHandler(ctx context.Context, alerts *usecase.AlertService) *AlertHa
 
 // GetActiveAlerts returns all active fundamental alerts.
 func (h *AlertHandler) GetActiveAlerts() ([]FundamentalAlertResponse, error) {
+	if h == nil {
+		return nil, nil
+	}
 	alerts, err := h.alerts.GetActiveAlerts(h.ctx)
 	if err != nil {
 		return nil, err
@@ -32,6 +35,9 @@ func (h *AlertHandler) GetActiveAlerts() ([]FundamentalAlertResponse, error) {
 
 // GetAlertsByTicker returns all alerts for a given ticker.
 func (h *AlertHandler) GetAlertsByTicker(ticker string) ([]FundamentalAlertResponse, error) {
+	if h == nil {
+		return nil, nil
+	}
 	alerts, err := h.alerts.GetAlertsByTicker(h.ctx, ticker)
 	if err != nil {
 		return nil, err
@@ -45,10 +51,16 @@ func (h *AlertHandler) GetAlertsByTicker(ticker string) ([]FundamentalAlertRespo
 
 // AcknowledgeAlert marks an alert as acknowledged.
 func (h *AlertHandler) AcknowledgeAlert(id string) error {
+	if h == nil {
+		return nil
+	}
 	return h.alerts.AcknowledgeAlert(h.ctx, id)
 }
 
 // GetAlertCount returns the number of active alerts.
 func (h *AlertHandler) GetAlertCount() (int, error) {
+	if h == nil {
+		return 0, nil
+	}
 	return h.alerts.GetActiveCount(h.ctx)
 }
