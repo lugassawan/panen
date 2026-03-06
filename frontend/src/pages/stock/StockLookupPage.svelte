@@ -1,6 +1,7 @@
 <script lang="ts">
 import { LoaderCircle } from "lucide-svelte";
 import { LookupStock } from "../../../wailsjs/go/backend/App";
+import { t } from "../../i18n";
 import DataTimestamp from "../../lib/components/DataTimestamp.svelte";
 import Input from "../../lib/components/Input.svelte";
 import Select from "../../lib/components/Select.svelte";
@@ -16,15 +17,15 @@ let loading = $state(false);
 let error = $state<string | null>(null);
 
 async function lookup() {
-  const t = ticker.trim().toUpperCase();
-  if (!t) return;
+  const code = ticker.trim().toUpperCase();
+  if (!code) return;
 
   loading = true;
   error = null;
   result = null;
 
   try {
-    result = await LookupStock(t, riskProfile);
+    result = await LookupStock(code, riskProfile);
   } catch (e: unknown) {
     error = e instanceof Error ? e.message : String(e);
   } finally {
@@ -39,7 +40,7 @@ function percentInRange(value: number, min: number, max: number): number {
 </script>
 
 <div class="mx-auto max-w-2xl px-4 py-8">
-  <h1 class="mb-6 text-2xl font-bold text-text-primary font-display">Stock Lookup</h1>
+  <h1 class="mb-6 text-2xl font-bold text-text-primary font-display">{t("lookup.title")}</h1>
   <!-- Search Form -->
   <form
     onsubmit={(e) => { e.preventDefault(); lookup(); }}
@@ -47,7 +48,7 @@ function percentInRange(value: number, min: number, max: number): number {
   >
     <Input
       bind:value={ticker}
-      placeholder="Ticker (e.g. BBCA)"
+      placeholder={t("lookup.tickerPlaceholder")}
       aria-label="Stock ticker"
       class="flex-1 uppercase placeholder:normal-case placeholder:text-text-muted"
     />
@@ -56,16 +57,16 @@ function percentInRange(value: number, min: number, max: number): number {
       aria-label="Risk profile"
       class="!w-auto"
     >
-      <option value="CONSERVATIVE">Conservative</option>
-      <option value="MODERATE">Moderate</option>
-      <option value="AGGRESSIVE">Aggressive</option>
+      <option value="CONSERVATIVE">{t("screener.conservative")}</option>
+      <option value="MODERATE">{t("screener.moderate")}</option>
+      <option value="AGGRESSIVE">{t("screener.aggressive")}</option>
     </Select>
     <button
       type="submit"
       disabled={loading}
       class="rounded bg-green-700 px-5 py-2 text-sm font-medium text-text-inverse hover:bg-green-800 disabled:opacity-50 focus-ring transition-fast"
     >
-      {loading ? "Looking up\u2026" : "Lookup"}
+      {loading ? t("lookup.lookingUp") : t("lookup.lookup")}
     </button>
   </form>
 
@@ -73,7 +74,7 @@ function percentInRange(value: number, min: number, max: number): number {
   {#if loading}
     <div class="flex items-center justify-center gap-2 py-12 text-text-secondary" role="status">
       <LoaderCircle size={20} strokeWidth={2} class="animate-spin" />
-      <span>Fetching valuation data...</span>
+      <span>{t("lookup.fetchingValuation")}</span>
     </div>
   {/if}
 
@@ -103,12 +104,12 @@ function percentInRange(value: number, min: number, max: number): number {
 
     <!-- Price Card -->
     <div class="mb-4 rounded border border-border-default bg-bg-elevated p-4">
-      <h2 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">Current Price</h2>
+      <h2 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">{t("lookup.currentPrice")}</h2>
       <div class="text-2xl font-bold font-mono text-green-700">{formatRupiah(result.price)}</div>
       <div class="mt-3">
         <div class="flex justify-between text-xs text-text-muted">
-          <span>52W Low: {formatRupiah(result.low52Week)}</span>
-          <span>52W High: {formatRupiah(result.high52Week)}</span>
+          <span>{t("lookup.week52Low")} {formatRupiah(result.low52Week)}</span>
+          <span>{t("lookup.week52High")} {formatRupiah(result.high52Week)}</span>
         </div>
         <div class="relative mt-1 h-2 rounded-full bg-bg-tertiary">
           <div
@@ -122,26 +123,26 @@ function percentInRange(value: number, min: number, max: number): number {
 
     <!-- Graham Valuation Card -->
     <div class="mb-4 rounded border border-border-default bg-bg-elevated p-4">
-      <h2 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">Graham Valuation</h2>
+      <h2 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">{t("lookup.grahamValuation")}</h2>
       <div class="grid grid-cols-2 gap-4">
         <div>
           <Tooltip text="Intrinsic value estimate using Benjamin Graham's formula: sqrt(22.5 * EPS * BVPS)">
-            <div class="text-xs text-text-muted underline decoration-dotted cursor-help">Graham Number</div>
+            <div class="text-xs text-text-muted underline decoration-dotted cursor-help">{t("lookup.grahamNumber")}</div>
           </Tooltip>
           <div class="text-lg font-semibold font-mono" data-testid="graham-number">{formatRupiah(result.grahamNumber)}</div>
         </div>
         <div>
           <Tooltip text="How much the current price is below the Graham Number. Higher = more undervalued.">
-            <div class="text-xs text-text-muted underline decoration-dotted cursor-help">Margin of Safety</div>
+            <div class="text-xs text-text-muted underline decoration-dotted cursor-help">{t("lookup.marginOfSafety")}</div>
           </Tooltip>
           <div class="text-lg font-semibold font-mono">{formatPercent(result.marginOfSafety)}</div>
         </div>
         <div>
-          <div class="text-xs text-text-muted">Entry Price</div>
+          <div class="text-xs text-text-muted">{t("lookup.entryPrice")}</div>
           <div class="text-lg font-semibold font-mono text-profit" data-testid="entry-price">{formatRupiah(result.entryPrice)}</div>
         </div>
         <div>
-          <div class="text-xs text-text-muted">Exit Target</div>
+          <div class="text-xs text-text-muted">{t("lookup.exitTarget")}</div>
           <div class="text-lg font-semibold font-mono text-loss">{formatRupiah(result.exitTarget)}</div>
         </div>
       </div>
@@ -152,24 +153,24 @@ function percentInRange(value: number, min: number, max: number): number {
       {@const pbvPct = percentInRange(result.pbv, result.pbvBand.min, result.pbvBand.max)}
       <div class="mb-4 rounded border border-border-default bg-bg-elevated p-4" data-testid="pbv-band">
         <Tooltip text="Price-to-Book Value historical range. Position shows where current PBV sits relative to its 5-year band." position="right">
-          <h2 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted underline decoration-dotted cursor-help">PBV Band</h2>
+          <h2 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted underline decoration-dotted cursor-help">{t("lookup.pbvBand")}</h2>
         </Tooltip>
-        <div class="mb-2 text-lg font-semibold font-mono">Current PBV: {formatDecimal(result.pbv)}</div>
+        <div class="mb-2 text-lg font-semibold font-mono">{t("lookup.currentPbv")} {formatDecimal(result.pbv)}</div>
         <div class="grid grid-cols-4 gap-2 text-center text-xs">
           <div>
-            <div class="text-text-muted">Min</div>
+            <div class="text-text-muted">{t("lookup.min")}</div>
             <div class="font-mono">{formatDecimal(result.pbvBand.min)}</div>
           </div>
           <div>
-            <div class="text-text-muted">Avg</div>
+            <div class="text-text-muted">{t("lookup.avg")}</div>
             <div class="font-mono">{formatDecimal(result.pbvBand.avg)}</div>
           </div>
           <div>
-            <div class="text-text-muted">Median</div>
+            <div class="text-text-muted">{t("lookup.median")}</div>
             <div class="font-mono">{formatDecimal(result.pbvBand.median)}</div>
           </div>
           <div>
-            <div class="text-text-muted">Max</div>
+            <div class="text-text-muted">{t("lookup.max")}</div>
             <div class="font-mono">{formatDecimal(result.pbvBand.max)}</div>
           </div>
         </div>
@@ -187,23 +188,23 @@ function percentInRange(value: number, min: number, max: number): number {
     {#if result.perBand}
       {@const perPct = percentInRange(result.per, result.perBand.min, result.perBand.max)}
       <div class="mb-4 rounded border border-border-default bg-bg-elevated p-4" data-testid="per-band">
-        <h2 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">PER Band</h2>
-        <div class="mb-2 text-lg font-semibold font-mono">Current PER: {formatDecimal(result.per)}</div>
+        <h2 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">{t("lookup.perBand")}</h2>
+        <div class="mb-2 text-lg font-semibold font-mono">{t("lookup.currentPer")} {formatDecimal(result.per)}</div>
         <div class="grid grid-cols-4 gap-2 text-center text-xs">
           <div>
-            <div class="text-text-muted">Min</div>
+            <div class="text-text-muted">{t("lookup.min")}</div>
             <div class="font-mono">{formatDecimal(result.perBand.min)}</div>
           </div>
           <div>
-            <div class="text-text-muted">Avg</div>
+            <div class="text-text-muted">{t("lookup.avg")}</div>
             <div class="font-mono">{formatDecimal(result.perBand.avg)}</div>
           </div>
           <div>
-            <div class="text-text-muted">Median</div>
+            <div class="text-text-muted">{t("lookup.median")}</div>
             <div class="font-mono">{formatDecimal(result.perBand.median)}</div>
           </div>
           <div>
-            <div class="text-text-muted">Max</div>
+            <div class="text-text-muted">{t("lookup.max")}</div>
             <div class="font-mono">{formatDecimal(result.perBand.max)}</div>
           </div>
         </div>
@@ -219,7 +220,7 @@ function percentInRange(value: number, min: number, max: number): number {
 
     <!-- Key Metrics Grid -->
     <div class="mb-4 rounded border border-border-default bg-bg-elevated p-4">
-      <h2 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">Key Metrics</h2>
+      <h2 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">{t("lookup.keyMetrics")}</h2>
       <div class="grid grid-cols-3 gap-4 text-sm">
         <div>
           <div class="text-xs text-text-muted">EPS</div>
@@ -238,11 +239,11 @@ function percentInRange(value: number, min: number, max: number): number {
           <div class="font-semibold font-mono">{formatDecimal(result.der)}</div>
         </div>
         <div>
-          <div class="text-xs text-text-muted">Dividend Yield</div>
+          <div class="text-xs text-text-muted">{t("lookup.dividendYield")}</div>
           <div class="font-semibold font-mono">{formatPercent(result.dividendYield)}</div>
         </div>
         <div>
-          <div class="text-xs text-text-muted">Payout Ratio</div>
+          <div class="text-xs text-text-muted">{t("lookup.payoutRatio")}</div>
           <div class="font-semibold font-mono">{formatPercent(result.payoutRatio)}</div>
         </div>
       </div>
@@ -250,8 +251,8 @@ function percentInRange(value: number, min: number, max: number): number {
 
     <!-- Metadata Footer -->
     <div class="flex items-center justify-center gap-3 text-xs text-text-muted">
-      <span>Source: {result.source}</span>
-      <DataTimestamp date={result.fetchedAt} label="Fetched" />
+      <span>{t("lookup.source")} {result.source}</span>
+      <DataTimestamp date={result.fetchedAt} label={t("lookup.fetched")} />
     </div>
   {/if}
 </div>

@@ -5,6 +5,7 @@ import {
   ListScreenerSectors,
   RunScreen,
 } from "../../../wailsjs/go/backend/App";
+import { t } from "../../i18n";
 import Badge from "../../lib/components/Badge.svelte";
 import SortableHeader from "../../lib/components/SortableHeader.svelte";
 import Tooltip from "../../lib/components/Tooltip.svelte";
@@ -54,7 +55,7 @@ async function runScreen() {
       universeType === "CUSTOM"
         ? customTickers
             .split(",")
-            .map((t) => t.trim().toUpperCase())
+            .map((s) => s.trim().toUpperCase())
             .filter(Boolean)
         : [];
 
@@ -130,8 +131,8 @@ loadReferenceData();
 <div class="flex h-full flex-col bg-bg-primary">
   <!-- Page Header -->
   <div class="border-b border-border-default px-6 py-4">
-    <h2 class="text-lg font-semibold text-text-primary">Stock Screener</h2>
-    <p class="mt-0.5 text-sm text-text-secondary">Screen stocks against fundamental criteria by risk profile</p>
+    <h2 class="text-lg font-semibold text-text-primary">{t("screener.title")}</h2>
+    <p class="mt-0.5 text-sm text-text-secondary">{t("screener.subtitle")}</p>
   </div>
 
   <!-- Filters -->
@@ -151,16 +152,16 @@ loadReferenceData();
   {#if state === "initial"}
     <div class="flex flex-1 items-center justify-center py-24 text-center">
       <div>
-        <p class="mb-1 font-medium text-text-primary">Configure and run a screen</p>
+        <p class="mb-1 font-medium text-text-primary">{t("screener.configurePrompt")}</p>
         <p class="text-sm text-text-secondary">
-          Select a universe, choose a risk profile, and click "Run Screen" to discover stocks.
+          {t("screener.configureDescription")}
         </p>
       </div>
     </div>
   {:else if state === "loading"}
     <div class="flex flex-1 items-center justify-center gap-2 py-16 text-text-secondary" role="status">
       <LoaderCircle size={20} strokeWidth={2} class="animate-spin" />
-      <span>Screening stocks...</span>
+      <span>{t("screener.screening")}</span>
     </div>
   {:else if state === "error"}
     <div class="mx-6 mt-4 rounded border border-negative/20 bg-negative-bg px-4 py-3 text-sm text-negative" role="alert">
@@ -170,28 +171,28 @@ loadReferenceData();
         class="mt-2 text-xs font-medium underline hover:opacity-80 focus-ring rounded"
         onclick={runScreen}
       >
-        Retry
+        {t("common.retry")}
       </button>
     </div>
   {:else if state === "results"}
     <!-- Summary -->
     <div class="flex items-center gap-4 border-b border-border-default px-6 py-3 text-sm text-text-secondary">
-      <span>{results.length} stock{results.length !== 1 ? "s" : ""} screened</span>
+      <span>{t("screener.stocksScreened", { count: results.length })}</span>
       <span class="flex items-center gap-1 text-positive">
         <CheckCircle2 size={14} strokeWidth={2} />
-        {passCount} pass
+        {passCount} {t("common.pass").toLowerCase()}
       </span>
       <span class="flex items-center gap-1 text-negative">
         <XCircle size={14} strokeWidth={2} />
-        {failCount} fail
+        {failCount} {t("common.fail").toLowerCase()}
       </span>
     </div>
 
     {#if results.length === 0}
       <div class="flex flex-1 items-center justify-center py-16 text-center">
         <div>
-          <p class="mb-1 font-medium text-text-primary">No results</p>
-          <p class="text-sm text-text-secondary">Try a different universe or broaden your filters.</p>
+          <p class="mb-1 font-medium text-text-primary">{t("screener.noResults")}</p>
+          <p class="text-sm text-text-secondary">{t("screener.noResultsHint")}</p>
         </div>
       </div>
     {:else}
@@ -201,19 +202,19 @@ loadReferenceData();
           <thead class="sticky top-0 border-b border-border-default bg-bg-secondary">
             <tr>
               <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-text-muted">
-                <Tooltip text="Pass: meets all screening criteria for the selected risk profile. Fail: one or more criteria not met.">
-                  <span class="underline decoration-dotted cursor-help">Status</span>
+                <Tooltip text={t("screener.statusTooltip")}>
+                  <span class="underline decoration-dotted cursor-help">{t("screener.status")}</span>
                 </Tooltip>
               </th>
               {#each [
-                { key: "ticker", label: "Ticker" },
-                { key: "sector", label: "Sector" },
-                { key: "price", label: "Price" },
+                { key: "ticker", label: t("screener.ticker") },
+                { key: "sector", label: t("screener.sector") },
+                { key: "price", label: t("screener.price") },
                 { key: "roe", label: "ROE" },
                 { key: "der", label: "DER" },
-                { key: "dividendYield", label: "Div Yield" },
+                { key: "dividendYield", label: "DY" },
                 { key: "verdict", label: "Verdict" },
-                { key: "score", label: "Score" },
+                { key: "score", label: t("screener.score") },
               ] as col}
                 <SortableHeader
                   label={col.label}
@@ -231,16 +232,16 @@ loadReferenceData();
               <tr class="transition-fast hover:bg-bg-tertiary">
                 <td class="px-4 py-3">
                   {#if item.price == null}
-                    <Badge variant="warning">No data</Badge>
+                    <Badge variant="warning">{t("common.noData")}</Badge>
                   {:else if item.passed}
                     <Badge variant="profit">
                       <CheckCircle2 size={12} strokeWidth={2} />
-                      Pass
+                      {t("common.pass")}
                     </Badge>
                   {:else}
                     <Badge variant="loss">
                       <XCircle size={12} strokeWidth={2} />
-                      Fail
+                      {t("common.fail")}
                     </Badge>
                   {/if}
                 </td>
