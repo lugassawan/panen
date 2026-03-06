@@ -264,10 +264,7 @@ func (s *PaydayService) GetPaydayHistory(ctx context.Context) ([]*MonthlyPaydayS
 	currentMonth := time.Now().UTC().Format(monthLayout)
 
 	// Build a lookup of portfolios by ID.
-	portfolioMap := make(map[string]*portfolio.Portfolio, len(allPortfolios))
-	for _, p := range allPortfolios {
-		portfolioMap[p.ID] = p
-	}
+	portfolioMap := shared.IndexBy(allPortfolios, func(p *portfolio.Portfolio) string { return p.ID })
 
 	// Collect all events grouped by month.
 	monthEvents := make(map[string][]*payday.PaydayEvent)

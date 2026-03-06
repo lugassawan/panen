@@ -232,9 +232,7 @@ func (s *PortfolioService) GetDetail(
 		}
 		peaks, peakErr := s.peaks.ListByHoldingIDs(ctx, holdingIDs)
 		if peakErr == nil {
-			for _, pk := range peaks {
-				peakMap[pk.HoldingID] = pk
-			}
+			peakMap = shared.IndexBy(peaks, func(pk *trailingstop.HoldingPeak) string { return pk.HoldingID })
 		}
 	}
 
@@ -337,6 +335,9 @@ func (s *PortfolioService) SyncPeaks(ctx context.Context, portfolioID string) er
 	return nil
 }
 
+// syncHoldingPeak is best-effort: peak data enhances trailing-stop display but
+// is not critical. Errors are logged and swallowed so a persistence failure
+// doesn't block the holdings refresh that the user is waiting on.
 func (s *PortfolioService) syncHoldingPeak(
 	ctx context.Context,
 	h *portfolio.Holding,
