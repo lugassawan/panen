@@ -11,6 +11,7 @@ import {
 import type { PortfolioDetailResponse } from "../../lib/types";
 import AddHoldingForm from "./AddHoldingForm.svelte";
 import ChartsTab from "./ChartsTab.svelte";
+import DividendChartsTab from "./DividendChartsTab.svelte";
 import DividendMetricsPanel from "./DividendMetricsPanel.svelte";
 import DividendRankingPanel from "./DividendRankingPanel.svelte";
 import HoldingsTable from "./HoldingsTable.svelte";
@@ -25,14 +26,19 @@ interface Props {
 
 let { detail, onBack, onChecklist, onHoldingAdded }: Props = $props();
 
-let activeTab = $state<"holdings" | "charts">("holdings");
+type TabId = "holdings" | "charts" | "dividends";
+let activeTab = $state<TabId>("holdings");
 
 const TAB_ACCENT: Record<string, string> = {
   VALUE: "border-green-700 text-green-700",
   DIVIDEND: "border-gold-500 text-gold-500",
 };
 
-const TABS: ("holdings" | "charts")[] = ["holdings", "charts"];
+let TABS: TabId[] = $derived(
+  detail.portfolio.mode === "DIVIDEND"
+    ? ["holdings", "charts", "dividends"]
+    : ["holdings", "charts"],
+);
 
 function handleTabKeydown(e: KeyboardEvent) {
   const idx = TABS.indexOf(activeTab);
@@ -111,30 +117,20 @@ let overallPL = $derived(calcOverallPL(detail.holdings));
 
 <!-- Tab Bar -->
 <div class="mb-6 flex gap-0 border-b border-border-default" role="tablist">
-  <button
-    type="button"
-    role="tab"
-    aria-selected={activeTab === "holdings"}
-    aria-controls="panel-holdings"
-    tabindex={activeTab === "holdings" ? 0 : -1}
-    class="px-4 py-2 text-sm font-medium transition-fast focus-ring -mb-px {activeTab === 'holdings' ? `border-b-2 ${TAB_ACCENT[detail.portfolio.mode]}` : 'text-text-secondary hover:text-text-primary'}"
-    onclick={() => (activeTab = "holdings")}
-    onkeydown={handleTabKeydown}
-  >
-    Holdings
-  </button>
-  <button
-    type="button"
-    role="tab"
-    aria-selected={activeTab === "charts"}
-    aria-controls="panel-charts"
-    tabindex={activeTab === "charts" ? 0 : -1}
-    class="px-4 py-2 text-sm font-medium transition-fast focus-ring -mb-px {activeTab === 'charts' ? `border-b-2 ${TAB_ACCENT[detail.portfolio.mode]}` : 'text-text-secondary hover:text-text-primary'}"
-    onclick={() => (activeTab = "charts")}
-    onkeydown={handleTabKeydown}
-  >
-    Charts
-  </button>
+  {#each TABS as tab}
+    <button
+      type="button"
+      role="tab"
+      aria-selected={activeTab === tab}
+      aria-controls="panel-{tab}"
+      tabindex={activeTab === tab ? 0 : -1}
+      class="px-4 py-2 text-sm font-medium transition-fast focus-ring -mb-px capitalize {activeTab === tab ? `border-b-2 ${TAB_ACCENT[detail.portfolio.mode]}` : 'text-text-secondary hover:text-text-primary'}"
+      onclick={() => (activeTab = tab)}
+      onkeydown={handleTabKeydown}
+    >
+      {tab}
+    </button>
+  {/each}
 </div>
 
 {#if activeTab === "holdings"}
@@ -190,5 +186,11 @@ let overallPL = $derived(calcOverallPL(detail.holdings));
 {#if activeTab === "charts"}
   <div id="panel-charts" role="tabpanel">
     <ChartsTab holdings={detail.holdings} portfolioMode={detail.portfolio.mode} />
+  </div>
+{/if}
+
+{#if activeTab === "dividends"}
+  <div id="panel-dividends" role="tabpanel">
+    <DividendChartsTab portfolioId={detail.portfolio.id} holdings={detail.holdings} />
   </div>
 {/if}

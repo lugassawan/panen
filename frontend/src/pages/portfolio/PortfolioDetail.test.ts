@@ -7,6 +7,12 @@ vi.mock("../../../wailsjs/go/backend/App", () => ({
   GetDividendRanking: vi.fn(),
   GetHoldingSectors: vi.fn(() => Promise.resolve({ BBCA: "Financials" })),
   GetPriceHistory: vi.fn(() => Promise.resolve([])),
+  GetDividendIncomeSummary: vi.fn(() =>
+    Promise.resolve({ totalAnnualIncome: 0, perStock: [], monthlyBreakdown: [] }),
+  ),
+  GetDGR: vi.fn(() => Promise.resolve([])),
+  GetYoCProgression: vi.fn(() => Promise.resolve([])),
+  GetDividendCalendar: vi.fn(() => Promise.resolve([])),
 }));
 
 vi.mock("chart.js", () => {
@@ -147,13 +153,13 @@ describe("PortfolioDetail", () => {
     render(PortfolioDetail, { props: defaultProps });
     const tablist = screen.getByRole("tablist");
     expect(tablist).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Holdings" })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Charts" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /holdings/i })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /charts/i })).toBeInTheDocument();
   });
 
   it("shows holdings tab by default", () => {
     render(PortfolioDetail, { props: defaultProps });
-    const holdingsTab = screen.getByRole("tab", { name: "Holdings" });
+    const holdingsTab = screen.getByRole("tab", { name: /holdings/i });
     expect(holdingsTab).toHaveAttribute("aria-selected", "true");
     expect(screen.getByText("BBCA")).toBeInTheDocument();
   });
@@ -162,9 +168,9 @@ describe("PortfolioDetail", () => {
     const user = userEvent.setup();
     render(PortfolioDetail, { props: defaultProps });
 
-    await user.click(screen.getByRole("tab", { name: "Charts" }));
+    await user.click(screen.getByRole("tab", { name: /charts/i }));
 
-    const chartsTab = screen.getByRole("tab", { name: "Charts" });
+    const chartsTab = screen.getByRole("tab", { name: /charts/i });
     expect(chartsTab).toHaveAttribute("aria-selected", "true");
     expect(screen.queryByRole("heading", { name: "Add Holding" })).not.toBeInTheDocument();
   });
@@ -173,19 +179,35 @@ describe("PortfolioDetail", () => {
     const user = userEvent.setup();
     render(PortfolioDetail, { props: defaultProps });
 
-    const holdingsTab = screen.getByRole("tab", { name: "Holdings" });
+    const holdingsTab = screen.getByRole("tab", { name: /holdings/i });
     holdingsTab.focus();
     await user.keyboard("{ArrowRight}");
 
-    expect(screen.getByRole("tab", { name: "Charts" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: /charts/i })).toHaveAttribute("aria-selected", "true");
 
     await user.keyboard("{ArrowLeft}");
-    expect(screen.getByRole("tab", { name: "Holdings" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: /holdings/i })).toHaveAttribute("aria-selected", "true");
   });
 
   it("inactive tab has tabindex -1", () => {
     render(PortfolioDetail, { props: defaultProps });
-    expect(screen.getByRole("tab", { name: "Holdings" })).toHaveAttribute("tabindex", "0");
-    expect(screen.getByRole("tab", { name: "Charts" })).toHaveAttribute("tabindex", "-1");
+    expect(screen.getByRole("tab", { name: /holdings/i })).toHaveAttribute("tabindex", "0");
+    expect(screen.getByRole("tab", { name: /charts/i })).toHaveAttribute("tabindex", "-1");
+  });
+
+  it("shows Dividends tab for DIVIDEND mode portfolios", () => {
+    const dividendDetail = {
+      portfolio: { ...detail.portfolio, mode: "DIVIDEND" as const },
+      holdings: detail.holdings,
+    };
+    render(PortfolioDetail, {
+      props: { ...defaultProps, detail: dividendDetail },
+    });
+    expect(screen.getByRole("tab", { name: /dividends/i })).toBeInTheDocument();
+  });
+
+  it("does not show Dividends tab for VALUE mode portfolios", () => {
+    render(PortfolioDetail, { props: defaultProps });
+    expect(screen.queryByRole("tab", { name: /dividends/i })).not.toBeInTheDocument();
   });
 });
