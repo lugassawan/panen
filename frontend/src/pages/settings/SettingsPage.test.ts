@@ -56,6 +56,10 @@ vi.mock("../../../wailsjs/runtime/runtime", () => ({
   EventsOn: vi.fn(),
 }));
 
+vi.mock("../../lib/format", () => ({
+  formatRelativeTime: (iso: string) => (iso ? "5m ago" : "Not synced yet"),
+}));
+
 // Mock theme store to avoid localStorage initialization issues in ThemeToggle.
 vi.mock("../../lib/stores/theme.svelte", () => ({
   theme: {
@@ -119,6 +123,7 @@ describe("SettingsPage", () => {
 
     await waitFor(() => {
       expect(screen.getByText("1.2.0")).toBeInTheDocument();
+      expect(screen.getByText("5m ago")).toBeInTheDocument();
     });
   });
 
