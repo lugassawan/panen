@@ -15,6 +15,7 @@ import Button from "../../lib/components/Button.svelte";
 import Select from "../../lib/components/Select.svelte";
 import ThemeToggle from "../../lib/components/ThemeToggle.svelte";
 import Tooltip from "../../lib/components/Tooltip.svelte";
+import { formatRelativeTime } from "../../lib/format";
 import { sync } from "../../lib/stores/sync.svelte";
 import { theme } from "../../lib/stores/theme.svelte";
 import { toastStore } from "../../lib/stores/toast.svelte";
@@ -150,7 +151,7 @@ function openRelease(url: string) {
 
         {#if lastRefreshedAt}
           <p class="text-xs text-text-tertiary">
-            {t("settings.lastRefreshed")} <span class="font-mono">{lastRefreshedAt}</span>
+            {t("settings.lastRefreshed")} <span class="font-mono">{formatRelativeTime(lastRefreshedAt)}</span>
           </p>
         {/if}
 
