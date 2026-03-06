@@ -11,7 +11,7 @@ import {
 } from "chart.js";
 import { TrendingUp } from "lucide-svelte";
 import { GetYoCProgression } from "../../../wailsjs/go/backend/App";
-import { defaultChartOptions } from "../../lib/chartColors.svelte";
+import { accentPalette, defaultChartOptions } from "../../lib/chartColors.svelte";
 import EmptyState from "../../lib/components/EmptyState.svelte";
 import Select from "../../lib/components/Select.svelte";
 import type { YoCPointResponse } from "../../lib/types";
@@ -76,8 +76,8 @@ $effect(() => {
       datasets: [
         {
           data: points.map((p) => p.yoc),
-          borderColor: "#d4a12a",
-          backgroundColor: "#d4a12a20",
+          borderColor: accentPalette(1)[0],
+          backgroundColor: `${accentPalette(1)[0]}20`,
           borderWidth: 2,
           pointRadius: 3,
           pointHitRadius: 8,

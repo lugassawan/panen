@@ -2,7 +2,7 @@
 import { BarController, BarElement, CategoryScale, Chart, LinearScale, Tooltip } from "chart.js";
 import { Wallet } from "lucide-svelte";
 import { GetDividendIncomeSummary } from "../../../wailsjs/go/backend/App";
-import { chartColors, defaultChartOptions } from "../../lib/chartColors.svelte";
+import { accentPalette, chartColors, defaultChartOptions } from "../../lib/chartColors.svelte";
 import EmptyState from "../../lib/components/EmptyState.svelte";
 import { formatRupiah } from "../../lib/format";
 import type { DividendIncomeSummaryResponse } from "../../lib/types";
@@ -69,7 +69,7 @@ $effect(() => {
       datasets: [
         {
           data,
-          backgroundColor: "#d4a12a",
+          backgroundColor: accentPalette(1)[0],
           borderRadius: 4,
         },
       ],

@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"log"
 
 	"github.com/lugassawan/panen/backend/domain/dividend"
 	"github.com/lugassawan/panen/backend/domain/portfolio"
@@ -13,6 +14,12 @@ type DividendIncomeSummary struct {
 	TotalAnnualIncome float64
 	PerStock          []StockIncomeSummary
 	MonthlyBreakdown  []dividend.MonthlyIncome
+}
+
+// CalendarEntry wraps a projected dividend with the total income for the holding.
+type CalendarEntry struct {
+	dividend.ProjectedDividend
+	TotalIncome float64
 }
 
 // StockIncomeSummary holds dividend income data for a single stock in a portfolio.
@@ -122,6 +129,7 @@ func (s *DividendHistoryService) GetDividendIncomeSummary(
 	for _, h := range holdings {
 		events, err := s.GetDividendHistory(ctx, h.Ticker)
 		if err != nil {
+			log.Printf("warn: failed to fetch dividend history for %s: %v", h.Ticker, err)
 			continue
 		}
 
@@ -165,22 +173,29 @@ func (s *DividendHistoryService) GetDividendIncomeSummary(
 func (s *DividendHistoryService) GetDividendCalendar(
 	ctx context.Context,
 	portfolioID string,
-) ([]dividend.ProjectedDividend, error) {
+) ([]CalendarEntry, error) {
 	holdings, err := s.holdingRepo.ListByPortfolioID(ctx, portfolioID)
 	if err != nil {
 		return nil, err
 	}
 
-	var allProjections []dividend.ProjectedDividend
+	sharesPerLot := 100
+	var allEntries []CalendarEntry
 	for _, h := range holdings {
 		events, err := s.GetDividendHistory(ctx, h.Ticker)
 		if err != nil {
+			log.Printf("warn: failed to fetch dividend history for %s: %v", h.Ticker, err)
 			continue
 		}
 
 		projections := dividend.ProjectUpcoming(events, h.Ticker)
-		allProjections = append(allProjections, projections...)
+		for _, p := range projections {
+			allEntries = append(allEntries, CalendarEntry{
+				ProjectedDividend: p,
+				TotalIncome:       p.ExpectedAmount * float64(h.Lots*sharesPerLot),
+			})
+		}
 	}
 
-	return allProjections, nil
+	return allEntries, nil
 }

@@ -101,9 +101,14 @@ $effect(() => {
                 <span class="font-mono font-medium {entry.isProjection ? 'border-b border-dashed border-text-muted' : ''}">
                   {entry.ticker}
                 </span>
-                <span class="font-mono text-text-secondary">
-                  {formatRupiah(entry.amount)}
-                </span>
+                <div class="text-right">
+                  <span class="font-mono text-text-secondary">
+                    {formatRupiah(entry.totalIncome)}
+                  </span>
+                  <span class="block text-xs font-mono text-text-muted">
+                    @{formatRupiah(entry.amount)}/sh
+                  </span>
+                </div>
               </div>
             {/each}
           </div>

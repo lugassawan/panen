@@ -114,6 +114,7 @@ func (h *DividendCalendarHandler) GetDividendCalendar(portfolioID string) ([]Div
 			ExDate:       p.ExpectedExDate.Format(dateLayout),
 			Amount:       p.ExpectedAmount,
 			IsProjection: p.IsProjection,
+			TotalIncome:  p.TotalIncome,
 		}
 	}
 	return resp, nil

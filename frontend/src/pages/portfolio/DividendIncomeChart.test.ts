@@ -46,6 +46,7 @@ vi.mock("../../lib/chartColors.svelte", () => ({
     plugins: {},
     scales: { x: {}, y: {} },
   }),
+  accentPalette: (n: number) => Array.from({ length: n }, () => "#d4a12a"),
 }));
 
 import DividendIncomeChart from "./DividendIncomeChart.svelte";

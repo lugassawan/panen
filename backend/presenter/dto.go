@@ -306,6 +306,7 @@ type DividendCalendarEntryResponse struct {
 	ExDate       string  `json:"exDate"`
 	Amount       float64 `json:"amount"`
 	IsProjection bool    `json:"isProjection"`
+	TotalIncome  float64 `json:"totalIncome"`
 }
 
 // MonthlyIncomeItemResponse is the frontend-facing response for a monthly income entry.

@@ -338,6 +338,7 @@ export interface DividendCalendarEntryResponse {
   exDate: string;
   amount: number;
   isProjection: boolean;
+  totalIncome: number;
 }
 
 export interface MonthlyIncomeItemResponse {
