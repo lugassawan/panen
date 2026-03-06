@@ -60,6 +60,8 @@ func newTestCrashPlaybookHandler() *CrashPlaybookHandler {
 		settingsRepo,
 		&mockTickerCollector{},
 		&mockEventEmitter{},
+		nil,
+		nil,
 	)
 	svc := usecase.NewCrashPlaybookService(
 		stockRepo,

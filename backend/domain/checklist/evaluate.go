@@ -10,16 +10,17 @@ import (
 
 // EvaluateInput contains all data needed for auto-check evaluation.
 type EvaluateInput struct {
-	Action      ActionType
-	StockData   *stock.Data
-	Valuation   *valuation.ValuationResult
-	Holding     *portfolio.Holding // nil for new buy
-	Portfolio   *portfolio.Portfolio
-	AllHoldings []*portfolio.Holding
-	Thresholds  Thresholds
-	BuyFeePct   float64
-	SellFeePct  float64
-	SellTaxPct  float64
+	Action           ActionType
+	StockData        *stock.Data
+	Valuation        *valuation.ValuationResult
+	Holding          *portfolio.Holding // nil for new buy
+	Portfolio        *portfolio.Portfolio
+	AllHoldings      []*portfolio.Holding
+	Thresholds       Thresholds
+	BuyFeePct        float64
+	SellFeePct       float64
+	SellTaxPct       float64
+	HasCriticalAlert bool
 }
 
 // CheckResult holds the evaluated result of a single check.
@@ -54,6 +55,7 @@ var checkRegistry = map[string]checkFunc{
 		return checkFundamentalsStable(in.StockData, in.Thresholds)
 	},
 	"dividend_maintained": func(in EvaluateInput) CheckResult { return checkDividendMaintained(in.StockData) },
+	"no_critical_alerts":  func(in EvaluateInput) CheckResult { return checkNoCriticalAlerts(in.HasCriticalAlert) },
 }
 
 // EvaluateAutoChecks evaluates all auto-checks for the given input.
@@ -255,5 +257,18 @@ func checkDividendMaintained(data *stock.Data) CheckResult {
 	return CheckResult{
 		Status: status,
 		Detail: fmt.Sprintf("Dividend yield: %.2f%%", data.DividendYield),
+	}
+}
+
+func checkNoCriticalAlerts(hasCritical bool) CheckResult {
+	status := CheckStatusPass
+	detail := "No critical fundamental alerts"
+	if hasCritical {
+		status = CheckStatusFail
+		detail = "Critical fundamental alert active for this ticker"
+	}
+	return CheckResult{
+		Status: status,
+		Detail: detail,
 	}
 }

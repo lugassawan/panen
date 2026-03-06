@@ -7,6 +7,7 @@ const PAGE_ORDER: Page[] = [
   "portfolio",
   "payday",
   "crashplaybook",
+  "alerts",
   "brokerage",
   "settings",
 ];

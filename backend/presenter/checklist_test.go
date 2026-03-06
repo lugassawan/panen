@@ -107,7 +107,7 @@ func newTestChecklistHandler() *ChecklistHandler {
 		Source:    "mock",
 	})
 
-	svc := usecase.NewChecklistService(checklistRepo, portfolioRepo, holdingRepo, brokerageRepo, stockRepo)
+	svc := usecase.NewChecklistService(checklistRepo, portfolioRepo, holdingRepo, brokerageRepo, stockRepo, nil)
 	return NewChecklistHandler(ctx, svc)
 }
 

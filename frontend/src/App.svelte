@@ -6,6 +6,7 @@ import { handleGlobalShortcut } from "./lib/shortcuts";
 import { commandPalette } from "./lib/stores/command-palette.svelte";
 import { theme } from "./lib/stores/theme.svelte";
 import type { Page } from "./lib/types";
+import AlertsPage from "./pages/alerts/AlertsPage.svelte";
 import BrokeragePage from "./pages/brokerage/BrokeragePage.svelte";
 import CrashPlaybookPage from "./pages/crashplaybook/CrashPlaybookPage.svelte";
 import PaydayPage from "./pages/payday/PaydayPage.svelte";
@@ -40,6 +41,8 @@ function navigateTo(page: Page) {
       <PaydayPage />
     {:else if currentPage === "crashplaybook"}
       <CrashPlaybookPage />
+    {:else if currentPage === "alerts"}
+      <AlertsPage />
     {:else if currentPage === "brokerage"}
       <BrokeragePage />
     {:else if currentPage === "settings"}

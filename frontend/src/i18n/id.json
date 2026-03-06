@@ -29,6 +29,7 @@
     "portfolio": "Portofolio",
     "payday": "Hari Gajian",
     "crashPlaybook": "Playbook Crash",
+    "alerts": "Peringatan",
     "brokerage": "Sekuritas",
     "settings": "Pengaturan",
     "searchPages": "Cari halaman...",
@@ -436,6 +437,22 @@
     "createAccount": "Buat Akun",
     "saving": "Menyimpan...",
     "saveChanges": "Simpan Perubahan"
+  },
+  "alerts": {
+    "title": "Peringatan",
+    "empty": "Tidak ada peringatan fundamental",
+    "filterAll": "Semua",
+    "filterCritical": "Kritis",
+    "filterWarning": "Peringatan",
+    "filterMinor": "Minor",
+    "acknowledge": "Konfirmasi",
+    "acknowledged": "Dikonfirmasi",
+    "resolved": "Terselesaikan",
+    "active": "Aktif",
+    "detectedAt": "Terdeteksi {date}",
+    "changed": "berubah",
+    "noCriticalAlerts": "Tidak ada peringatan fundamental kritis",
+    "criticalBlock": "Peringatan kritis memblokir saran sampai dikonfirmasi"
   },
   "watchlist": {
     "presetIndices": "Indeks Preset",

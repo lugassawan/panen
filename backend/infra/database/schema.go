@@ -12,6 +12,7 @@ var migrations = []string{
 	migrationV8,
 	migrationV9,
 	migrationV10,
+	migrationV11,
 }
 
 const migrationV1 = `
@@ -210,4 +211,38 @@ CREATE TABLE dividend_history (
 	UNIQUE(ticker, ex_date, source)
 );
 CREATE INDEX idx_dividend_history_ticker_date ON dividend_history(ticker, ex_date);
+`
+
+const migrationV11 = `
+CREATE TABLE financial_snapshots (
+	id             TEXT PRIMARY KEY,
+	ticker         TEXT NOT NULL,
+	price          REAL NOT NULL DEFAULT 0,
+	eps            REAL NOT NULL DEFAULT 0,
+	bvps           REAL NOT NULL DEFAULT 0,
+	roe            REAL NOT NULL DEFAULT 0,
+	der            REAL NOT NULL DEFAULT 0,
+	pbv            REAL NOT NULL DEFAULT 0,
+	per            REAL NOT NULL DEFAULT 0,
+	dividend_yield REAL NOT NULL DEFAULT 0,
+	payout_ratio   REAL NOT NULL DEFAULT 0,
+	source         TEXT NOT NULL,
+	fetched_at     TEXT NOT NULL
+);
+CREATE INDEX idx_financial_snapshots_ticker ON financial_snapshots(ticker, fetched_at);
+
+CREATE TABLE fundamental_alerts (
+	id          TEXT PRIMARY KEY,
+	ticker      TEXT NOT NULL,
+	metric      TEXT NOT NULL,
+	severity    TEXT NOT NULL CHECK(severity IN ('MINOR','WARNING','CRITICAL')),
+	old_value   REAL NOT NULL DEFAULT 0,
+	new_value   REAL NOT NULL DEFAULT 0,
+	change_pct  REAL NOT NULL DEFAULT 0,
+	status      TEXT NOT NULL CHECK(status IN ('ACTIVE','ACKNOWLEDGED','RESOLVED')) DEFAULT 'ACTIVE',
+	detected_at TEXT NOT NULL,
+	resolved_at TEXT
+);
+CREATE INDEX idx_fundamental_alerts_ticker ON fundamental_alerts(ticker, status);
+CREATE INDEX idx_fundamental_alerts_status ON fundamental_alerts(status, detected_at);
 `

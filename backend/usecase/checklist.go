@@ -29,6 +29,7 @@ type ChecklistService struct {
 	holdings   portfolio.HoldingRepository
 	brokerages brokerage.Repository
 	stockData  stock.Repository
+	alertSvc   *AlertService
 }
 
 // NewChecklistService creates a new ChecklistService.
@@ -38,6 +39,7 @@ func NewChecklistService(
 	holdings portfolio.HoldingRepository,
 	brokerages brokerage.Repository,
 	stockData stock.Repository,
+	alertSvc *AlertService,
 ) *ChecklistService {
 	return &ChecklistService{
 		results:    results,
@@ -45,6 +47,7 @@ func NewChecklistService(
 		holdings:   holdings,
 		brokerages: brokerages,
 		stockData:  stockData,
+		alertSvc:   alertSvc,
 	}
 }
 
@@ -201,17 +204,23 @@ func (s *ChecklistService) buildEvalInput(
 		return checklist.EvaluateInput{}, err
 	}
 
+	var hasCritical bool
+	if s.alertSvc != nil {
+		hasCritical, _ = s.alertSvc.HasCriticalAlert(ctx, ticker)
+	}
+
 	return checklist.EvaluateInput{
-		Action:      action,
-		StockData:   data,
-		Valuation:   val,
-		Holding:     holding,
-		Portfolio:   p,
-		AllHoldings: allHoldings,
-		Thresholds:  checklist.ThresholdsForRisk(p.RiskProfile),
-		BuyFeePct:   acct.BuyFeePct,
-		SellFeePct:  acct.SellFeePct,
-		SellTaxPct:  acct.SellTaxPct,
+		Action:           action,
+		StockData:        data,
+		Valuation:        val,
+		Holding:          holding,
+		Portfolio:        p,
+		AllHoldings:      allHoldings,
+		Thresholds:       checklist.ThresholdsForRisk(p.RiskProfile),
+		BuyFeePct:        acct.BuyFeePct,
+		SellFeePct:       acct.SellFeePct,
+		SellTaxPct:       acct.SellTaxPct,
+		HasCriticalAlert: hasCritical,
 	}, nil
 }
 

@@ -2,12 +2,18 @@
 import { LoaderCircle } from "lucide-svelte";
 import { LookupStock } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
+import AlertComponent from "../../lib/components/Alert.svelte";
 import DataTimestamp from "../../lib/components/DataTimestamp.svelte";
 import Input from "../../lib/components/Input.svelte";
 import Select from "../../lib/components/Select.svelte";
 import Tooltip from "../../lib/components/Tooltip.svelte";
 import { formatDecimal, formatPercent, formatRupiah } from "../../lib/format";
-import type { RiskProfile, StockValuationResponse } from "../../lib/types";
+import { alerts } from "../../lib/stores/alerts.svelte";
+import type {
+  FundamentalAlertResponse,
+  RiskProfile,
+  StockValuationResponse,
+} from "../../lib/types";
 import { getVerdictDisplay } from "../../lib/verdict";
 
 let ticker = $state("");
@@ -15,6 +21,7 @@ let riskProfile = $state<RiskProfile>("MODERATE");
 let result = $state<StockValuationResponse | null>(null);
 let loading = $state(false);
 let error = $state<string | null>(null);
+let tickerAlerts = $state<FundamentalAlertResponse[]>([]);
 
 async function lookup() {
   const code = ticker.trim().toUpperCase();
@@ -26,6 +33,9 @@ async function lookup() {
 
   try {
     result = await LookupStock(code, riskProfile);
+    tickerAlerts = (await alerts.loadAlertsByTicker(code)).filter(
+      (a: FundamentalAlertResponse) => a.status === "ACTIVE",
+    );
   } catch (e: unknown) {
     error = e instanceof Error ? e.message : String(e);
   } finally {
@@ -101,6 +111,17 @@ function percentInRange(value: number, min: number, max: number): number {
         {result.ticker} &middot; {result.riskProfile} risk profile
       </p>
     </div>
+
+    <!-- Inline Alerts -->
+    {#each tickerAlerts as a (a.id)}
+      <div class="mb-4">
+        <AlertComponent variant={a.severity === "CRITICAL" ? "negative" : a.severity === "WARNING" ? "warning" : "info"}>
+          <span class="font-semibold">{a.severity}:</span>
+          {a.metric.toUpperCase().replace("_", " ")} {t("alerts.changed")} {formatDecimal(a.oldValue)} → {formatDecimal(a.newValue)}
+          ({a.changePct > 0 ? "+" : ""}{formatDecimal(a.changePct)}%)
+        </AlertComponent>
+      </div>
+    {/each}
 
     <!-- Price Card -->
     <div class="mb-4 rounded border border-border-default bg-bg-elevated p-4">

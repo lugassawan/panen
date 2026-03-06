@@ -29,6 +29,7 @@
     "portfolio": "Portfolio",
     "payday": "Payday",
     "crashPlaybook": "Crash Playbook",
+    "alerts": "Alerts",
     "brokerage": "Brokerage",
     "settings": "Settings",
     "searchPages": "Search pages...",
@@ -436,6 +437,22 @@
     "createAccount": "Create Account",
     "saving": "Saving...",
     "saveChanges": "Save Changes"
+  },
+  "alerts": {
+    "title": "Alerts",
+    "empty": "No fundamental alerts",
+    "filterAll": "All",
+    "filterCritical": "Critical",
+    "filterWarning": "Warning",
+    "filterMinor": "Minor",
+    "acknowledge": "Acknowledge",
+    "acknowledged": "Acknowledged",
+    "resolved": "Resolved",
+    "active": "Active",
+    "detectedAt": "Detected {date}",
+    "changed": "changed",
+    "noCriticalAlerts": "No critical fundamental alerts",
+    "criticalBlock": "Critical alert blocks suggestions until acknowledged"
   },
   "watchlist": {
     "presetIndices": "Preset Indices",
