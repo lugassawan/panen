@@ -13,6 +13,11 @@ import (
 	"github.com/lugassawan/panen/backend/domain/shared"
 )
 
+const (
+	settingPaydayDay = "payday_day"
+	monthLayout      = "2006-01"
+)
+
 var (
 	ErrPaydayNotConfigured = errors.New("payday day not configured")
 	ErrInvalidPaydayDay    = errors.New("payday day must be between 0 and 31")
@@ -84,7 +89,7 @@ func NewPaydayService(
 // GetPaydayDay reads the configured payday day from settings.
 // Returns 0 if not set or empty.
 func (s *PaydayService) GetPaydayDay(ctx context.Context) (int, error) {
-	val, err := s.settings.GetSetting(ctx, "payday_day")
+	val, err := s.settings.GetSetting(ctx, settingPaydayDay)
 	if err != nil {
 		if errors.Is(err, shared.ErrNotFound) {
 			return 0, nil
@@ -107,7 +112,7 @@ func (s *PaydayService) SavePaydayDay(ctx context.Context, day int) error {
 	if day < 0 || day > 31 {
 		return ErrInvalidPaydayDay
 	}
-	return s.settings.SetSetting(ctx, "payday_day", strconv.Itoa(day))
+	return s.settings.SetSetting(ctx, settingPaydayDay, strconv.Itoa(day))
 }
 
 // GetCurrentMonthStatus builds the payday status for the current month,
@@ -122,7 +127,7 @@ func (s *PaydayService) GetCurrentMonthStatus(ctx context.Context) (*MonthlyPayd
 	}
 
 	now := time.Now().UTC()
-	currentMonth := now.Format("2006-01")
+	currentMonth := now.Format(monthLayout)
 
 	allPortfolios, err := s.portfolios.ListAll(ctx)
 	if err != nil {
@@ -174,7 +179,7 @@ func newPortfolioPaydayStatus(p *portfolio.Portfolio, event *payday.PaydayEvent)
 // and records a cash flow entry.
 func (s *PaydayService) ConfirmPayday(ctx context.Context, portfolioID string, actualAmount float64) error {
 	now := time.Now().UTC()
-	currentMonth := now.Format("2006-01")
+	currentMonth := now.Format(monthLayout)
 
 	event, err := s.events.GetByMonthAndPortfolio(ctx, currentMonth, portfolioID)
 	if err != nil {
@@ -207,7 +212,7 @@ func (s *PaydayService) DeferPayday(ctx context.Context, portfolioID string, def
 		return ErrDeferDateNotFuture
 	}
 
-	currentMonth := now.Format("2006-01")
+	currentMonth := now.Format(monthLayout)
 
 	event, err := s.events.GetByMonthAndPortfolio(ctx, currentMonth, portfolioID)
 	if err != nil {
@@ -227,7 +232,7 @@ func (s *PaydayService) DeferPayday(ctx context.Context, portfolioID string, def
 // SkipPayday marks the current month's payday event as skipped for a portfolio.
 func (s *PaydayService) SkipPayday(ctx context.Context, portfolioID string) error {
 	now := time.Now().UTC()
-	currentMonth := now.Format("2006-01")
+	currentMonth := now.Format(monthLayout)
 
 	event, err := s.events.GetByMonthAndPortfolio(ctx, currentMonth, portfolioID)
 	if err != nil {
@@ -256,7 +261,7 @@ func (s *PaydayService) GetPaydayHistory(ctx context.Context) ([]*MonthlyPaydayS
 		return nil, err
 	}
 
-	currentMonth := time.Now().UTC().Format("2006-01")
+	currentMonth := time.Now().UTC().Format(monthLayout)
 
 	// Build a lookup of portfolios by ID.
 	portfolioMap := make(map[string]*portfolio.Portfolio, len(allPortfolios))

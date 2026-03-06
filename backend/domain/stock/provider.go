@@ -1,6 +1,10 @@
 package stock
 
-import "context"
+import (
+	"context"
+
+	"github.com/lugassawan/panen/backend/domain/dividend"
+)
 
 // PriceResult holds price data fetched from an external source.
 type PriceResult struct {
@@ -31,4 +35,6 @@ type DataProvider interface {
 	FetchFinancials(ctx context.Context, ticker string) (*FinancialResult, error)
 	// FetchPriceHistory returns daily OHLCV data for a ticker.
 	FetchPriceHistory(ctx context.Context, ticker string) ([]PricePoint, error)
+	// FetchDividendHistory returns historical dividend events for a ticker.
+	FetchDividendHistory(ctx context.Context, ticker string) ([]dividend.DividendEvent, error)
 }

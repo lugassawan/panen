@@ -9,9 +9,19 @@ type chartResponse struct {
 }
 
 type chartResult struct {
-	Meta       chartMeta  `json:"meta"`
-	Timestamp  []int64    `json:"timestamp"`
-	Indicators indicators `json:"indicators"`
+	Meta       chartMeta    `json:"meta"`
+	Timestamp  []int64      `json:"timestamp"`
+	Events     *chartEvents `json:"events,omitempty"`
+	Indicators indicators   `json:"indicators"`
+}
+
+type chartEvents struct {
+	Dividends map[string]chartDividend `json:"dividends,omitempty"`
+}
+
+type chartDividend struct {
+	Date   int64   `json:"date"`
+	Amount float64 `json:"amount"`
 }
 
 type chartMeta struct {

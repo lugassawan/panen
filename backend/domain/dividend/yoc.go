@@ -1,5 +1,7 @@
 package dividend
 
+import "time"
+
 // DeriveAnnualDPS estimates the annual dividend per share from price and
 // dividend yield percentage. Returns 0 if inputs are non-positive.
 func DeriveAnnualDPS(price, dividendYieldPct float64) float64 {
@@ -33,6 +35,38 @@ func ProjectedYoC(annualDPS, avgBuyPrice float64, currentLots int, newPrice floa
 		return 0
 	}
 	return annualDPS / newAvg * 100
+}
+
+// YoCPoint represents yield on cost at a specific point in time.
+type YoCPoint struct {
+	Date time.Time
+	YoC  float64
+}
+
+// YoCProgression computes historical yield on cost at each dividend payment date.
+// It sums trailing-12-month DPS at each event and divides by avgBuyPrice.
+func YoCProgression(events []DividendEvent, avgBuyPrice float64) []YoCPoint {
+	if avgBuyPrice <= 0 || len(events) == 0 {
+		return nil
+	}
+
+	var points []YoCPoint
+	for i, e := range events {
+		if e.Amount <= 0 {
+			continue
+		}
+		// Sum trailing 12-month DPS up to and including this event
+		cutoff := e.ExDate.AddDate(-1, 0, 0)
+		var trailing float64
+		for j := 0; j <= i; j++ {
+			if events[j].ExDate.After(cutoff) && events[j].Amount > 0 {
+				trailing += events[j].Amount
+			}
+		}
+		yoc := trailing / avgBuyPrice * 100
+		points = append(points, YoCPoint{Date: e.ExDate, YoC: yoc})
+	}
+	return points
 }
 
 // PortfolioYieldItem is used to compute portfolio-level weighted yield.

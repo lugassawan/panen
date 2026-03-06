@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/lugassawan/panen/backend/domain/dividend"
 	"github.com/lugassawan/panen/backend/domain/stock"
 )
 
@@ -176,5 +177,9 @@ func (m *mockPriceHistoryProvider) FetchPriceHistory(ctx context.Context, ticker
 	if m.historyFunc != nil {
 		return m.historyFunc(ctx, ticker)
 	}
+	return nil, nil
+}
+
+func (m *mockPriceHistoryProvider) FetchDividendHistory(_ context.Context, _ string) ([]dividend.DividendEvent, error) {
 	return nil, nil
 }

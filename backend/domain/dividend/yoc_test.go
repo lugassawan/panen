@@ -3,6 +3,7 @@ package dividend
 import (
 	"math"
 	"testing"
+	"time"
 )
 
 func TestDeriveAnnualDPS(t *testing.T) {
@@ -157,6 +158,52 @@ func TestPortfolioYield(t *testing.T) {
 				t.Errorf("PortfolioYield() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestYoCProgression(t *testing.T) {
+	events := []DividendEvent{
+		{ExDate: time.Date(2023, 3, 15, 0, 0, 0, 0, time.UTC), Amount: 50},
+		{ExDate: time.Date(2023, 9, 15, 0, 0, 0, 0, time.UTC), Amount: 60},
+		{ExDate: time.Date(2024, 3, 15, 0, 0, 0, 0, time.UTC), Amount: 55},
+	}
+	avgBuyPrice := 2000.0
+
+	points := YoCProgression(events, avgBuyPrice)
+	if len(points) != 3 {
+		t.Fatalf("got %d points, want 3", len(points))
+	}
+
+	// First point: trailing 12m DPS = 50, YoC = 50/2000*100 = 2.5
+	if !almostEqual(points[0].YoC, 2.5) {
+		t.Errorf("points[0].YoC = %v, want 2.5", points[0].YoC)
+	}
+
+	// Second point: trailing 12m DPS = 50+60 = 110, YoC = 110/2000*100 = 5.5
+	if !almostEqual(points[1].YoC, 5.5) {
+		t.Errorf("points[1].YoC = %v, want 5.5", points[1].YoC)
+	}
+
+	// Third point: trailing 12m (2023-03-16 to 2024-03-15) DPS = 60+55 = 115, YoC = 115/2000*100 = 5.75
+	if !almostEqual(points[2].YoC, 5.75) {
+		t.Errorf("points[2].YoC = %v, want 5.75", points[2].YoC)
+	}
+}
+
+func TestYoCProgressionZeroAvgBuyPrice(t *testing.T) {
+	events := []DividendEvent{
+		{ExDate: time.Date(2023, 3, 15, 0, 0, 0, 0, time.UTC), Amount: 50},
+	}
+	points := YoCProgression(events, 0)
+	if points != nil {
+		t.Errorf("got %v, want nil", points)
+	}
+}
+
+func TestYoCProgressionEmpty(t *testing.T) {
+	points := YoCProgression(nil, 2000)
+	if points != nil {
+		t.Errorf("got %v, want nil", points)
 	}
 }
 

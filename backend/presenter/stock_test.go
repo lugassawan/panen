@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/lugassawan/panen/backend/domain/dividend"
 	"github.com/lugassawan/panen/backend/domain/stock"
 	"github.com/lugassawan/panen/backend/domain/valuation"
 	"github.com/lugassawan/panen/backend/usecase"
@@ -42,6 +43,10 @@ func (m *mockDataProvider) FetchFinancials(ctx context.Context, ticker string) (
 }
 
 func (m *mockDataProvider) FetchPriceHistory(_ context.Context, _ string) ([]stock.PricePoint, error) {
+	return nil, nil
+}
+
+func (m *mockDataProvider) FetchDividendHistory(_ context.Context, _ string) ([]dividend.DividendEvent, error) {
 	return nil, nil
 }
 
