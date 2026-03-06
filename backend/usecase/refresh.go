@@ -390,17 +390,17 @@ func (r *RefreshService) detectAndStoreAlerts(ctx context.Context, data *stock.D
 	// Detect changes if we have a previous snapshot.
 	if prev != nil {
 		detected := alert.DetectChanges(prev, data)
-		r.processDetectedAlerts(ctx, data.Ticker, detected)
-		r.autoResolveAlerts(ctx, data.Ticker, detected)
+		r.reconcileAlerts(ctx, data.Ticker, detected)
 	}
 
 	// Cleanup old snapshots.
 	_ = r.snapshots.Cleanup(ctx, data.Ticker, snapshotKeepN)
 }
 
-// processDetectedAlerts creates new alerts for detected changes,
-// skipping metrics that already have an active alert.
-func (r *RefreshService) processDetectedAlerts(ctx context.Context, ticker string, detected []*alert.FundamentalAlert) {
+// reconcileAlerts creates new alerts for newly detected changes and
+// auto-resolves existing alerts whose metrics have recovered.
+// Uses a single GetActiveByTicker query to avoid duplicate DB calls.
+func (r *RefreshService) reconcileAlerts(ctx context.Context, ticker string, detected []*alert.FundamentalAlert) {
 	existing, err := r.alerts.GetActiveByTicker(ctx, ticker)
 	if err != nil {
 		return
@@ -411,24 +411,12 @@ func (r *RefreshService) processDetectedAlerts(ctx context.Context, ticker strin
 		activeMetrics[a.Metric] = true
 	}
 
-	for _, d := range detected {
-		if activeMetrics[d.Metric] {
-			continue
-		}
-		_ = r.alerts.Create(ctx, d)
-	}
-}
-
-// autoResolveAlerts resolves active alerts whose metric is no longer in the detected set.
-func (r *RefreshService) autoResolveAlerts(ctx context.Context, ticker string, detected []*alert.FundamentalAlert) {
-	existing, err := r.alerts.GetActiveByTicker(ctx, ticker)
-	if err != nil {
-		return
-	}
-
 	detectedMetrics := make(map[string]bool, len(detected))
 	for _, d := range detected {
 		detectedMetrics[d.Metric] = true
+		if !activeMetrics[d.Metric] {
+			_ = r.alerts.Create(ctx, d)
+		}
 	}
 
 	for _, a := range existing {

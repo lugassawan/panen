@@ -3,11 +3,9 @@ package database
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"time"
 
 	"github.com/lugassawan/panen/backend/domain/alert"
-	"github.com/lugassawan/panen/backend/domain/shared"
 )
 
 const (
@@ -23,8 +21,9 @@ const (
 	alertGetActiveByTicker = `SELECT id, ticker, metric, severity, old_value, new_value, change_pct,
 		status, detected_at, resolved_at
 		FROM fundamental_alerts WHERE ticker = ? AND status = 'ACTIVE' ORDER BY detected_at DESC`
-	alertAcknowledge    = `UPDATE fundamental_alerts SET status = 'ACKNOWLEDGED' WHERE id = ?`
-	alertResolve        = `UPDATE fundamental_alerts SET status = 'RESOLVED', resolved_at = ? WHERE id = ?`
+	alertAcknowledge = `UPDATE fundamental_alerts SET status = 'ACKNOWLEDGED' WHERE id = ? AND status = 'ACTIVE'`
+	alertResolve     = `UPDATE fundamental_alerts SET status = 'RESOLVED', resolved_at = ?
+		WHERE id = ? AND status IN ('ACTIVE', 'ACKNOWLEDGED')`
 	alertCountActive    = `SELECT COUNT(*) FROM fundamental_alerts WHERE status = 'ACTIVE'`
 	alertDeleteOlderThn = `DELETE FROM fundamental_alerts WHERE detected_at < ?`
 )
@@ -122,9 +121,6 @@ func (r *AlertRepo) scanAlertRow(rows *sql.Rows) (*alert.FundamentalAlert, error
 		&a.OldValue, &a.NewValue, &a.ChangePct,
 		&status, &detectedAt, &resolvedAt,
 	); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, shared.ErrNotFound
-		}
 		return nil, err
 	}
 
