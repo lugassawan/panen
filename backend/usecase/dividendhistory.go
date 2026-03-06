@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"log"
+	"sync"
 
 	"github.com/lugassawan/panen/backend/domain/dividend"
 	"github.com/lugassawan/panen/backend/domain/portfolio"
@@ -37,6 +38,7 @@ type DividendHistoryService struct {
 	holdingRepo   portfolio.HoldingRepository
 	portfolioRepo portfolio.Repository
 	stockRepo     stock.Repository
+	fetchMu       sync.Mutex
 }
 
 // NewDividendHistoryService creates a new DividendHistoryService.
@@ -61,6 +63,9 @@ func (s *DividendHistoryService) GetDividendHistory(
 	ctx context.Context,
 	ticker string,
 ) ([]dividend.DividendEvent, error) {
+	s.fetchMu.Lock()
+	defer s.fetchMu.Unlock()
+
 	latest, err := s.historyRepo.LatestDate(ctx, ticker, s.provider.Source())
 	if err != nil {
 		return nil, err
