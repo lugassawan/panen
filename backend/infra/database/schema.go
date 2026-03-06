@@ -11,6 +11,7 @@ var migrations = []string{
 	migrationV7,
 	migrationV8,
 	migrationV9,
+	migrationV10,
 }
 
 const migrationV1 = `
@@ -197,4 +198,16 @@ CREATE TABLE price_history (
 	UNIQUE(ticker, date, source)
 );
 CREATE INDEX idx_price_history_ticker_date ON price_history(ticker, date);
+`
+
+const migrationV10 = `
+CREATE TABLE dividend_history (
+	id      TEXT PRIMARY KEY,
+	ticker  TEXT NOT NULL,
+	ex_date TEXT NOT NULL,
+	amount  REAL NOT NULL DEFAULT 0,
+	source  TEXT NOT NULL,
+	UNIQUE(ticker, ex_date, source)
+);
+CREATE INDEX idx_dividend_history_ticker_date ON dividend_history(ticker, ex_date);
 `

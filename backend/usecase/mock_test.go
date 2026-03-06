@@ -7,6 +7,7 @@ import (
 
 	"github.com/lugassawan/panen/backend/domain/brokerage"
 	"github.com/lugassawan/panen/backend/domain/checklist"
+	"github.com/lugassawan/panen/backend/domain/dividend"
 	"github.com/lugassawan/panen/backend/domain/payday"
 	"github.com/lugassawan/panen/backend/domain/portfolio"
 	"github.com/lugassawan/panen/backend/domain/settings"
@@ -109,6 +110,10 @@ func (p *mockProvider) FetchFinancials(ctx context.Context, ticker string) (*sto
 }
 
 func (p *mockProvider) FetchPriceHistory(_ context.Context, _ string) ([]stock.PricePoint, error) {
+	return nil, nil
+}
+
+func (p *mockProvider) FetchDividendHistory(_ context.Context, _ string) ([]dividend.DividendEvent, error) {
 	return nil, nil
 }
 

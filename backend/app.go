@@ -33,6 +33,7 @@ type App struct {
 	*presenter.ScreenerHandler
 	*presenter.DividendHandler
 	*presenter.PriceHistoryHandler
+	*presenter.DividendCalendarHandler
 	db      *database.DB
 	refresh *usecase.RefreshService
 }
@@ -110,6 +111,10 @@ func (a *App) Startup(ctx context.Context) {
 	priceHistoryRepo := database.NewPriceHistoryRepo(conn)
 	priceHistorySvc := usecase.NewPriceHistoryService(priceHistoryRepo, yahoo)
 	a.PriceHistoryHandler = presenter.NewPriceHistoryHandler(ctx, priceHistorySvc)
+
+	divHistoryRepo := database.NewDividendHistoryRepo(conn)
+	divHistorySvc := usecase.NewDividendHistoryService(divHistoryRepo, yahoo, holdingRepo, portfolioRepo, stockRepo)
+	a.DividendCalendarHandler = presenter.NewDividendCalendarHandler(ctx, divHistorySvc)
 
 	settingsRepo := database.NewSettingsRepo(conn)
 	tickerCollector := database.NewTickerCollector(conn)

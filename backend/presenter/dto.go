@@ -281,6 +281,55 @@ type PricePointResponse struct {
 	Volume int64   `json:"volume"`
 }
 
+// DividendHistoryItemResponse is the frontend-facing response for a dividend history event.
+type DividendHistoryItemResponse struct {
+	ExDate string  `json:"exDate"`
+	Amount float64 `json:"amount"`
+}
+
+// DGRItemResponse is the frontend-facing response for a dividend growth rate entry.
+type DGRItemResponse struct {
+	Year      int     `json:"year"`
+	DPS       float64 `json:"dps"`
+	GrowthPct float64 `json:"growthPct"`
+}
+
+// YoCPointResponse is the frontend-facing response for a YoC data point.
+type YoCPointResponse struct {
+	Date string  `json:"date"`
+	YoC  float64 `json:"yoc"`
+}
+
+// DividendCalendarEntryResponse is the frontend-facing response for a calendar entry.
+type DividendCalendarEntryResponse struct {
+	Ticker       string  `json:"ticker"`
+	ExDate       string  `json:"exDate"`
+	Amount       float64 `json:"amount"`
+	IsProjection bool    `json:"isProjection"`
+	TotalIncome  float64 `json:"totalIncome"`
+}
+
+// MonthlyIncomeItemResponse is the frontend-facing response for a monthly income entry.
+type MonthlyIncomeItemResponse struct {
+	Month  int     `json:"month"`
+	Amount float64 `json:"amount"`
+}
+
+// StockIncomeItemResponse is the frontend-facing response for a stock's income summary.
+type StockIncomeItemResponse struct {
+	Ticker        string  `json:"ticker"`
+	AnnualIncome  float64 `json:"annualIncome"`
+	DividendYield float64 `json:"dividendYield"`
+	Lots          int     `json:"lots"`
+}
+
+// DividendIncomeSummaryResponse is the frontend-facing response for income summary.
+type DividendIncomeSummaryResponse struct {
+	TotalAnnualIncome float64                     `json:"totalAnnualIncome"`
+	PerStock          []StockIncomeItemResponse   `json:"perStock"`
+	MonthlyBreakdown  []MonthlyIncomeItemResponse `json:"monthlyBreakdown"`
+}
+
 // CashFlowItemResponse is the frontend-facing response for a single cash flow entry.
 type CashFlowItemResponse struct {
 	ID          string  `json:"id"`

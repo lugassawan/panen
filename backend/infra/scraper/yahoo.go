@@ -15,6 +15,7 @@ import (
 
 	"golang.org/x/time/rate"
 
+	"github.com/lugassawan/panen/backend/domain/dividend"
 	"github.com/lugassawan/panen/backend/domain/stock"
 )
 
@@ -184,6 +185,44 @@ func extractPricePoints(result chartResult, ticker, source string) []stock.Price
 	}
 
 	return points
+}
+
+// FetchDividendHistory returns historical dividend events for a ticker.
+func (y *Yahoo) FetchDividendHistory(ctx context.Context, ticker string) ([]dividend.DividendEvent, error) {
+	encoded := url.PathEscape(FormatIDX(ticker))
+	reqURL := fmt.Sprintf("%s/v8/finance/chart/%s?range=10y&interval=1mo&events=div", y.baseURL, encoded)
+
+	body, err := y.doGet(ctx, reqURL)
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := parseChartResult(body)
+	if err != nil {
+		return nil, err
+	}
+
+	return extractDividendEvents(result, ticker, y.Source()), nil
+}
+
+func extractDividendEvents(result chartResult, ticker, source string) []dividend.DividendEvent {
+	if result.Events == nil || len(result.Events.Dividends) == 0 {
+		return nil
+	}
+
+	events := make([]dividend.DividendEvent, 0, len(result.Events.Dividends))
+	for _, d := range result.Events.Dividends {
+		if d.Amount <= 0 {
+			continue
+		}
+		events = append(events, dividend.DividendEvent{
+			Ticker: ticker,
+			ExDate: time.Unix(d.Date, 0).UTC(),
+			Amount: d.Amount,
+			Source: source,
+		})
+	}
+	return events
 }
 
 // FetchFinancials returns fundamental financial metrics for a ticker.

@@ -317,6 +317,48 @@ export interface ScreenerItemResponse {
   fetchedAt?: string;
 }
 
+export interface DividendHistoryItemResponse {
+  exDate: string;
+  amount: number;
+}
+
+export interface DGRItemResponse {
+  year: number;
+  dps: number;
+  growthPct: number;
+}
+
+export interface YoCPointResponse {
+  date: string;
+  yoc: number;
+}
+
+export interface DividendCalendarEntryResponse {
+  ticker: string;
+  exDate: string;
+  amount: number;
+  isProjection: boolean;
+  totalIncome: number;
+}
+
+export interface MonthlyIncomeItemResponse {
+  month: number;
+  amount: number;
+}
+
+export interface StockIncomeItemResponse {
+  ticker: string;
+  annualIncome: number;
+  dividendYield: number;
+  lots: number;
+}
+
+export interface DividendIncomeSummaryResponse {
+  totalAnnualIncome: number;
+  perStock: StockIncomeItemResponse[];
+  monthlyBreakdown: MonthlyIncomeItemResponse[];
+}
+
 export interface RefreshProgress {
   ticker: string;
   index: number;
