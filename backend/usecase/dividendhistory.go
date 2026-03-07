@@ -2,12 +2,12 @@ package usecase
 
 import (
 	"context"
-	"log/slog"
 	"sync"
 
 	"github.com/lugassawan/panen/backend/domain/dividend"
 	"github.com/lugassawan/panen/backend/domain/portfolio"
 	"github.com/lugassawan/panen/backend/domain/stock"
+	"github.com/lugassawan/panen/backend/infra/applog"
 )
 
 // DividendIncomeSummary holds aggregated dividend income data for a portfolio.
@@ -134,7 +134,7 @@ func (s *DividendHistoryService) GetDividendIncomeSummary(
 	for _, h := range holdings {
 		events, err := s.GetDividendHistory(ctx, h.Ticker)
 		if err != nil {
-			slog.Warn("failed to fetch dividend history", "ticker", h.Ticker, logKeyErr, err)
+			applog.Warn("failed to fetch dividend history", err, applog.Fields{"ticker": h.Ticker})
 			continue
 		}
 
@@ -189,7 +189,7 @@ func (s *DividendHistoryService) GetDividendCalendar(
 	for _, h := range holdings {
 		events, err := s.GetDividendHistory(ctx, h.Ticker)
 		if err != nil {
-			slog.Warn("failed to fetch dividend history", "ticker", h.Ticker, logKeyErr, err)
+			applog.Warn("failed to fetch dividend history", err, applog.Fields{"ticker": h.Ticker})
 			continue
 		}
 
