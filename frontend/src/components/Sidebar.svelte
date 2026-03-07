@@ -1,5 +1,6 @@
 <script lang="ts">
 import {
+  ArrowLeftRight,
   Bell,
   Bookmark,
   Briefcase,
@@ -24,6 +25,7 @@ const navItems: { page: Page; labelKey: string; icon: Component }[] = [
   { page: "lookup", labelKey: "nav.lookup", icon: Search },
   { page: "watchlist", labelKey: "nav.watchlist", icon: Bookmark },
   { page: "screener", labelKey: "nav.screener", icon: Filter },
+  { page: "comparison", labelKey: "nav.comparison", icon: ArrowLeftRight },
   { page: "portfolio", labelKey: "nav.portfolio", icon: Briefcase },
   { page: "payday", labelKey: "nav.payday", icon: CalendarDays },
   { page: "crashplaybook", labelKey: "nav.crashPlaybook", icon: Shield },

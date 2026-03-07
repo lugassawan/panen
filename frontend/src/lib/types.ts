@@ -128,6 +128,7 @@ export type Page =
   | "lookup"
   | "watchlist"
   | "screener"
+  | "comparison"
   | "portfolio"
   | "payday"
   | "crashplaybook"

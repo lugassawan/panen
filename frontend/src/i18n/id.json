@@ -32,6 +32,7 @@
     "transactions": "Transaksi",
     "alerts": "Peringatan",
     "brokerage": "Sekuritas",
+    "comparison": "Bandingkan",
     "settings": "Pengaturan",
     "searchPages": "Cari halaman...",
     "noResults": "Tidak ada hasil"
@@ -517,6 +518,24 @@
     "buy": "Beli",
     "sell": "Jual",
     "dividend": "Dividen"
+  },
+  "comparison": {
+    "title": "Perbandingan Saham",
+    "subtitle": "Bandingkan 2-4 saham secara berdampingan",
+    "addTicker": "Tambah Ticker",
+    "removeTicker": "Hapus",
+    "compare": "Bandingkan",
+    "comparing": "Membandingkan...",
+    "tickerPlaceholder": "cth. BBCA",
+    "fromWatchlist": "Dari watchlist...",
+    "emptyTitle": "Bandingkan Saham",
+    "emptyDescription": "Masukkan minimal 2 ticker dan klik Bandingkan untuk melihat metrik berdampingan.",
+    "sectionValuation": "Valuasi",
+    "sectionFundamentals": "Fundamental",
+    "sectionBands": "Band",
+    "week52Range": "Rentang 52M",
+    "minTickers": "Masukkan minimal 2 ticker",
+    "partialResults": "{success} dari {total} dimuat"
   },
   "watchlist": {
     "presetIndices": "Indeks Preset",

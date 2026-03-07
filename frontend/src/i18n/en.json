@@ -32,6 +32,7 @@
     "transactions": "Transactions",
     "alerts": "Alerts",
     "brokerage": "Brokerage",
+    "comparison": "Compare",
     "settings": "Settings",
     "searchPages": "Search pages...",
     "noResults": "No results found"
@@ -517,6 +518,24 @@
     "buy": "Buy",
     "sell": "Sell",
     "dividend": "Dividend"
+  },
+  "comparison": {
+    "title": "Stock Comparison",
+    "subtitle": "Compare 2-4 stocks side by side",
+    "addTicker": "Add Ticker",
+    "removeTicker": "Remove",
+    "compare": "Compare",
+    "comparing": "Comparing...",
+    "tickerPlaceholder": "e.g. BBCA",
+    "fromWatchlist": "From watchlist...",
+    "emptyTitle": "Compare Stocks",
+    "emptyDescription": "Enter at least 2 tickers and click Compare to see side-by-side metrics.",
+    "sectionValuation": "Valuation",
+    "sectionFundamentals": "Fundamentals",
+    "sectionBands": "Bands",
+    "week52Range": "52W Range",
+    "minTickers": "Enter at least 2 tickers",
+    "partialResults": "{success} of {total} loaded"
   },
   "watchlist": {
     "presetIndices": "Preset Indices",
