@@ -10,6 +10,7 @@ import AlertsPage from "./pages/alerts/AlertsPage.svelte";
 import BrokeragePage from "./pages/brokerage/BrokeragePage.svelte";
 import ComparisonPage from "./pages/comparison/ComparisonPage.svelte";
 import CrashPlaybookPage from "./pages/crashplaybook/CrashPlaybookPage.svelte";
+import DashboardPage from "./pages/dashboard/DashboardPage.svelte";
 import PaydayPage from "./pages/payday/PaydayPage.svelte";
 import PortfolioPage from "./pages/portfolio/PortfolioPage.svelte";
 import ScreenerPage from "./pages/screener/ScreenerPage.svelte";
@@ -18,7 +19,7 @@ import StockLookupPage from "./pages/stock/StockLookupPage.svelte";
 import TransactionHistoryPage from "./pages/transactions/TransactionHistoryPage.svelte";
 import WatchlistPage from "./pages/watchlist/WatchlistPage.svelte";
 
-let currentPage = $state<Page>("lookup");
+let currentPage = $state<Page>("dashboard");
 
 function navigateTo(page: Page) {
   currentPage = page;
@@ -31,7 +32,9 @@ function navigateTo(page: Page) {
   <Sidebar {currentPage} onNavigate={navigateTo} />
 
   <main class="flex-1 overflow-y-auto">
-    {#if currentPage === "lookup"}
+    {#if currentPage === "dashboard"}
+      <DashboardPage onNavigate={navigateTo} />
+    {:else if currentPage === "lookup"}
       <StockLookupPage />
     {:else if currentPage === "watchlist"}
       <WatchlistPage />

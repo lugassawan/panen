@@ -6,6 +6,7 @@ vi.mock("./i18n", () => ({
   locale: { current: "en" },
   t: (key: string, params?: Record<string, string | number>) => {
     const keys: Record<string, string> = {
+      "nav.dashboard": "Dashboard",
       "nav.lookup": "Stock Lookup",
       "nav.watchlist": "Watchlist",
       "nav.screener": "Screener",
@@ -71,6 +72,11 @@ vi.mock("./i18n", () => ({
       "brokerage.noAccounts": "No brokerage accounts yet",
       "brokerage.noAccountsDesc":
         "Add your first brokerage account to start tracking fees and managing portfolios.",
+      "dashboard.title": "Dashboard",
+      "dashboard.emptyTitle": "No portfolios yet",
+      "dashboard.empty":
+        "Set up a brokerage account and create your first portfolio to see your dashboard.",
+      "dashboard.goToBrokerage": "Set Up Brokerage",
       "common.retry": "Retry",
       "common.loading": "Loading...",
     };
@@ -123,6 +129,21 @@ vi.mock("../wailsjs/go/backend/App", () => ({
   GetAlertsByTicker: vi.fn(() => Promise.resolve([])),
   AcknowledgeAlert: vi.fn(() => Promise.resolve()),
   ListTransactions: vi.fn(() => Promise.resolve({ items: [], summary: {} })),
+  GetDashboardOverview: vi.fn(() =>
+    Promise.resolve({
+      totalMarketValue: 0,
+      totalCostBasis: 0,
+      totalPlAmount: 0,
+      totalPlPercent: 0,
+      totalDividendIncome: 0,
+      portfolios: [],
+      topGainers: [],
+      topLosers: [],
+      portfolioAllocation: [],
+      sectorAllocation: [],
+      recentTransactions: [],
+    }),
+  ),
 }));
 
 vi.mock("../wailsjs/runtime/runtime", () => ({
@@ -154,31 +175,31 @@ vi.mock("./lib/stores/theme.svelte", () => ({
 }));
 
 describe("App navigation", () => {
-  it("renders sidebar with 11 nav items", () => {
+  it("renders sidebar with 12 nav items", () => {
     render(App);
     const nav = screen.getByRole("navigation", { name: /main/i });
     const buttons = within(nav).getAllByRole("button");
-    expect(buttons).toHaveLength(11);
-    expect(buttons[0]).toHaveTextContent("Stock Lookup");
-    expect(buttons[1]).toHaveTextContent("Watchlist");
-    expect(buttons[2]).toHaveTextContent("Screener");
-    expect(buttons[3]).toHaveTextContent("Compare");
-    expect(buttons[4]).toHaveTextContent("Portfolio");
-    expect(buttons[5]).toHaveTextContent("Payday");
-    expect(buttons[6]).toHaveTextContent("Crash Playbook");
-    expect(buttons[7]).toHaveTextContent("Transactions");
-    expect(buttons[8]).toHaveTextContent("Alerts");
-    expect(buttons[9]).toHaveTextContent("Brokerage");
-    expect(buttons[10]).toHaveTextContent("Settings");
+    expect(buttons).toHaveLength(12);
+    expect(buttons[0]).toHaveTextContent("Dashboard");
+    expect(buttons[1]).toHaveTextContent("Stock Lookup");
+    expect(buttons[2]).toHaveTextContent("Watchlist");
+    expect(buttons[3]).toHaveTextContent("Screener");
+    expect(buttons[4]).toHaveTextContent("Compare");
+    expect(buttons[5]).toHaveTextContent("Portfolio");
+    expect(buttons[6]).toHaveTextContent("Payday");
+    expect(buttons[7]).toHaveTextContent("Crash Playbook");
+    expect(buttons[8]).toHaveTextContent("Transactions");
+    expect(buttons[9]).toHaveTextContent("Alerts");
+    expect(buttons[10]).toHaveTextContent("Brokerage");
+    expect(buttons[11]).toHaveTextContent("Settings");
   });
 
-  it("starts on Stock Lookup page by default", () => {
+  it("starts on Dashboard page by default", async () => {
     render(App);
-    expect(screen.getByLabelText("Stock ticker")).toBeInTheDocument();
-    expect(screen.getByLabelText("Risk profile")).toBeInTheDocument();
+    expect(await screen.findByText("No portfolios yet")).toBeInTheDocument();
   });
 
-  it("shows Stock Lookup as active nav item by default", () => {
+  it("shows Dashboard as active nav item by default", () => {
     render(App);
     const nav = screen.getByRole("navigation", { name: /main/i });
     const buttons = within(nav).getAllByRole("button");
@@ -258,14 +279,14 @@ describe("App navigation", () => {
 
     const nav = screen.getByRole("navigation", { name: /main/i });
     const buttons = within(nav).getAllByRole("button");
-    const [lookupBtn, , , , portfolioBtn] = buttons;
+    const [dashboardBtn, , , , , portfolioBtn] = buttons;
 
-    expect(lookupBtn).toHaveAttribute("aria-current", "page");
+    expect(dashboardBtn).toHaveAttribute("aria-current", "page");
     expect(portfolioBtn).not.toHaveAttribute("aria-current");
 
     await user.click(portfolioBtn);
 
     expect(portfolioBtn).toHaveAttribute("aria-current", "page");
-    expect(lookupBtn).not.toHaveAttribute("aria-current");
+    expect(dashboardBtn).not.toHaveAttribute("aria-current");
   });
 });

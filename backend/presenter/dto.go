@@ -386,6 +386,51 @@ type CashFlowItemResponse struct {
 	CreatedAt   string  `json:"createdAt"`
 }
 
+// DashboardOverviewResponse is the frontend-facing response for the dashboard overview.
+type DashboardOverviewResponse struct {
+	TotalMarketValue    float64                     `json:"totalMarketValue"`
+	TotalCostBasis      float64                     `json:"totalCostBasis"`
+	TotalPLAmount       float64                     `json:"totalPlAmount"`
+	TotalPLPercent      float64                     `json:"totalPlPercent"`
+	TotalDividendIncome float64                     `json:"totalDividendIncome"`
+	Portfolios          []PortfolioSummaryResponse  `json:"portfolios"`
+	TopGainers          []HoldingPLResponse         `json:"topGainers"`
+	TopLosers           []HoldingPLResponse         `json:"topLosers"`
+	PortfolioAllocation []AllocationItemResponse    `json:"portfolioAllocation"`
+	SectorAllocation    []AllocationItemResponse    `json:"sectorAllocation"`
+	RecentTransactions  []TransactionRecordResponse `json:"recentTransactions"`
+}
+
+// PortfolioSummaryResponse is the frontend-facing response for a portfolio summary in the dashboard.
+type PortfolioSummaryResponse struct {
+	ID          string  `json:"id"`
+	Name        string  `json:"name"`
+	Mode        string  `json:"mode"`
+	MarketValue float64 `json:"marketValue"`
+	CostBasis   float64 `json:"costBasis"`
+	PLAmount    float64 `json:"plAmount"`
+	PLPercent   float64 `json:"plPercent"`
+	Weight      float64 `json:"weight"`
+}
+
+// HoldingPLResponse is the frontend-facing response for a holding's P/L in the dashboard.
+type HoldingPLResponse struct {
+	Ticker        string  `json:"ticker"`
+	PortfolioID   string  `json:"portfolioId"`
+	PortfolioName string  `json:"portfolioName"`
+	MarketValue   float64 `json:"marketValue"`
+	CostBasis     float64 `json:"costBasis"`
+	PLAmount      float64 `json:"plAmount"`
+	PLPercent     float64 `json:"plPercent"`
+}
+
+// AllocationItemResponse is the frontend-facing response for an allocation breakdown item.
+type AllocationItemResponse struct {
+	Label string  `json:"label"`
+	Value float64 `json:"value"`
+	Pct   float64 `json:"pct"`
+}
+
 // TransactionRecordResponse is the frontend-facing response for a single transaction record.
 type TransactionRecordResponse struct {
 	ID            string  `json:"id"`

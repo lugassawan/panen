@@ -7,6 +7,7 @@ import {
   CalendarDays,
   Filter,
   Landmark,
+  LayoutDashboard,
   Receipt,
   Search,
   Settings,
@@ -37,6 +38,7 @@ interface CommandItem {
 }
 
 const commands: CommandItem[] = [
+  { id: "dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard, shortcut: "" },
   { id: "lookup", labelKey: "nav.lookup", icon: Search, shortcut: "1" },
   { id: "watchlist", labelKey: "nav.watchlist", icon: Bookmark, shortcut: "2" },
   { id: "screener", labelKey: "nav.screener", icon: Filter, shortcut: "3" },

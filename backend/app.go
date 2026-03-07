@@ -44,6 +44,7 @@ type App struct {
 	*presenter.LogHandler
 	*presenter.LiveConfigHandler
 	*presenter.TransactionHandler
+	*presenter.DashboardHandler
 	db        *database.DB
 	backup    *backup.BackupService
 	dbPath    string
@@ -75,6 +76,7 @@ func NewApp() *App {
 		LogHandler:              &presenter.LogHandler{},
 		LiveConfigHandler:       &presenter.LiveConfigHandler{},
 		TransactionHandler:      &presenter.TransactionHandler{},
+		DashboardHandler:        &presenter.DashboardHandler{},
 		backup:                  backup.NewBackupService(),
 	}
 }
@@ -241,6 +243,11 @@ func (a *App) Startup(ctx context.Context) {
 	txnHistoryRepo := database.NewTransactionHistoryRepo(conn)
 	transactionSvc := usecase.NewTransactionService(txnHistoryRepo)
 	a.TransactionHandler.Bind(ctx, transactionSvc)
+
+	dashboardSvc := usecase.NewDashboardService(
+		portfolioRepo, holdingRepo, stockRepo, paydayRepo, txnHistoryRepo, sectorRegistry,
+	)
+	a.DashboardHandler.Bind(ctx, dashboardSvc)
 
 	crashCapitalRepo := database.NewCrashCapitalRepo(conn)
 	crashPlaybookSvc := usecase.NewCrashPlaybookService(

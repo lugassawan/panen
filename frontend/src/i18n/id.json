@@ -23,6 +23,7 @@
     "fail": "Gagal"
   },
   "nav": {
+    "dashboard": "Dasbor",
     "lookup": "Cari Saham",
     "watchlist": "Watchlist",
     "screener": "Screener",
@@ -536,6 +537,25 @@
     "week52Range": "Rentang 52M",
     "minTickers": "Masukkan minimal 2 ticker",
     "partialResults": "{success} dari {total} dimuat"
+  },
+  "dashboard": {
+    "title": "Dasbor",
+    "totalMarketValue": "Total Nilai Pasar",
+    "totalPL": "Total L/R",
+    "totalDividend": "Total Pendapatan Dividen",
+    "portfolioAllocation": "Alokasi Portofolio",
+    "sectorAllocation": "Alokasi Sektor",
+    "topGainers": "Kenaikan Teratas",
+    "topLosers": "Penurunan Teratas",
+    "recentTransactions": "Transaksi Terakhir",
+    "emptyTitle": "Belum ada portofolio",
+    "empty": "Siapkan akun sekuritas dan buat portofolio pertama Anda untuk melihat dasbor.",
+    "goToBrokerage": "Atur Sekuritas",
+    "ticker": "Ticker",
+    "portfolio": "Portofolio",
+    "plPct": "L/R %",
+    "plAmount": "L/R",
+    "weight": "Bobot"
   },
   "watchlist": {
     "presetIndices": "Indeks Preset",
