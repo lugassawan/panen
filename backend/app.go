@@ -12,6 +12,7 @@ import (
 	brokerConfigLoader "github.com/lugassawan/panen/backend/infra/brokerconfig"
 	"github.com/lugassawan/panen/backend/infra/database"
 	"github.com/lugassawan/panen/backend/infra/github"
+	"github.com/lugassawan/panen/backend/infra/liveconfig"
 	"github.com/lugassawan/panen/backend/infra/platform"
 	"github.com/lugassawan/panen/backend/infra/scraper"
 	"github.com/lugassawan/panen/backend/infra/watchlistconfig"
@@ -40,6 +41,7 @@ type App struct {
 	*presenter.AlertHandler
 	*presenter.BackupHandler
 	*presenter.LogHandler
+	*presenter.LiveConfigHandler
 	db        *database.DB
 	backup    *backup.BackupService
 	dbPath    string
@@ -69,6 +71,7 @@ func NewApp() *App {
 		AlertHandler:            &presenter.AlertHandler{},
 		BackupHandler:           &presenter.BackupHandler{},
 		LogHandler:              &presenter.LogHandler{},
+		LiveConfigHandler:       &presenter.LiveConfigHandler{},
 		backup:                  backup.NewBackupService(),
 	}
 }
@@ -143,21 +146,40 @@ func (a *App) Startup(ctx context.Context) {
 		wailsRuntime.LogFatalf(ctx, "ensure default user: %v", err)
 	}
 
-	loader := brokerConfigLoader.NewLoader(dataDir)
-	brokerConfigs := loader.Load(ctx)
+	settingsRepo := database.NewSettingsRepo(conn)
 
-	indexLoader := watchlistconfig.NewIndexLoader(dataDir)
-	indexRegistry := indexLoader.Load(ctx)
+	if dbg, err := settingsRepo.GetSetting(ctx, applog.DebugLoggingKey); err == nil && dbg == "1" {
+		applog.SetLevel(slog.LevelDebug)
+	}
+	if err := applog.RotateLogs(a.logDir, applog.LogRetentionDays); err != nil {
+		applog.Warn("log rotation", err, nil)
+	}
+	a.LogHandler.Bind(ctx, settingsRepo, a.logDir)
+
+	tickerCollector := database.NewTickerCollector(conn)
+	wailsEmitter := presenter.NewWailsEmitter(ctx)
+
+	liveDeps := liveconfig.Deps{
+		Settings: settingsRepo,
+		Emitter:  wailsEmitter,
+	}
+
+	brokerLoader := brokerConfigLoader.NewLoader(dataDir, liveDeps)
+	brokerResult := brokerLoader.Load(ctx)
+
+	indexLoader := watchlistconfig.NewIndexLoader(dataDir, liveDeps)
+	indexResult := indexLoader.Load(ctx)
 	sectorRegistry := watchlistconfig.NewSectorRegistry()
+	swappableIndexReg := watchlistconfig.NewSwappableIndexRegistry(indexResult.Data)
 	watchlistSvc := usecase.NewWatchlistService(
 		watchlistRepo,
 		watchlistItemRepo,
 		stockRepo,
-		indexRegistry,
+		swappableIndexReg,
 		sectorRegistry,
 	)
 
-	screenerSvc := usecase.NewScreenerService(stockRepo, indexRegistry, sectorRegistry)
+	screenerSvc := usecase.NewScreenerService(stockRepo, swappableIndexReg, sectorRegistry)
 	a.ScreenerHandler.Bind(ctx, screenerSvc)
 
 	priceHistoryRepo := database.NewPriceHistoryRepo(conn)
@@ -167,19 +189,6 @@ func (a *App) Startup(ctx context.Context) {
 	divHistoryRepo := database.NewDividendHistoryRepo(conn)
 	divHistorySvc := usecase.NewDividendHistoryService(divHistoryRepo, yahoo, holdingRepo, portfolioRepo, stockRepo)
 	a.DividendCalendarHandler.Bind(ctx, divHistorySvc)
-
-	settingsRepo := database.NewSettingsRepo(conn)
-
-	if dbg, err := settingsRepo.GetSetting(ctx, "debug_logging"); err == nil && dbg == "1" {
-		applog.SetLevel(slog.LevelDebug)
-	}
-	if err := applog.RotateLogs(a.logDir, 14); err != nil {
-		applog.Warn("log rotation", err, nil)
-	}
-	a.LogHandler.Bind(ctx, settingsRepo, a.logDir)
-
-	tickerCollector := database.NewTickerCollector(conn)
-	wailsEmitter := presenter.NewWailsEmitter(ctx)
 
 	snapshotRepo := database.NewSnapshotRepo(conn)
 	alertRepo := database.NewAlertRepo(conn)
@@ -195,9 +204,17 @@ func (a *App) Startup(ctx context.Context) {
 	a.PortfolioHandler.Bind(ctx, portfolios, sectorRegistry)
 	a.DividendHandler.Bind(ctx, dividendSvc)
 	a.BrokerageHandler.Bind(ctx, profileID, brokerages)
-	a.BrokerConfigHandler.Bind(brokerConfigs)
+	a.BrokerConfigHandler.Bind(brokerResult.Data)
 	a.WatchlistHandler.Bind(ctx, profileID, watchlistSvc)
 	a.RefreshHandler.Bind(ctx, refreshSvc, settingsRepo)
+
+	a.Init(ctx)
+	a.RegisterLoader("brokers", brokerLoader, func(_ context.Context) {
+		a.BrokerConfigHandler.Bind(brokerLoader.LastResult().Data)
+	})
+	a.RegisterLoader("indices", indexLoader, func(_ context.Context) {
+		swappableIndexReg.Swap(indexLoader.LastResult().Data)
+	})
 
 	alertSvc := usecase.NewAlertService(alertRepo)
 	a.AlertHandler.Bind(ctx, alertSvc)

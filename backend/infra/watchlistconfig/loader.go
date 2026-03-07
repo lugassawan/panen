@@ -1,88 +1,25 @@
 package watchlistconfig
 
 import (
-	"context"
 	"encoding/json"
-	"fmt"
-	"io"
-	"net/http"
-	"os"
-	"path/filepath"
+	"errors"
 	"sort"
-	"time"
+	"sync"
 
+	"github.com/lugassawan/panen/backend/infra/liveconfig"
 	"github.com/lugassawan/panen/configs"
 )
 
-// remoteURL is a var so tests can override it.
-var remoteURL = "https://raw.githubusercontent.com/lugassawan/panen/main/configs/indices.json"
-
-const (
-	cacheFileName = "indices.json"
-	maxBodySize   = 1 << 20 // 1 MB
-)
-
-// IndexLoader fetches index compositions using a three-layer fallback: remote → cache → bundled.
-type IndexLoader struct {
-	dataDir string
-	client  *http.Client
-}
-
-// NewIndexLoader creates an IndexLoader that caches in dataDir.
-func NewIndexLoader(dataDir string) *IndexLoader {
-	return &IndexLoader{
-		dataDir: dataDir,
-		client:  &http.Client{Timeout: 10 * time.Second},
-	}
-}
-
-// Load returns an IndexRegistry, trying remote first, then local cache, then bundled fallback.
-// It never returns an error — worst case it returns the bundled data.
-func (l *IndexLoader) Load(ctx context.Context) *IndexRegistry {
-	if data, err := l.fetchRemote(ctx); err == nil {
-		if reg := parseIndices(data); reg != nil {
-			l.writeCache(data)
-			return reg
-		}
-	}
-
-	if data, err := l.readCache(); err == nil {
-		if reg := parseIndices(data); reg != nil {
-			return reg
-		}
-	}
-
-	if reg := parseIndices(configs.IndicesJSON); reg != nil {
-		return reg
-	}
-
-	return &IndexRegistry{indices: map[string][]string{}}
-}
-
-func (l *IndexLoader) fetchRemote(ctx context.Context) ([]byte, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, remoteURL, nil)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := l.client.Do(req) //nolint:gosec // URL is a compile-time constant
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status %d", resp.StatusCode)
-	}
-
-	return io.ReadAll(io.LimitReader(resp.Body, maxBodySize))
-}
-
-func (l *IndexLoader) readCache() ([]byte, error) {
-	return os.ReadFile(filepath.Join(l.dataDir, cacheFileName))
-}
-
-func (l *IndexLoader) writeCache(data []byte) {
-	_ = os.WriteFile(filepath.Join(l.dataDir, cacheFileName), data, 0o600)
+// NewIndexLoader creates a liveconfig.Loader for index compositions.
+func NewIndexLoader(dataDir string, deps liveconfig.Deps) *liveconfig.Loader[*IndexRegistry] {
+	return liveconfig.NewLoader(dataDir, liveconfig.Config[*IndexRegistry]{
+		Name:          "indices",
+		RemotePath:    "indices.json",
+		CacheFileName: "indices.json",
+		BundledData:   configs.IndicesJSON,
+		ParseFunc:     parseIndices,
+		ZeroValue:     &IndexRegistry{indices: map[string][]string{}},
+	}, deps)
 }
 
 // IndexRegistry provides lookup access to index compositions.
@@ -104,6 +41,39 @@ func (r *IndexRegistry) Names() []string {
 	}
 	sort.Strings(names)
 	return names
+}
+
+// SwappableIndexRegistry wraps an IndexRegistry with atomic swap support.
+// It implements usecase.IndexRegistry so it can be passed to services directly.
+type SwappableIndexRegistry struct {
+	mu  sync.RWMutex
+	reg *IndexRegistry
+}
+
+// NewSwappableIndexRegistry creates a SwappableIndexRegistry with an initial registry.
+func NewSwappableIndexRegistry(reg *IndexRegistry) *SwappableIndexRegistry {
+	return &SwappableIndexRegistry{reg: reg}
+}
+
+// Tickers delegates to the underlying IndexRegistry under a read lock.
+func (s *SwappableIndexRegistry) Tickers(name string) ([]string, bool) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.reg.Tickers(name)
+}
+
+// Names delegates to the underlying IndexRegistry under a read lock.
+func (s *SwappableIndexRegistry) Names() []string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.reg.Names()
+}
+
+// Swap replaces the underlying IndexRegistry.
+func (s *SwappableIndexRegistry) Swap(reg *IndexRegistry) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.reg = reg
 }
 
 // SectorRegistry maps tickers to their sector. Bundled-only (sectors are stable).
@@ -139,13 +109,13 @@ func (r *SectorRegistry) AllSectors() []string {
 	return sectors
 }
 
-func parseIndices(data []byte) *IndexRegistry {
+func parseIndices(data []byte) (*IndexRegistry, error) {
 	var m map[string][]string
 	if err := json.Unmarshal(data, &m); err != nil {
-		return nil
+		return nil, err
 	}
 	if len(m) == 0 {
-		return nil
+		return nil, errors.New("empty index config")
 	}
-	return &IndexRegistry{indices: m}
+	return &IndexRegistry{indices: m}, nil
 }

@@ -25,6 +25,12 @@ type LogStats struct {
 }
 
 const (
+	// DebugLoggingKey is the settings key for enabling debug-level logging.
+	DebugLoggingKey = "debug_logging"
+
+	// LogRetentionDays is the number of days to retain log and export files.
+	LogRetentionDays = 14
+
 	logPrefix  = "panen-"
 	logSuffix  = ".log"
 	dateLayout = "2006-01-02"

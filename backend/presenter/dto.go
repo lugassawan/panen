@@ -367,6 +367,14 @@ type LogStatsResponse struct {
 	NewestDate string `json:"newestDate"`
 }
 
+// ConfigStatusResponse is the frontend-facing response for a config loader's status.
+type ConfigStatusResponse struct {
+	Name        string `json:"name"`
+	Source      string `json:"source"`
+	LastRefresh string `json:"lastRefresh"`
+	DataHash    string `json:"dataHash"`
+}
+
 // CashFlowItemResponse is the frontend-facing response for a single cash flow entry.
 type CashFlowItemResponse struct {
 	ID          string  `json:"id"`
