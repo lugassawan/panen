@@ -29,16 +29,17 @@ function makePortfolios(): PortfolioResponse[] {
   return [
     {
       id: "p1",
+      brokerageAcctId: "b1",
       name: "Growth",
-      brokerageAccountId: "b1",
       mode: "VALUE",
       riskProfile: "MODERATE",
       capital: 0,
       monthlyAddition: 0,
       maxStocks: 0,
-      universe: [],
+      createdAt: "2026-01-01T00:00:00Z",
+      updatedAt: "2026-01-01T00:00:00Z",
     },
-  ] as PortfolioResponse[];
+  ];
 }
 
 beforeEach(() => {

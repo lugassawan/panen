@@ -83,10 +83,11 @@ FROM (
 
 // sortColumns maps user-facing sort field names to SQL columns.
 var sortColumns = map[string]string{
-	"date":   "date",
-	"type":   "type",
-	"ticker": "ticker",
-	"total":  "total",
+	"date":      "date",
+	"type":      "type",
+	"ticker":    "ticker",
+	"portfolio": "portfolio_name",
+	"total":     "total",
 }
 
 // TransactionHistoryRepo implements transaction.Repository.
