@@ -359,6 +359,14 @@ type DividendIncomeSummaryResponse struct {
 	MonthlyBreakdown  []MonthlyIncomeItemResponse `json:"monthlyBreakdown"`
 }
 
+// LogStatsResponse is the frontend-facing response for log file statistics.
+type LogStatsResponse struct {
+	FileCount  int    `json:"fileCount"`
+	TotalBytes int64  `json:"totalBytes"`
+	OldestDate string `json:"oldestDate"`
+	NewestDate string `json:"newestDate"`
+}
+
 // CashFlowItemResponse is the frontend-facing response for a single cash flow entry.
 type CashFlowItemResponse struct {
 	ID          string  `json:"id"`

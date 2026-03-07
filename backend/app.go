@@ -2,10 +2,12 @@ package backend
 
 import (
 	"context"
+	"log/slog"
 	"os"
 	"path/filepath"
 
 	"github.com/lugassawan/panen/backend/domain/user"
+	"github.com/lugassawan/panen/backend/infra/applog"
 	"github.com/lugassawan/panen/backend/infra/backup"
 	brokerConfigLoader "github.com/lugassawan/panen/backend/infra/brokerconfig"
 	"github.com/lugassawan/panen/backend/infra/database"
@@ -15,7 +17,7 @@ import (
 	"github.com/lugassawan/panen/backend/infra/watchlistconfig"
 	"github.com/lugassawan/panen/backend/presenter"
 	"github.com/lugassawan/panen/backend/usecase"
-	"github.com/wailsapp/wails/v2/pkg/runtime"
+	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App is the Wails-bound application controller.
@@ -37,10 +39,12 @@ type App struct {
 	*presenter.DividendCalendarHandler
 	*presenter.AlertHandler
 	*presenter.BackupHandler
+	*presenter.LogHandler
 	db        *database.DB
 	backup    *backup.BackupService
 	dbPath    string
 	backupDir string
+	logDir    string
 	refresh   *usecase.RefreshService
 }
 
@@ -64,48 +68,51 @@ func NewApp() *App {
 		DividendCalendarHandler: &presenter.DividendCalendarHandler{},
 		AlertHandler:            &presenter.AlertHandler{},
 		BackupHandler:           &presenter.BackupHandler{},
+		LogHandler:              &presenter.LogHandler{},
 		backup:                  backup.NewBackupService(),
 	}
 }
 
 // Startup initialises infrastructure, constructs services, and ensures a default user profile.
 func (a *App) Startup(ctx context.Context) {
+	a.initLogging(ctx)
+
 	dataDir, err := platform.DataDir()
 	if err != nil {
-		runtime.LogFatalf(ctx, "resolve data dir: %v", err)
+		wailsRuntime.LogFatalf(ctx, "resolve data dir: %v", err)
 	}
 	if err := os.MkdirAll(dataDir, 0o750); err != nil {
-		runtime.LogFatalf(ctx, "create data dir: %v", err)
+		wailsRuntime.LogFatalf(ctx, "create data dir: %v", err)
 	}
 
 	backupDir, err := platform.BackupDir()
 	if err != nil {
-		runtime.LogFatalf(ctx, "resolve backup dir: %v", err)
+		wailsRuntime.LogFatalf(ctx, "resolve backup dir: %v", err)
 	}
 	a.backupDir = backupDir
 	a.dbPath = filepath.Join(dataDir, "panen.db")
 
 	if restored, err := backup.TryRecover(dataDir, backupDir); err != nil {
-		runtime.LogWarningf(ctx, "recovery check: %v", err)
+		wailsRuntime.LogWarningf(ctx, "recovery check: %v", err)
 	} else if restored != "" {
-		runtime.LogInfof(ctx, "database restored from backup: %s", restored)
+		wailsRuntime.LogInfof(ctx, "database restored from backup: %s", restored)
 	}
 
 	db, err := database.Open(a.dbPath)
 	if err != nil {
-		runtime.LogFatalf(ctx, "open database: %v", err)
+		wailsRuntime.LogFatalf(ctx, "open database: %v", err)
 	}
 	a.db = db
 
 	if err := database.Migrate(ctx, db.Conn()); err != nil {
-		runtime.LogFatalf(ctx, "migrate database: %v", err)
+		wailsRuntime.LogFatalf(ctx, "migrate database: %v", err)
 	}
 
 	if err := a.backup.RunDaily(a.dbPath, backupDir); err != nil {
-		runtime.LogWarningf(ctx, "daily backup: %v", err)
+		wailsRuntime.LogWarningf(ctx, "daily backup: %v", err)
 	}
 	if err := a.backup.Cleanup(backupDir, 7); err != nil {
-		runtime.LogWarningf(ctx, "backup cleanup: %v", err)
+		wailsRuntime.LogWarningf(ctx, "backup cleanup: %v", err)
 	}
 
 	conn := db.Conn()
@@ -133,7 +140,7 @@ func (a *App) Startup(ctx context.Context) {
 
 	profileID, err := ensureDefaultUser(ctx, userRepo)
 	if err != nil {
-		runtime.LogFatalf(ctx, "ensure default user: %v", err)
+		wailsRuntime.LogFatalf(ctx, "ensure default user: %v", err)
 	}
 
 	loader := brokerConfigLoader.NewLoader(dataDir)
@@ -162,6 +169,15 @@ func (a *App) Startup(ctx context.Context) {
 	a.DividendCalendarHandler.Bind(ctx, divHistorySvc)
 
 	settingsRepo := database.NewSettingsRepo(conn)
+
+	if dbg, err := settingsRepo.GetSetting(ctx, "debug_logging"); err == nil && dbg == "1" {
+		applog.SetLevel(slog.LevelDebug)
+	}
+	if err := applog.RotateLogs(a.logDir, 14); err != nil {
+		applog.Warn("log rotation", err, nil)
+	}
+	a.LogHandler.Bind(ctx, settingsRepo, a.logDir)
+
 	tickerCollector := database.NewTickerCollector(conn)
 	wailsEmitter := presenter.NewWailsEmitter(ctx)
 
@@ -229,9 +245,22 @@ func (a *App) Shutdown(ctx context.Context) {
 	}
 	if a.db != nil {
 		if err := a.db.Close(); err != nil {
-			runtime.LogErrorf(ctx, "close database: %v", err)
+			wailsRuntime.LogErrorf(ctx, "close database: %v", err)
 		}
 	}
+	applog.Shutdown()
+}
+
+// initLogging sets up file-based structured logging.
+func (a *App) initLogging(ctx context.Context) {
+	logDir, err := platform.LogDir()
+	if err != nil {
+		wailsRuntime.LogFatalf(ctx, "resolve log dir: %v", err)
+	}
+	if err := applog.Init(logDir); err != nil {
+		wailsRuntime.LogFatalf(ctx, "init logging: %v", err)
+	}
+	a.logDir = logDir
 }
 
 // releaseCheckerAdapter bridges github.Client to usecase.ReleaseChecker.
