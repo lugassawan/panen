@@ -15,6 +15,7 @@ import (
 	"github.com/lugassawan/panen/backend/infra/liveconfig"
 	"github.com/lugassawan/panen/backend/infra/platform"
 	"github.com/lugassawan/panen/backend/infra/scraper"
+	"github.com/lugassawan/panen/backend/infra/updater"
 	"github.com/lugassawan/panen/backend/infra/watchlistconfig"
 	"github.com/lugassawan/panen/backend/presenter"
 	"github.com/lugassawan/panen/backend/usecase"
@@ -250,7 +251,17 @@ func (a *App) Startup(ctx context.Context) {
 	ghClient := github.NewClient()
 	updateChecker := &releaseCheckerAdapter{client: ghClient}
 	updateSvc := usecase.NewUpdateService(updateChecker, Version())
-	a.UpdateHandler.Bind(ctx, updateSvc, settingsRepo)
+
+	downloader := updater.NewDownloader(ghClient)
+	verifier := &updater.SHA256Verifier{}
+	extractor := &updater.Extractor{}
+	installer := updater.NewPlatformInstaller()
+	selfUpdateSvc := usecase.NewSelfUpdateService(
+		updateChecker, downloader, verifier, extractor,
+		installer, wailsEmitter, Version(),
+	)
+
+	a.UpdateHandler.Bind(ctx, updateSvc, selfUpdateSvc, settingsRepo)
 
 	a.BackupHandler.Bind(ctx, a.backup, a.dbPath, a.backupDir)
 	a.BindBackup(a.backup, a.dbPath, a.backupDir)
@@ -258,6 +269,7 @@ func (a *App) Startup(ctx context.Context) {
 	refreshSvc.Start(ctx)
 
 	go a.CheckForUpdateOnStartup()
+	go selfUpdateSvc.CleanupPreviousUpdate()
 }
 
 // Shutdown stops background services and closes the database connection.
@@ -295,9 +307,18 @@ func (a *releaseCheckerAdapter) LatestRelease(ctx context.Context) (*usecase.Rel
 	if err != nil {
 		return nil, err
 	}
+	assets := make([]usecase.ReleaseAsset, len(rel.Assets))
+	for i, ga := range rel.Assets {
+		assets[i] = usecase.ReleaseAsset{
+			Name:        ga.Name,
+			DownloadURL: ga.BrowserDownloadURL,
+			Size:        ga.Size,
+		}
+	}
 	return &usecase.ReleaseInfo{
 		Version:    rel.Version(),
 		ReleaseURL: rel.HTMLURL,
+		Assets:     assets,
 	}, nil
 }
 

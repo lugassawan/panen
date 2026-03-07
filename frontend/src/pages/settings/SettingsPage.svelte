@@ -3,6 +3,7 @@ import { onMount } from "svelte";
 import {
   CheckForUpdate,
   CreateManualBackup,
+  DownloadAndInstallUpdate,
   ExportLogs,
   GetAppVersion,
   GetBackupStatus,
@@ -21,10 +22,12 @@ import Button from "../../lib/components/Button.svelte";
 import Select from "../../lib/components/Select.svelte";
 import ThemeToggle from "../../lib/components/ThemeToggle.svelte";
 import Tooltip from "../../lib/components/Tooltip.svelte";
+import UpdateDialog from "../../lib/components/UpdateDialog.svelte";
 import { formatFileSize, formatRelativeTime } from "../../lib/format";
 import { sync } from "../../lib/stores/sync.svelte";
 import { theme } from "../../lib/stores/theme.svelte";
 import { toastStore } from "../../lib/stores/toast.svelte";
+import { updateStore } from "../../lib/stores/update.svelte";
 
 let autoRefreshEnabled = $state(true);
 let intervalMinutes = $state(720);
@@ -366,6 +369,14 @@ async function createBackup() {
                 {t("settings.viewRelease")}
               </button>
             </Alert>
+            <Button
+              variant="primary"
+              size="sm"
+              onclick={() => DownloadAndInstallUpdate()}
+              disabled={updateStore.isActive}
+            >
+              {t("settings.downloadAndInstall")}
+            </Button>
           {:else}
             <Alert variant="positive">{t("settings.upToDate")}</Alert>
           {/if}
@@ -380,3 +391,5 @@ async function createBackup() {
     </div>
   </div>
 </div>
+
+<UpdateDialog />

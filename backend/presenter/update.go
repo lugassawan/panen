@@ -17,25 +17,34 @@ const (
 
 // UpdateHandler handles update-related requests from the frontend.
 type UpdateHandler struct {
-	ctx      context.Context
-	update   *usecase.UpdateService
-	settings settings.Repository
+	ctx        context.Context
+	update     *usecase.UpdateService
+	selfUpdate *usecase.SelfUpdateService
+	settings   settings.Repository
 }
 
 // NewUpdateHandler creates a new UpdateHandler.
 func NewUpdateHandler(
 	ctx context.Context,
 	update *usecase.UpdateService,
+	selfUpdate *usecase.SelfUpdateService,
 	settings settings.Repository,
 ) *UpdateHandler {
 	h := &UpdateHandler{}
-	h.Bind(ctx, update, settings)
+	h.Bind(ctx, update, selfUpdate, settings)
 	return h
 }
 
-func (h *UpdateHandler) Bind(ctx context.Context, update *usecase.UpdateService, settings settings.Repository) {
+// Bind wires the handler to its dependencies.
+func (h *UpdateHandler) Bind(
+	ctx context.Context,
+	update *usecase.UpdateService,
+	selfUpdate *usecase.SelfUpdateService,
+	settings settings.Repository,
+) {
 	h.ctx = ctx
 	h.update = update
+	h.selfUpdate = selfUpdate
 	h.settings = settings
 }
 
@@ -115,4 +124,25 @@ func (h *UpdateHandler) CheckForUpdateOnStartup() {
 			runtime.LogWarningf(h.ctx, "save skipped version: %v", err)
 		}
 	}
+}
+
+// DownloadAndInstallUpdate starts the async self-update flow.
+// Progress is reported via Wails events, not the return value.
+func (h *UpdateHandler) DownloadAndInstallUpdate() error {
+	go func() {
+		if err := h.selfUpdate.PerformUpdate(h.ctx); err != nil {
+			runtime.LogWarningf(h.ctx, "self-update: %v", err)
+		}
+	}()
+	return nil
+}
+
+// CancelUpdate aborts an in-progress download.
+func (h *UpdateHandler) CancelUpdate() {
+	h.selfUpdate.Cancel()
+}
+
+// QuitForRestart gracefully shuts down the app so the user can relaunch.
+func (h *UpdateHandler) QuitForRestart() {
+	runtime.Quit(h.ctx)
 }

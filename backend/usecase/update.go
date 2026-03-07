@@ -7,10 +7,18 @@ import (
 	"strings"
 )
 
+// ReleaseAsset holds information about a downloadable release artifact.
+type ReleaseAsset struct {
+	Name        string
+	DownloadURL string
+	Size        int64
+}
+
 // ReleaseInfo holds version information about a release.
 type ReleaseInfo struct {
 	Version    string
 	ReleaseURL string
+	Assets     []ReleaseAsset
 }
 
 // ReleaseChecker fetches the latest release information.
