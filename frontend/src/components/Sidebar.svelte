@@ -7,6 +7,7 @@ import {
   CalendarDays,
   Filter,
   Landmark,
+  LayoutDashboard,
   Receipt,
   Search,
   Settings,
@@ -22,6 +23,7 @@ import type { Page } from "../lib/types";
 let { currentPage, onNavigate }: { currentPage: Page; onNavigate: (page: Page) => void } = $props();
 
 const navItems: { page: Page; labelKey: string; icon: Component }[] = [
+  { page: "dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
   { page: "lookup", labelKey: "nav.lookup", icon: Search },
   { page: "watchlist", labelKey: "nav.watchlist", icon: Bookmark },
   { page: "screener", labelKey: "nav.screener", icon: Filter },

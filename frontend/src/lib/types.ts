@@ -125,6 +125,7 @@ export type RiskProfile = "CONSERVATIVE" | "MODERATE" | "AGGRESSIVE";
 export type Verdict = "UNDERVALUED" | "FAIR" | "OVERVALUED";
 
 export type Page =
+  | "dashboard"
   | "lookup"
   | "watchlist"
   | "screener"
@@ -468,4 +469,45 @@ export interface TransactionSummaryResponse {
 export interface TransactionListResponse {
   items: TransactionRecordResponse[];
   summary: TransactionSummaryResponse;
+}
+
+export interface DashboardOverviewResponse {
+  totalMarketValue: number;
+  totalCostBasis: number;
+  totalPlAmount: number;
+  totalPlPercent: number;
+  totalDividendIncome: number;
+  portfolios: DashboardPortfolioSummary[];
+  topGainers: HoldingPLResponse[];
+  topLosers: HoldingPLResponse[];
+  portfolioAllocation: AllocationItemResponse[];
+  sectorAllocation: AllocationItemResponse[];
+  recentTransactions: TransactionRecordResponse[];
+}
+
+export interface DashboardPortfolioSummary {
+  id: string;
+  name: string;
+  mode: string;
+  marketValue: number;
+  costBasis: number;
+  plAmount: number;
+  plPercent: number;
+  weight: number;
+}
+
+export interface HoldingPLResponse {
+  ticker: string;
+  portfolioId: string;
+  portfolioName: string;
+  marketValue: number;
+  costBasis: number;
+  plAmount: number;
+  plPercent: number;
+}
+
+export interface AllocationItemResponse {
+  label: string;
+  value: number;
+  pct: number;
 }

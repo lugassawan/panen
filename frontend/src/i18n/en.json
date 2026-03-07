@@ -23,6 +23,7 @@
     "fail": "Fail"
   },
   "nav": {
+    "dashboard": "Dashboard",
     "lookup": "Stock Lookup",
     "watchlist": "Watchlist",
     "screener": "Screener",
@@ -536,6 +537,25 @@
     "week52Range": "52W Range",
     "minTickers": "Enter at least 2 tickers",
     "partialResults": "{success} of {total} loaded"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "totalMarketValue": "Total Market Value",
+    "totalPL": "Total P/L",
+    "totalDividend": "Total Dividend Income",
+    "portfolioAllocation": "Portfolio Allocation",
+    "sectorAllocation": "Sector Allocation",
+    "topGainers": "Top Gainers",
+    "topLosers": "Top Losers",
+    "recentTransactions": "Recent Transactions",
+    "emptyTitle": "No portfolios yet",
+    "empty": "Set up a brokerage account and create your first portfolio to see your dashboard.",
+    "goToBrokerage": "Set Up Brokerage",
+    "ticker": "Ticker",
+    "portfolio": "Portfolio",
+    "plPct": "P/L %",
+    "plAmount": "P/L",
+    "weight": "Weight"
   },
   "watchlist": {
     "presetIndices": "Preset Indices",
