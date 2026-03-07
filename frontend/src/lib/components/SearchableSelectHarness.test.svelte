@@ -43,8 +43,8 @@ function keyFn(item: Item): string {
     {#snippet children({ item })}
       <span>{item.label}</span>
     {/snippet}
-    {#snippet footer()}
-      <button type="button">Footer action</button>
+    {#snippet footer({ close })}
+      <button type="button" onclick={close}>Footer action</button>
     {/snippet}
   </SearchableSelect>
 {:else}

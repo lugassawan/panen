@@ -34,8 +34,9 @@ function handleSelect(code: string) {
   onselect?.(code);
 }
 
-function selectOther() {
+function selectOther(close: () => void) {
   value = "OTHER";
+  close();
   onselect?.("OTHER");
 }
 
@@ -63,10 +64,10 @@ let otherDisplay = $derived(value === "OTHER" ? t("brokerage.otherManual") : "")
       {t("brokerage.buy")} {item.buyFeePct}% | {t("brokerage.sell")} {item.sellFeePct}% | {t("brokerage.pph")} {item.sellTaxPct}%
     </div>
   {/snippet}
-  {#snippet footer()}
+  {#snippet footer({ close })}
     <button
       type="button"
-      onclick={selectOther}
+      onclick={() => selectOther(close)}
       class="w-full cursor-pointer px-3 py-2 text-left text-sm text-text-secondary hover:bg-bg-tertiary"
     >
       {t("brokerage.otherManual")}

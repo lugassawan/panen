@@ -28,7 +28,7 @@ let {
   onselect?: (key: string) => void;
   fallbackDisplay?: string;
   children: Snippet<[{ item: T; active: boolean }]>;
-  footer?: Snippet;
+  footer?: Snippet<[{ close: () => void }]>;
 } = $props();
 
 let open = $state(false);
@@ -171,7 +171,7 @@ $effect(() => {
       {/if}
       {#if footer}
         <li class="border-t border-border-default">
-          {@render footer()}
+          {@render footer({ close: closeDropdown })}
         </li>
       {/if}
     </ul>
