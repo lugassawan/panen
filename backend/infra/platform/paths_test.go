@@ -15,6 +15,10 @@ func TestDataDir(t *testing.T) {
 	testDirFunc(t, "DataDir", DataDir, "data")
 }
 
+func TestBackupDir(t *testing.T) {
+	testDirFunc(t, "BackupDir", BackupDir, "backups")
+}
+
 func testDirFunc(t *testing.T, name string, fn func() (string, error), suffix string) {
 	t.Helper()
 
