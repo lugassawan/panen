@@ -40,9 +40,17 @@ func TestShortCaller(t *testing.T) {
 	}
 }
 
-func TestInfo(t *testing.T) {
+func setTestLogger(t *testing.T) *bytes.Buffer {
+	t.Helper()
+	original := slog.Default()
+	t.Cleanup(func() { slog.SetDefault(original) })
 	var buf bytes.Buffer
 	slog.SetDefault(slog.New(slog.NewTextHandler(&buf, nil)))
+	return &buf
+}
+
+func TestInfo(t *testing.T) {
+	buf := setTestLogger(t)
 
 	Info("test info", Fields{"key": "val"})
 
@@ -50,8 +58,8 @@ func TestInfo(t *testing.T) {
 	if !strings.Contains(out, "test info") {
 		t.Errorf("expected log to contain message, got %q", out)
 	}
-	if !strings.Contains(out, "caller=") {
-		t.Errorf("expected log to contain caller, got %q", out)
+	if !strings.Contains(out, "caller=infra/applog.TestInfo") {
+		t.Errorf("expected caller to point to TestInfo, got %q", out)
 	}
 	if strings.Contains(out, "err=") {
 		t.Errorf("info log should not contain err key, got %q", out)
@@ -59,8 +67,7 @@ func TestInfo(t *testing.T) {
 }
 
 func TestWarn(t *testing.T) {
-	var buf bytes.Buffer
-	slog.SetDefault(slog.New(slog.NewTextHandler(&buf, nil)))
+	buf := setTestLogger(t)
 
 	Warn("test warn", errors.New("boom"), Fields{"key": "val"})
 
@@ -68,8 +75,8 @@ func TestWarn(t *testing.T) {
 	if !strings.Contains(out, "test warn") {
 		t.Errorf("expected log to contain message, got %q", out)
 	}
-	if !strings.Contains(out, "caller=") {
-		t.Errorf("expected log to contain caller, got %q", out)
+	if !strings.Contains(out, "caller=infra/applog.TestWarn") {
+		t.Errorf("expected caller to point to TestWarn, got %q", out)
 	}
 	if !strings.Contains(out, "err=boom") {
 		t.Errorf("expected log to contain err=boom, got %q", out)
@@ -77,8 +84,7 @@ func TestWarn(t *testing.T) {
 }
 
 func TestError(t *testing.T) {
-	var buf bytes.Buffer
-	slog.SetDefault(slog.New(slog.NewTextHandler(&buf, nil)))
+	buf := setTestLogger(t)
 
 	Error("test error", errors.New("fail"), nil)
 
@@ -86,8 +92,8 @@ func TestError(t *testing.T) {
 	if !strings.Contains(out, "test error") {
 		t.Errorf("expected log to contain message, got %q", out)
 	}
-	if !strings.Contains(out, "caller=") {
-		t.Errorf("expected log to contain caller, got %q", out)
+	if !strings.Contains(out, "caller=infra/applog.TestError") {
+		t.Errorf("expected caller to point to TestError, got %q", out)
 	}
 	if !strings.Contains(out, "err=fail") {
 		t.Errorf("expected log to contain err=fail, got %q", out)
