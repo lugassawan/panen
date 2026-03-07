@@ -215,6 +215,7 @@ func (a *App) Startup(ctx context.Context) {
 	a.UpdateHandler.Bind(ctx, updateSvc, settingsRepo)
 
 	a.BackupHandler.Bind(ctx, a.backup, a.dbPath, a.backupDir)
+	a.BindBackup(a.backup, a.dbPath, a.backupDir)
 
 	refreshSvc.Start(ctx)
 
