@@ -2,6 +2,21 @@ package presenter
 
 const dateLayout = "2006-01-02"
 
+// BackupInfoResponse is the frontend-facing response for a single backup file.
+type BackupInfoResponse struct {
+	Filename  string `json:"filename"`
+	SizeBytes int64  `json:"sizeBytes"`
+	CreatedAt string `json:"createdAt"`
+}
+
+// BackupStatusResponse is the frontend-facing response for backup status summary.
+type BackupStatusResponse struct {
+	LastBackupDate string `json:"lastBackupDate"`
+	BackupCount    int    `json:"backupCount"`
+	TotalSizeBytes int64  `json:"totalSizeBytes"`
+	DbSizeBytes    int64  `json:"dbSizeBytes"`
+}
+
 // FundamentalAlertResponse is the frontend-facing response for a fundamental change alert.
 type FundamentalAlertResponse struct {
 	ID         string  `json:"id"`
