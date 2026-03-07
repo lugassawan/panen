@@ -36,6 +36,30 @@ func TestOpen(t *testing.T) {
 		}
 	})
 
+	t.Run("checkpoint succeeds", func(t *testing.T) {
+		db, err := Open(":memory:")
+		if err != nil {
+			t.Fatalf("Open() error = %v", err)
+		}
+		defer db.Close()
+
+		if err := db.Checkpoint(); err != nil {
+			t.Errorf("Checkpoint() error = %v", err)
+		}
+	})
+
+	t.Run("quick check passes on healthy database", func(t *testing.T) {
+		db, err := Open(":memory:")
+		if err != nil {
+			t.Fatalf("Open() error = %v", err)
+		}
+		defer db.Close()
+
+		if err := db.QuickCheck(); err != nil {
+			t.Errorf("QuickCheck() error = %v", err)
+		}
+	})
+
 	t.Run("foreign keys enabled", func(t *testing.T) {
 		db, err := Open(":memory:")
 		if err != nil {
