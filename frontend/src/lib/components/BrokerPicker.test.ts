@@ -78,7 +78,7 @@ describe("BrokerPicker", () => {
     expect(onselect).toHaveBeenCalledWith("XC");
   });
 
-  it("selects Other", async () => {
+  it("selects Other by click", async () => {
     const onselect = vi.fn();
     render(BrokerPicker, { props: { brokerConfigs, onselect } });
     const user = userEvent.setup();
@@ -87,5 +87,18 @@ describe("BrokerPicker", () => {
     await user.click(screen.getByRole("button", { name: /other.*manual/i }));
 
     expect(onselect).toHaveBeenCalledWith("OTHER");
+  });
+
+  it("selects Other by keyboard", async () => {
+    const onselect = vi.fn();
+    render(BrokerPicker, { props: { brokerConfigs, onselect } });
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("combobox"));
+    // Navigate past 2 brokers to reach footer
+    await user.keyboard("{ArrowDown}{ArrowDown}{Enter}");
+
+    expect(onselect).toHaveBeenCalledWith("OTHER");
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
   });
 });

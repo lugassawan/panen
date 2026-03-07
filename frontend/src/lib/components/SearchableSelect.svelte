@@ -13,6 +13,7 @@ let {
   disabled = false,
   id,
   onselect,
+  onfooterselect,
   fallbackDisplay = "",
   children,
   footer,
@@ -26,10 +27,15 @@ let {
   disabled?: boolean;
   id?: string;
   onselect?: (key: string) => void;
+  onfooterselect?: () => void;
   fallbackDisplay?: string;
   children: Snippet<[{ item: T; active: boolean }]>;
   footer?: Snippet<[{ close: () => void }]>;
 } = $props();
+
+const listboxId = id
+  ? `${id}-listbox`
+  : `searchable-select-listbox-${Math.random().toString(36).slice(2, 8)}`;
 
 let open = $state(false);
 let query = $state("");
@@ -87,6 +93,9 @@ function handleKeydown(e: KeyboardEvent) {
       e.preventDefault();
       if (activeIndex < filtered.length) {
         selectItem(keyFn(filtered[activeIndex]));
+      } else if (footer && activeIndex === filtered.length) {
+        closeDropdown();
+        onfooterselect?.();
       }
       break;
     case "Escape":
@@ -129,6 +138,7 @@ $effect(() => {
       aria-expanded={open}
       aria-haspopup="listbox"
       aria-autocomplete="list"
+      aria-controls={open ? listboxId : undefined}
       {disabled}
       placeholder={open ? placeholder : displayText || placeholder}
       value={open ? query : displayText}
@@ -149,6 +159,7 @@ $effect(() => {
 
   {#if open}
     <ul
+      id={listboxId}
       role="listbox"
       bind:this={listEl}
       class="absolute z-10 mt-1 max-h-56 w-full overflow-y-auto rounded border border-border-default bg-bg-elevated shadow-lg"
@@ -170,7 +181,11 @@ $effect(() => {
         {/each}
       {/if}
       {#if footer}
-        <li class="border-t border-border-default">
+        <li
+          data-active={activeIndex === filtered.length}
+          onmouseenter={() => (activeIndex = filtered.length)}
+          class="border-t border-border-default {activeIndex === filtered.length ? 'bg-bg-tertiary' : ''}"
+        >
           {@render footer({ close: closeDropdown })}
         </li>
       {/if}

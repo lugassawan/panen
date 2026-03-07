@@ -8,12 +8,14 @@ let {
   value = $bindable(""),
   placeholder = "",
   onselect,
+  onfooterselect,
   showFooter = false,
 }: {
   items?: Item[];
   value?: string;
   placeholder?: string;
   onselect?: (key: string) => void;
+  onfooterselect?: () => void;
   showFooter?: boolean;
 } = $props();
 
@@ -39,6 +41,7 @@ function keyFn(item: Item): string {
     {keyFn}
     {placeholder}
     {onselect}
+    {onfooterselect}
   >
     {#snippet children({ item })}
       <span>{item.label}</span>

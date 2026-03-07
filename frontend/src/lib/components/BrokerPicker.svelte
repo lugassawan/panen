@@ -40,6 +40,11 @@ function selectOther(close: () => void) {
   onselect?.("OTHER");
 }
 
+function handleFooterSelect() {
+  value = "OTHER";
+  onselect?.("OTHER");
+}
+
 let otherDisplay = $derived(value === "OTHER" ? t("brokerage.otherManual") : "");
 </script>
 
@@ -54,6 +59,7 @@ let otherDisplay = $derived(value === "OTHER" ? t("brokerage.otherManual") : "")
   {disabled}
   {id}
   onselect={handleSelect}
+  onfooterselect={handleFooterSelect}
 >
   {#snippet children({ item })}
     <div>

@@ -79,6 +79,22 @@ describe("SearchableSelect", () => {
     expect(screen.queryAllByRole("option")).toHaveLength(0);
   });
 
+  it("selects footer with keyboard Enter", async () => {
+    const onfooterselect = vi.fn();
+    render(SearchableSelectHarness, {
+      props: { items, showFooter: true, onfooterselect },
+    });
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("combobox"));
+    // Navigate past all 3 items to reach footer
+    await user.keyboard("{ArrowDown}{ArrowDown}{ArrowDown}{Enter}");
+
+    expect(onfooterselect).toHaveBeenCalledOnce();
+    // Dropdown should be closed
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+  });
+
   it("footer is always visible", async () => {
     render(SearchableSelectHarness, { props: { items, showFooter: true } });
     const user = userEvent.setup();
