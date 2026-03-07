@@ -136,12 +136,16 @@ No scopes or breaking change markers. Direct commits to `main` are blocked.
 - Ensure `make lint` and `make test` pass before opening
 - Fill in the PR template (issue link, summary, test plan)
 
+### Deferred Tasks
+
+When planning or reviewing surfaces improvement ideas not implemented immediately, create GitHub issues to track them. These issues do NOT belong in the PR's `## Issue` section — that section is reserved for issues the PR directly closes/fixes/resolves.
+
 ## Project Structure
 
 ```
 backend/              Go backend (presenter, domain, usecase, infra layers)
-frontend/src/         Svelte 5 app (pages/, lib/components/, stores, utils)
+frontend/src/         Svelte 5 app (pages/, lib/components/, i18n/, stores, utils)
 tools/lint/           Custom golangci-lint analyzers
 build/                Build assets
-docs/plans/           Design documents
+docs/                 Documentation (design-system.md)
 ```
