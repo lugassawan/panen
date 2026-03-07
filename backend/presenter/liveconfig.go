@@ -3,6 +3,7 @@ package presenter
 import (
 	"context"
 	"errors"
+	"sort"
 	"sync"
 
 	"github.com/lugassawan/panen/backend/infra/liveconfig"
@@ -35,7 +36,7 @@ func (h *LiveConfigHandler) RegisterLoader(
 	h.reloaders[name] = reloader
 }
 
-// GetAllConfigStatus returns status info for all registered config loaders.
+// GetAllConfigStatus returns status info for all registered config loaders, sorted by name.
 func (h *LiveConfigHandler) GetAllConfigStatus() []*ConfigStatusResponse {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
@@ -50,6 +51,9 @@ func (h *LiveConfigHandler) GetAllConfigStatus() []*ConfigStatusResponse {
 			DataHash:    s.Hash,
 		})
 	}
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Name < result[j].Name
+	})
 	return result
 }
 

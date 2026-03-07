@@ -76,9 +76,8 @@ type Loader[T any] struct {
 	dataDir string
 	client  *http.Client
 
-	mu          sync.Mutex
-	lastSource  Source
-	lastHash    string
+	mu          sync.RWMutex
+	lastResult  Result[T]
 	lastRefresh time.Time
 }
 
@@ -99,7 +98,11 @@ func NewLoader[T any](dataDir string, cfg Config[T], deps Deps) *Loader[T] {
 }
 
 // Load returns the config data using the three-layer fallback: remote -> cache -> bundled.
+// Load is safe for concurrent use; only one load executes at a time.
 func (l *Loader[T]) Load(ctx context.Context) Result[T] {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
 	if !l.shouldFetchRemote(ctx) {
 		if r, ok := l.tryCache(); ok {
 			return r
@@ -113,8 +116,10 @@ func (l *Loader[T]) Load(ctx context.Context) Result[T] {
 			l.writeCache(data)
 			l.updateRefreshTimestamp(ctx)
 			l.detectChange(ctx, hash)
-			l.setStatus(SourceRemote, hash)
-			return Result[T]{Data: parsed, Source: SourceRemote, Hash: hash}
+			r := Result[T]{Data: parsed, Source: SourceRemote, Hash: hash}
+			l.lastResult = r
+			l.lastRefresh = time.Now()
+			return r
 		}
 	}
 
@@ -123,6 +128,14 @@ func (l *Loader[T]) Load(ctx context.Context) Result[T] {
 	}
 
 	return l.tryBundled()
+}
+
+// LastResult returns the result from the most recent Load call.
+// This avoids redundant loads when the caller already triggered one via Reload.
+func (l *Loader[T]) LastResult() Result[T] {
+	l.mu.RLock()
+	defer l.mu.RUnlock()
+	return l.lastResult
 }
 
 // Reload forces a refresh, bypassing the interval check.
@@ -135,13 +148,13 @@ func (l *Loader[T]) Reload(ctx context.Context) {
 
 // Status returns metadata about the last load.
 func (l *Loader[T]) Status() StatusInfo {
-	l.mu.Lock()
-	defer l.mu.Unlock()
+	l.mu.RLock()
+	defer l.mu.RUnlock()
 	return StatusInfo{
 		Name:        l.cfg.Name,
-		Source:      l.lastSource,
+		Source:      l.lastResult.Source,
 		LastRefresh: l.lastRefresh,
-		Hash:        l.lastHash,
+		Hash:        l.lastResult.Hash,
 	}
 }
 
@@ -165,7 +178,7 @@ func (l *Loader[T]) fetchRemote(ctx context.Context) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := l.client.Do(req) //nolint:gosec // URL is set via Config, not user input
+	resp, err := l.client.Do(req) //nolint:gosec // G107: URL is a compile-time constant from Config, not user input
 	if err != nil {
 		return nil, err
 	}
@@ -178,6 +191,7 @@ func (l *Loader[T]) fetchRemote(ctx context.Context) ([]byte, error) {
 	return io.ReadAll(io.LimitReader(resp.Body, maxBodySize))
 }
 
+// tryCache and tryBundled update lastResult/lastRefresh directly (caller holds mu).
 func (l *Loader[T]) tryCache() (Result[T], bool) {
 	data, err := os.ReadFile(filepath.Join(l.dataDir, l.cfg.CacheFileName))
 	if err != nil {
@@ -187,24 +201,34 @@ func (l *Loader[T]) tryCache() (Result[T], bool) {
 	if err != nil {
 		return Result[T]{}, false
 	}
-	hash := computeHash(data)
-	l.setStatus(SourceCache, hash)
-	return Result[T]{Data: parsed, Source: SourceCache, Hash: hash}, true
+	r := Result[T]{Data: parsed, Source: SourceCache, Hash: computeHash(data)}
+	l.lastResult = r
+	l.lastRefresh = time.Now()
+	return r, true
 }
 
 func (l *Loader[T]) tryBundled() Result[T] {
 	parsed, err := l.cfg.ParseFunc(l.cfg.BundledData)
 	if err != nil {
-		l.setStatus(SourceBundled, "")
-		return Result[T]{Data: l.cfg.ZeroValue, Source: SourceBundled}
+		r := Result[T]{Data: l.cfg.ZeroValue, Source: SourceBundled}
+		l.lastResult = r
+		l.lastRefresh = time.Now()
+		return r
 	}
-	hash := computeHash(l.cfg.BundledData)
-	l.setStatus(SourceBundled, hash)
-	return Result[T]{Data: parsed, Source: SourceBundled, Hash: hash}
+	r := Result[T]{Data: parsed, Source: SourceBundled, Hash: computeHash(l.cfg.BundledData)}
+	l.lastResult = r
+	l.lastRefresh = time.Now()
+	return r
 }
 
 func (l *Loader[T]) writeCache(data []byte) {
-	_ = os.WriteFile(filepath.Join(l.dataDir, l.cfg.CacheFileName), data, 0o600)
+	path := filepath.Join(l.dataDir, l.cfg.CacheFileName)
+	if err := os.WriteFile(path, data, 0o600); err != nil {
+		applog.Warn("write config cache", err, applog.Fields{
+			"config": l.cfg.Name,
+			"path":   path,
+		})
+	}
 }
 
 func (l *Loader[T]) updateRefreshTimestamp(ctx context.Context) {
@@ -238,14 +262,6 @@ func (l *Loader[T]) detectChange(ctx context.Context, newHash string) {
 			"hash": newHash,
 		})
 	}
-}
-
-func (l *Loader[T]) setStatus(source Source, hash string) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
-	l.lastSource = source
-	l.lastHash = hash
-	l.lastRefresh = time.Now()
 }
 
 func (l *Loader[T]) refreshKey() string {

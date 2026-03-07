@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -191,10 +192,10 @@ func TestChangeDetectionEmitsEvent(t *testing.T) {
 }
 
 func TestChangeDetectionNewHashEmitsAgain(t *testing.T) {
-	callCount := 0
+	var callCount atomic.Int32
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		callCount++
-		if callCount == 1 {
+		n := callCount.Add(1)
+		if n == 1 {
 			_, _ = w.Write([]byte(`["v1"]`))
 		} else {
 			_, _ = w.Write([]byte(`["v2"]`))
@@ -328,4 +329,33 @@ func TestNilDepsNoPanic(t *testing.T) {
 
 	l.Reload(context.Background())
 	_ = l.Status()
+}
+
+func TestLastResultReturnsLoadedData(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(`["remote"]`))
+	}))
+	defer srv.Close()
+
+	dir := t.TempDir()
+	l := NewLoader(dir, testConfig(srv.URL), Deps{})
+
+	// Before any load, LastResult returns zero value
+	lr := l.LastResult()
+	if lr.Source != "" {
+		t.Errorf("Source before Load = %q, want empty", lr.Source)
+	}
+
+	// After Load, LastResult matches
+	r := l.Load(context.Background())
+	lr = l.LastResult()
+	if lr.Source != r.Source {
+		t.Errorf("LastResult Source = %q, want %q", lr.Source, r.Source)
+	}
+	if lr.Hash != r.Hash {
+		t.Errorf("LastResult Hash = %q, want %q", lr.Hash, r.Hash)
+	}
+	if len(lr.Data) != 1 || lr.Data[0] != "remote" {
+		t.Errorf("LastResult Data = %v, want [remote]", lr.Data)
+	}
 }

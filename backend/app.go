@@ -209,13 +209,11 @@ func (a *App) Startup(ctx context.Context) {
 	a.RefreshHandler.Bind(ctx, refreshSvc, settingsRepo)
 
 	a.Init(ctx)
-	a.RegisterLoader("brokers", brokerLoader, func(ctx context.Context) {
-		r := brokerLoader.Load(ctx)
-		a.BrokerConfigHandler.Bind(r.Data)
+	a.RegisterLoader("brokers", brokerLoader, func(_ context.Context) {
+		a.BrokerConfigHandler.Bind(brokerLoader.LastResult().Data)
 	})
-	a.RegisterLoader("indices", indexLoader, func(ctx context.Context) {
-		r := indexLoader.Load(ctx)
-		swappableIndexReg.Swap(r.Data)
+	a.RegisterLoader("indices", indexLoader, func(_ context.Context) {
+		swappableIndexReg.Swap(indexLoader.LastResult().Data)
 	})
 
 	alertSvc := usecase.NewAlertService(alertRepo)
