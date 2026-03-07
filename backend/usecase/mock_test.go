@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"sort"
 	"sync"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 	"github.com/lugassawan/panen/backend/domain/shared"
 	"github.com/lugassawan/panen/backend/domain/stock"
 	"github.com/lugassawan/panen/backend/domain/trailingstop"
+	"github.com/lugassawan/panen/backend/domain/transaction"
 )
 
 // mockStockRepo is an in-memory stock.Repository for testing.
@@ -653,6 +655,35 @@ func (r *mockCashFlowRepo) Delete(_ context.Context, id string) error {
 		}
 	}
 	return shared.ErrNotFound
+}
+
+// mockTransactionHistoryRepo is an in-memory transaction.Repository for testing.
+type mockTransactionHistoryRepo struct {
+	mu      sync.Mutex
+	records []transaction.Record
+}
+
+func newMockTransactionHistoryRepo() *mockTransactionHistoryRepo {
+	return &mockTransactionHistoryRepo{}
+}
+
+func (r *mockTransactionHistoryRepo) List(_ context.Context, f transaction.Filter) ([]transaction.Record, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	result := make([]transaction.Record, len(r.records))
+	copy(result, r.records)
+	if f.SortField == "date" {
+		sort.Slice(result, func(i, j int) bool {
+			return result[i].Date.After(result[j].Date)
+		})
+	}
+	return result, nil
+}
+
+func (r *mockTransactionHistoryRepo) Summarize(_ context.Context, _ transaction.Filter) (*transaction.Summary, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return &transaction.Summary{TransactionCount: len(r.records)}, nil
 }
 
 // mockPeakRepo is an in-memory trailingstop.PeakRepository for testing.
