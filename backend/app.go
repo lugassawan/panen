@@ -41,6 +41,7 @@ type App struct {
 	*presenter.AlertHandler
 	*presenter.BackupHandler
 	*presenter.LogHandler
+	*presenter.LiveConfigHandler
 	db        *database.DB
 	backup    *backup.BackupService
 	dbPath    string
@@ -70,6 +71,7 @@ func NewApp() *App {
 		AlertHandler:            &presenter.AlertHandler{},
 		BackupHandler:           &presenter.BackupHandler{},
 		LogHandler:              &presenter.LogHandler{},
+		LiveConfigHandler:       &presenter.LiveConfigHandler{},
 		backup:                  backup.NewBackupService(),
 	}
 }
@@ -144,7 +146,24 @@ func (a *App) Startup(ctx context.Context) {
 		wailsRuntime.LogFatalf(ctx, "ensure default user: %v", err)
 	}
 
-	liveDeps := liveconfig.Deps{}
+	settingsRepo := database.NewSettingsRepo(conn)
+
+	if dbg, err := settingsRepo.GetSetting(ctx, "debug_logging"); err == nil && dbg == "1" {
+		applog.SetLevel(slog.LevelDebug)
+	}
+	if err := applog.RotateLogs(a.logDir, 14); err != nil {
+		applog.Warn("log rotation", err, nil)
+	}
+	a.LogHandler.Bind(ctx, settingsRepo, a.logDir)
+
+	tickerCollector := database.NewTickerCollector(conn)
+	wailsEmitter := presenter.NewWailsEmitter(ctx)
+
+	liveDeps := liveconfig.Deps{
+		Settings: settingsRepo,
+		Emitter:  wailsEmitter,
+	}
+
 	brokerLoader := brokerConfigLoader.NewLoader(dataDir, liveDeps)
 	brokerResult := brokerLoader.Load(ctx)
 
@@ -171,19 +190,6 @@ func (a *App) Startup(ctx context.Context) {
 	divHistorySvc := usecase.NewDividendHistoryService(divHistoryRepo, yahoo, holdingRepo, portfolioRepo, stockRepo)
 	a.DividendCalendarHandler.Bind(ctx, divHistorySvc)
 
-	settingsRepo := database.NewSettingsRepo(conn)
-
-	if dbg, err := settingsRepo.GetSetting(ctx, "debug_logging"); err == nil && dbg == "1" {
-		applog.SetLevel(slog.LevelDebug)
-	}
-	if err := applog.RotateLogs(a.logDir, 14); err != nil {
-		applog.Warn("log rotation", err, nil)
-	}
-	a.LogHandler.Bind(ctx, settingsRepo, a.logDir)
-
-	tickerCollector := database.NewTickerCollector(conn)
-	wailsEmitter := presenter.NewWailsEmitter(ctx)
-
 	snapshotRepo := database.NewSnapshotRepo(conn)
 	alertRepo := database.NewAlertRepo(conn)
 
@@ -201,6 +207,16 @@ func (a *App) Startup(ctx context.Context) {
 	a.BrokerConfigHandler.Bind(brokerResult.Data)
 	a.WatchlistHandler.Bind(ctx, profileID, watchlistSvc)
 	a.RefreshHandler.Bind(ctx, refreshSvc, settingsRepo)
+
+	a.Init(ctx)
+	a.RegisterLoader("brokers", brokerLoader, func(ctx context.Context) {
+		r := brokerLoader.Load(ctx)
+		a.BrokerConfigHandler.Bind(r.Data)
+	})
+	a.RegisterLoader("indices", indexLoader, func(ctx context.Context) {
+		r := indexLoader.Load(ctx)
+		swappableIndexReg.Swap(r.Data)
+	})
 
 	alertSvc := usecase.NewAlertService(alertRepo)
 	a.AlertHandler.Bind(ctx, alertSvc)
