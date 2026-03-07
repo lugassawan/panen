@@ -32,6 +32,18 @@ vi.mock("../../i18n", () => ({
       "settings.updateError": "Failed to check for updates: {error}",
       "settings.updateAvailable": "Panen {version} is available.",
       "settings.viewRelease": "View Release",
+      "settings.backup": "Database Backup",
+      "settings.lastBackup": "Last Backup",
+      "settings.backupCount": "Backups",
+      "settings.dbSize": "Database Size",
+      "settings.totalBackupSize": "Backup Size",
+      "settings.createBackup": "Create Backup",
+      "settings.creatingBackup": "Creating...",
+      "settings.backupCreated": "Backup created successfully",
+      "settings.backupError": "Backup failed: {error}",
+      "settings.noBackups": "No backups yet",
+      "settings.backupTooltip":
+        "Daily backups are created automatically on startup. Backups older than 7 days are removed.",
       "common.loading": "Loading...",
       "format.lastUpdated": "Last updated",
       "format.notSynced": "Not synced yet",
@@ -58,6 +70,7 @@ vi.mock("../../../wailsjs/runtime/runtime", () => ({
 
 vi.mock("../../lib/format", () => ({
   formatRelativeTime: (iso: string) => (iso ? "5m ago" : "Not synced yet"),
+  formatFileSize: (bytes: number) => `${bytes} B`,
 }));
 
 // Mock theme store to avoid localStorage initialization issues in ThemeToggle.
@@ -77,6 +90,8 @@ const mockUpdateRefreshSettings = vi.fn();
 const mockTriggerRefresh = vi.fn();
 const mockCheckForUpdate = vi.fn();
 const mockOpenReleaseURL = vi.fn();
+const mockGetBackupStatus = vi.fn();
+const mockCreateManualBackup = vi.fn();
 
 vi.mock("../../../wailsjs/go/backend/App", () => ({
   GetRefreshSettings: (...args: unknown[]) => mockGetRefreshSettings(...args),
@@ -85,6 +100,8 @@ vi.mock("../../../wailsjs/go/backend/App", () => ({
   TriggerRefresh: (...args: unknown[]) => mockTriggerRefresh(...args),
   CheckForUpdate: (...args: unknown[]) => mockCheckForUpdate(...args),
   OpenReleaseURL: (...args: unknown[]) => mockOpenReleaseURL(...args),
+  GetBackupStatus: (...args: unknown[]) => mockGetBackupStatus(...args),
+  CreateManualBackup: (...args: unknown[]) => mockCreateManualBackup(...args),
 }));
 
 import SettingsPage from "./SettingsPage.svelte";
@@ -96,6 +113,14 @@ describe("SettingsPage", () => {
     mockUpdateRefreshSettings.mockReset();
     mockTriggerRefresh.mockReset();
     mockCheckForUpdate.mockReset();
+    mockGetBackupStatus.mockReset();
+    mockCreateManualBackup.mockReset();
+    mockGetBackupStatus.mockResolvedValue({
+      lastBackupDate: "",
+      backupCount: 0,
+      totalSizeBytes: 0,
+      dbSizeBytes: 0,
+    });
   });
 
   it("renders settings heading", async () => {

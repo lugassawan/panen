@@ -2,7 +2,9 @@
 import { onMount } from "svelte";
 import {
   CheckForUpdate,
+  CreateManualBackup,
   GetAppVersion,
+  GetBackupStatus,
   GetRefreshSettings,
   OpenReleaseURL,
   TriggerRefresh,
@@ -15,7 +17,7 @@ import Button from "../../lib/components/Button.svelte";
 import Select from "../../lib/components/Select.svelte";
 import ThemeToggle from "../../lib/components/ThemeToggle.svelte";
 import Tooltip from "../../lib/components/Tooltip.svelte";
-import { formatRelativeTime } from "../../lib/format";
+import { formatFileSize, formatRelativeTime } from "../../lib/format";
 import { sync } from "../../lib/stores/sync.svelte";
 import { theme } from "../../lib/stores/theme.svelte";
 import { toastStore } from "../../lib/stores/toast.svelte";
@@ -35,6 +37,14 @@ let updateResult = $state<{
 } | null>(null);
 let updateError = $state<string | null>(null);
 
+let backupStatus = $state<{
+  lastBackupDate: string;
+  backupCount: number;
+  totalSizeBytes: number;
+  dbSizeBytes: number;
+} | null>(null);
+let backupCreating = $state(false);
+
 onMount(async () => {
   try {
     const settings = await GetRefreshSettings();
@@ -49,6 +59,12 @@ onMount(async () => {
     appVersion = await GetAppVersion();
   } catch {
     appVersion = "unknown";
+  }
+
+  try {
+    backupStatus = await GetBackupStatus();
+  } catch {
+    // non-critical
   }
 });
 
@@ -86,6 +102,20 @@ async function checkForUpdates() {
 
 function openRelease(url: string) {
   OpenReleaseURL(url);
+}
+
+async function createBackup() {
+  backupCreating = true;
+  try {
+    await CreateManualBackup();
+    toastStore.add(t("settings.backupCreated"), "success");
+    backupStatus = await GetBackupStatus();
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    toastStore.add(t("settings.backupError", { error: msg }), "error");
+  } finally {
+    backupCreating = false;
+  }
 }
 </script>
 
@@ -161,6 +191,49 @@ function openRelease(url: string) {
           class="w-full rounded border border-green-700 px-3 py-2 text-sm font-medium text-green-700 transition-fast hover:bg-green-100 disabled:opacity-60 focus-ring dark:hover:bg-green-900/30"
         >
           {sync.isSyncing ? t("settings.syncing") : t("settings.refreshNow")}
+        </button>
+      </div>
+    </div>
+
+    <div>
+      <p class="mb-3 text-sm text-text-secondary">
+        <Tooltip text={t("settings.backupTooltip")}>
+          <span class="underline decoration-dotted cursor-help">{t("settings.backup")}</span>
+        </Tooltip>
+      </p>
+      <div class="space-y-4 rounded-lg border border-border-default bg-bg-elevated p-4">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-text-primary">{t("settings.lastBackup")}</span>
+          <span class="font-mono text-sm text-text-secondary">
+            {#if backupStatus?.lastBackupDate}
+              {formatRelativeTime(backupStatus.lastBackupDate)}
+            {:else}
+              {t("settings.noBackups")}
+            {/if}
+          </span>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-text-primary">{t("settings.backupCount")}</span>
+          <span class="font-mono text-sm text-text-secondary">{backupStatus?.backupCount ?? 0}</span>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-text-primary">{t("settings.dbSize")}</span>
+          <span class="font-mono text-sm text-text-secondary">{formatFileSize(backupStatus?.dbSizeBytes ?? 0)}</span>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-text-primary">{t("settings.totalBackupSize")}</span>
+          <span class="font-mono text-sm text-text-secondary">{formatFileSize(backupStatus?.totalSizeBytes ?? 0)}</span>
+        </div>
+
+        <button
+          onclick={createBackup}
+          disabled={backupCreating}
+          class="w-full rounded border border-green-700 px-3 py-2 text-sm font-medium text-green-700 transition-fast hover:bg-green-100 disabled:opacity-60 focus-ring dark:hover:bg-green-900/30"
+        >
+          {backupCreating ? t("settings.creatingBackup") : t("settings.createBackup")}
         </button>
       </div>
     </div>
