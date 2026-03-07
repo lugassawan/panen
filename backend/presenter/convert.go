@@ -10,6 +10,7 @@ import (
 	"github.com/lugassawan/panen/backend/domain/portfolio"
 	"github.com/lugassawan/panen/backend/domain/stock"
 	"github.com/lugassawan/panen/backend/domain/trailingstop"
+	"github.com/lugassawan/panen/backend/domain/transaction"
 	"github.com/lugassawan/panen/backend/domain/valuation"
 	"github.com/lugassawan/panen/backend/domain/watchlist"
 	"github.com/lugassawan/panen/backend/usecase"
@@ -346,6 +347,36 @@ func newCashFlowItemResponse(item usecase.CashFlowItem) CashFlowItemResponse {
 		Date:        formatDTO(item.Date),
 		Note:        item.Note,
 		CreatedAt:   formatDTO(item.CreatedAt),
+	}
+}
+
+func newTransactionRecordResponse(r transaction.Record) TransactionRecordResponse {
+	return TransactionRecordResponse{
+		ID:            r.ID,
+		Type:          string(r.Type),
+		Date:          formatDTO(r.Date),
+		Ticker:        r.Ticker,
+		PortfolioID:   r.PortfolioID,
+		PortfolioName: r.PortfolioName,
+		Lots:          r.Lots,
+		Price:         r.Price,
+		Fee:           r.Fee,
+		Tax:           r.Tax,
+		Total:         r.Total,
+		CreatedAt:     formatDTO(r.CreatedAt),
+	}
+}
+
+func newTransactionSummaryResponse(s *transaction.Summary) TransactionSummaryResponse {
+	if s == nil {
+		return TransactionSummaryResponse{}
+	}
+	return TransactionSummaryResponse{
+		TotalBuyAmount:      s.TotalBuyAmount,
+		TotalSellAmount:     s.TotalSellAmount,
+		TotalDividendAmount: s.TotalDividendAmount,
+		TotalFees:           s.TotalFees,
+		TransactionCount:    s.TransactionCount,
 	}
 }
 

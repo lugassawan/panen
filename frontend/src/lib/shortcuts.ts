@@ -7,6 +7,7 @@ const PAGE_ORDER: Page[] = [
   "portfolio",
   "payday",
   "crashplaybook",
+  "transactions",
   "alerts",
   "brokerage",
   "settings",
@@ -21,7 +22,7 @@ export function handleGlobalShortcut(e: KeyboardEvent, handlers: ShortcutHandler
   const meta = e.metaKey || e.ctrlKey;
   if (!meta) return;
 
-  // Cmd+1 through Cmd+8 — page navigation
+  // Cmd+1 through Cmd+9 — page navigation
   const num = Number.parseInt(e.key, 10);
   if (num >= 1 && num <= PAGE_ORDER.length) {
     e.preventDefault();

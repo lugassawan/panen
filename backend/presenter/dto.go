@@ -385,3 +385,34 @@ type CashFlowItemResponse struct {
 	Note        string  `json:"note"`
 	CreatedAt   string  `json:"createdAt"`
 }
+
+// TransactionRecordResponse is the frontend-facing response for a single transaction record.
+type TransactionRecordResponse struct {
+	ID            string  `json:"id"`
+	Type          string  `json:"type"`
+	Date          string  `json:"date"`
+	Ticker        string  `json:"ticker"`
+	PortfolioID   string  `json:"portfolioId"`
+	PortfolioName string  `json:"portfolioName"`
+	Lots          int     `json:"lots"`
+	Price         float64 `json:"price"`
+	Fee           float64 `json:"fee"`
+	Tax           float64 `json:"tax"`
+	Total         float64 `json:"total"`
+	CreatedAt     string  `json:"createdAt"`
+}
+
+// TransactionSummaryResponse is the frontend-facing response for transaction summary totals.
+type TransactionSummaryResponse struct {
+	TotalBuyAmount      float64 `json:"totalBuyAmount"`
+	TotalSellAmount     float64 `json:"totalSellAmount"`
+	TotalDividendAmount float64 `json:"totalDividendAmount"`
+	TotalFees           float64 `json:"totalFees"`
+	TransactionCount    int     `json:"transactionCount"`
+}
+
+// TransactionListResponse is the frontend-facing response for a list of transactions with summary.
+type TransactionListResponse struct {
+	Items   []TransactionRecordResponse `json:"items"`
+	Summary TransactionSummaryResponse  `json:"summary"`
+}

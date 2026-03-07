@@ -30,3 +30,12 @@ type BuyTransactionRepository interface {
 	ListByHoldingID(ctx context.Context, holdingID string) ([]*BuyTransaction, error)
 	Delete(ctx context.Context, id string) error
 }
+
+// SellTransactionRepository defines persistence operations for sell transactions.
+// Transactions are immutable — no Update method.
+type SellTransactionRepository interface {
+	Create(ctx context.Context, tx *SellTransaction) error
+	GetByID(ctx context.Context, id string) (*SellTransaction, error)
+	ListByHoldingID(ctx context.Context, holdingID string) ([]*SellTransaction, error)
+	Delete(ctx context.Context, id string) error
+}
