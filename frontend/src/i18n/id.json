@@ -61,7 +61,18 @@
     "loadError": "Gagal memuat pengaturan: {error}",
     "saveError": "Gagal menyimpan pengaturan: {error}",
     "updateError": "Gagal memeriksa pembaruan: {error}",
-    "settingsSaved": "Pengaturan disimpan"
+    "settingsSaved": "Pengaturan disimpan",
+    "backup": "Cadangan Database",
+    "lastBackup": "Cadangan Terakhir",
+    "backupCount": "Cadangan",
+    "dbSize": "Ukuran Database",
+    "totalBackupSize": "Ukuran Cadangan",
+    "createBackup": "Buat Cadangan",
+    "creatingBackup": "Membuat...",
+    "backupCreated": "Cadangan berhasil dibuat",
+    "backupError": "Cadangan gagal: {error}",
+    "noBackups": "Belum ada cadangan",
+    "backupTooltip": "Cadangan harian dibuat otomatis saat aplikasi dimulai. Cadangan lebih dari 7 hari akan dihapus."
   },
   "format": {
     "justNow": "baru saja",

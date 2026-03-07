@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/lugassawan/panen/backend/domain/user"
+	"github.com/lugassawan/panen/backend/infra/backup"
 	brokerConfigLoader "github.com/lugassawan/panen/backend/infra/brokerconfig"
 	"github.com/lugassawan/panen/backend/infra/database"
 	"github.com/lugassawan/panen/backend/infra/github"
@@ -35,8 +36,12 @@ type App struct {
 	*presenter.PriceHistoryHandler
 	*presenter.DividendCalendarHandler
 	*presenter.AlertHandler
-	db      *database.DB
-	refresh *usecase.RefreshService
+	*presenter.BackupHandler
+	db        *database.DB
+	backup    *backup.BackupService
+	dbPath    string
+	backupDir string
+	refresh   *usecase.RefreshService
 }
 
 // NewApp creates all handlers upfront so embedded pointers are never nil.
@@ -58,6 +63,8 @@ func NewApp() *App {
 		PriceHistoryHandler:     &presenter.PriceHistoryHandler{},
 		DividendCalendarHandler: &presenter.DividendCalendarHandler{},
 		AlertHandler:            &presenter.AlertHandler{},
+		BackupHandler:           &presenter.BackupHandler{},
+		backup:                  backup.NewBackupService(),
 	}
 }
 
@@ -71,7 +78,20 @@ func (a *App) Startup(ctx context.Context) {
 		runtime.LogFatalf(ctx, "create data dir: %v", err)
 	}
 
-	db, err := database.Open(filepath.Join(dataDir, "panen.db"))
+	backupDir, err := platform.BackupDir()
+	if err != nil {
+		runtime.LogFatalf(ctx, "resolve backup dir: %v", err)
+	}
+	a.backupDir = backupDir
+	a.dbPath = filepath.Join(dataDir, "panen.db")
+
+	if restored, err := backup.TryRecover(dataDir, backupDir); err != nil {
+		runtime.LogWarningf(ctx, "recovery check: %v", err)
+	} else if restored != "" {
+		runtime.LogInfof(ctx, "database restored from backup: %s", restored)
+	}
+
+	db, err := database.Open(a.dbPath)
 	if err != nil {
 		runtime.LogFatalf(ctx, "open database: %v", err)
 	}
@@ -79,6 +99,13 @@ func (a *App) Startup(ctx context.Context) {
 
 	if err := database.Migrate(ctx, db.Conn()); err != nil {
 		runtime.LogFatalf(ctx, "migrate database: %v", err)
+	}
+
+	if err := a.backup.RunDaily(a.dbPath, backupDir); err != nil {
+		runtime.LogWarningf(ctx, "daily backup: %v", err)
+	}
+	if err := a.backup.Cleanup(backupDir, 7); err != nil {
+		runtime.LogWarningf(ctx, "backup cleanup: %v", err)
 	}
 
 	conn := db.Conn()
@@ -186,6 +213,9 @@ func (a *App) Startup(ctx context.Context) {
 	updateChecker := &releaseCheckerAdapter{client: ghClient}
 	updateSvc := usecase.NewUpdateService(updateChecker, Version())
 	a.UpdateHandler.Bind(ctx, updateSvc, settingsRepo)
+
+	a.BackupHandler.Bind(ctx, a.backup, a.dbPath, a.backupDir)
+	a.BindBackup(a.backup, a.dbPath, a.backupDir)
 
 	refreshSvc.Start(ctx)
 

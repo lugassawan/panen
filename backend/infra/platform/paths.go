@@ -43,6 +43,23 @@ func LogDir() (string, error) {
 	return filepath.Join(base, "logs"), nil
 }
 
+// BackupDir returns the platform-appropriate directory for Panen's database backups.
+//
+// Results by platform (production):
+//   - macOS:   ~/Library/Application Support/Panen/backups
+//   - Linux:   ~/.config/Panen/backups  (or $XDG_CONFIG_HOME/Panen/backups)
+//   - Windows: %APPDATA%\Panen\backups
+//
+// The directory is NOT created — the caller is responsible for calling
+// os.MkdirAll before writing files.
+func BackupDir() (string, error) {
+	base, err := appBaseDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(base, "backups"), nil
+}
+
 // appBaseDir returns the platform-appropriate base directory for Panen.
 func appBaseDir() (string, error) {
 	configDir, err := os.UserConfigDir()

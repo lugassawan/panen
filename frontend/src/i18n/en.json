@@ -61,7 +61,18 @@
     "loadError": "Failed to load settings: {error}",
     "saveError": "Failed to save settings: {error}",
     "updateError": "Failed to check for updates: {error}",
-    "settingsSaved": "Settings saved"
+    "settingsSaved": "Settings saved",
+    "backup": "Database Backup",
+    "lastBackup": "Last Backup",
+    "backupCount": "Backups",
+    "dbSize": "Database Size",
+    "totalBackupSize": "Backup Size",
+    "createBackup": "Create Backup",
+    "creatingBackup": "Creating...",
+    "backupCreated": "Backup created successfully",
+    "backupError": "Backup failed: {error}",
+    "noBackups": "No backups yet",
+    "backupTooltip": "Daily backups are created automatically on startup. Backups older than 7 days are removed."
   },
   "format": {
     "justNow": "just now",

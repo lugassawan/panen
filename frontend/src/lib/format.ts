@@ -50,6 +50,18 @@ export function formatRelativeTime(isoString: string): string {
   return t("format.daysAgo", { count: diffDays });
 }
 
+export function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  const units = ["KB", "MB", "GB"];
+  let value = bytes;
+  let unitIndex = -1;
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024;
+    unitIndex++;
+  }
+  return `${value.toFixed(1)} ${units[unitIndex]}`;
+}
+
 export function formatDate(isoString: string): string {
   if (!isoString) return "";
   const date = new Date(isoString);
