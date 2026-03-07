@@ -188,4 +188,27 @@ describe("SettingsPage", () => {
 
     expect(screen.getByRole("button", { name: /Check for Updates/i })).toBeInTheDocument();
   });
+
+  it("renders backup section with status", async () => {
+    mockGetRefreshSettings.mockResolvedValueOnce({
+      autoRefreshEnabled: true,
+      intervalMinutes: 720,
+      lastRefreshedAt: "",
+    });
+    mockGetAppVersion.mockResolvedValueOnce("1.0.0");
+    mockGetBackupStatus.mockResolvedValueOnce({
+      lastBackupDate: "2026-03-07T10:00:00Z",
+      backupCount: 3,
+      totalSizeBytes: 2048,
+      dbSizeBytes: 4096,
+    });
+
+    render(SettingsPage);
+
+    await waitFor(() => {
+      expect(screen.getByText("Database Backup")).toBeInTheDocument();
+      expect(screen.getByText("3")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Create Backup/i })).toBeInTheDocument();
+    });
+  });
 });

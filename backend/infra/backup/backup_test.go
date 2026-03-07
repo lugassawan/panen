@@ -90,18 +90,24 @@ func TestCleanup(t *testing.T) {
 	t.Run("removes old backups", func(t *testing.T) {
 		dir := t.TempDir()
 
-		// Create an old backup (10 days ago)
-		oldDate := time.Now().AddDate(0, 0, -10).Format(time.DateOnly)
-		oldFile := filepath.Join(dir, "panen-"+oldDate+".db")
+		// Create an old backup with ModTime 10 days ago
+		oldFile := filepath.Join(dir, "panen-old.db")
 		if err := os.WriteFile(oldFile, []byte("old"), 0o644); err != nil {
 			t.Fatalf("create old backup: %v", err)
 		}
+		oldTime := time.Now().AddDate(0, 0, -10)
+		if err := os.Chtimes(oldFile, oldTime, oldTime); err != nil {
+			t.Fatalf("chtimes: %v", err)
+		}
 
-		// Create a recent backup (1 day ago)
-		recentDate := time.Now().AddDate(0, 0, -1).Format(time.DateOnly)
-		recentFile := filepath.Join(dir, "panen-"+recentDate+".db")
+		// Create a recent backup with ModTime 1 day ago
+		recentFile := filepath.Join(dir, "panen-recent.db")
 		if err := os.WriteFile(recentFile, []byte("recent"), 0o644); err != nil {
 			t.Fatalf("create recent backup: %v", err)
+		}
+		recentTime := time.Now().AddDate(0, 0, -1)
+		if err := os.Chtimes(recentFile, recentTime, recentTime); err != nil {
+			t.Fatalf("chtimes: %v", err)
 		}
 
 		if err := svc.Cleanup(dir, 7); err != nil {
@@ -191,15 +197,17 @@ func TestListBackups(t *testing.T) {
 	t.Run("lists backups sorted newest first", func(t *testing.T) {
 		dir := t.TempDir()
 
-		files := []string{
-			"panen-2024-01-01.db",
-			"panen-2024-01-03.db",
-			"panen-2024-01-02.db",
-			"not-a-backup.txt",
-		}
-		for _, f := range files {
-			if err := os.WriteFile(filepath.Join(dir, f), []byte("data"), 0o644); err != nil {
-				t.Fatalf("create file %s: %v", f, err)
+		names := []string{"panen-2024-01-01.db", "panen-2024-01-03.db", "panen-2024-01-02.db", "not-a-backup.txt"}
+		ages := []int{3, 1, 2, 0} // days ago
+
+		for i, name := range names {
+			path := filepath.Join(dir, name)
+			if err := os.WriteFile(path, []byte("data"), 0o644); err != nil {
+				t.Fatalf("create file %s: %v", name, err)
+			}
+			modTime := time.Now().AddDate(0, 0, -ages[i])
+			if err := os.Chtimes(path, modTime, modTime); err != nil {
+				t.Fatalf("chtimes: %v", err)
 			}
 		}
 
@@ -228,26 +236,4 @@ func TestListBackups(t *testing.T) {
 			t.Errorf("ListBackups() = %v, want nil", backups)
 		}
 	})
-}
-
-func TestParseBackupDate(t *testing.T) {
-	tests := []struct {
-		name     string
-		filename string
-		wantDate string
-	}{
-		{"daily backup", "panen-2024-01-15.db", "2024-01-15"},
-		{"manual backup", "panen-2024-01-15-manual.db", "2024-01-15"},
-		{"pre-destructive", "panen-2024-01-15-pre-delete.db", "2024-01-15"},
-		{"manual with suffix", "panen-2024-01-15-manual-1.db", "2024-01-15"},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := parseBackupDate(tt.filename)
-			if got.Format(time.DateOnly) != tt.wantDate {
-				t.Errorf("parseBackupDate(%q) = %v, want %s", tt.filename, got, tt.wantDate)
-			}
-		})
-	}
 }

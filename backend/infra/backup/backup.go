@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -14,6 +15,8 @@ import (
 
 	_ "modernc.org/sqlite"
 )
+
+var safeReason = regexp.MustCompile(`[^a-zA-Z0-9-]`)
 
 // BackupInfo holds metadata about a single backup file.
 type BackupInfo struct {
@@ -85,8 +88,13 @@ func (s *BackupService) CreateBeforeDestructive(dbPath, backupDir, reason string
 		return fmt.Errorf("create backup dir: %w", err)
 	}
 
-	filename := fmt.Sprintf("panen-%s-pre-%s.db", time.Now().Format(time.DateOnly), reason)
-	dst := filepath.Join(backupDir, filename)
+	sanitized := safeReason.ReplaceAllString(reason, "")
+	if sanitized == "" {
+		sanitized = "unknown"
+	}
+
+	base := fmt.Sprintf("panen-%s-pre-%s", time.Now().Format(time.DateOnly), sanitized)
+	dst := uniquePath(backupDir, base)
 
 	if err := checkpoint(dbPath); err != nil {
 		return fmt.Errorf("checkpoint before destructive backup: %w", err)
@@ -101,17 +109,7 @@ func (s *BackupService) CreateManualBackup(dbPath, backupDir string) error {
 	}
 
 	base := fmt.Sprintf("panen-%s-manual", time.Now().Format(time.DateOnly))
-	filename := base + ".db"
-	dst := filepath.Join(backupDir, filename)
-
-	// Append -N suffix if file already exists
-	for i := 1; ; i++ {
-		if _, err := os.Stat(dst); os.IsNotExist(err) {
-			break
-		}
-		filename = fmt.Sprintf("%s-%d.db", base, i)
-		dst = filepath.Join(backupDir, filename)
-	}
+	dst := uniquePath(backupDir, base)
 
 	if err := checkpoint(dbPath); err != nil {
 		return fmt.Errorf("checkpoint before manual backup: %w", err)
@@ -141,11 +139,10 @@ func (s *BackupService) ListBackups(backupDir string) ([]BackupInfo, error) {
 			continue
 		}
 
-		createdAt := parseBackupDate(name)
 		backups = append(backups, BackupInfo{
 			Filename:  name,
 			SizeBytes: info.Size(),
-			CreatedAt: createdAt,
+			CreatedAt: info.ModTime(),
 		})
 	}
 
@@ -155,19 +152,15 @@ func (s *BackupService) ListBackups(backupDir string) ([]BackupInfo, error) {
 	return backups, nil
 }
 
-// parseBackupDate extracts the date from a backup filename like "panen-2024-01-15.db".
-func parseBackupDate(filename string) time.Time {
-	// Strip prefix "panen-" and suffix ".db"
-	name := strings.TrimPrefix(filename, "panen-")
-	name = strings.TrimSuffix(name, ".db")
-
-	// Take first 10 chars as date (YYYY-MM-DD)
-	if len(name) >= 10 {
-		if t, err := time.Parse(time.DateOnly, name[:10]); err == nil {
-			return t
+// uniquePath returns a path like base.db, or base-1.db, base-2.db if the file already exists.
+func uniquePath(dir, base string) string {
+	dst := filepath.Join(dir, base+".db")
+	for i := 1; ; i++ {
+		if _, err := os.Stat(dst); os.IsNotExist(err) {
+			return dst
 		}
+		dst = filepath.Join(dir, fmt.Sprintf("%s-%d.db", base, i))
 	}
-	return time.Time{}
 }
 
 // checkpoint opens a temporary connection to run WAL checkpoint.
@@ -182,7 +175,8 @@ func checkpoint(dbPath string) error {
 	return err
 }
 
-// copyFile copies src to dst using io.Copy.
+// copyFile copies src to dst using io.Copy, syncing to disk before closing.
+// On failure, the partial destination file is removed.
 func copyFile(src, dst string) error {
 	in, err := os.Open(src)
 	if err != nil {
@@ -194,9 +188,15 @@ func copyFile(src, dst string) error {
 	if err != nil {
 		return err
 	}
-	defer out.Close()
 
 	if _, err := io.Copy(out, in); err != nil {
+		_ = out.Close()
+		_ = os.Remove(dst)
+		return err
+	}
+	if err := out.Sync(); err != nil {
+		_ = out.Close()
+		_ = os.Remove(dst)
 		return err
 	}
 	return out.Close()

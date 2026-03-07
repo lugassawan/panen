@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/lugassawan/panen/backend/infra/applog"
 
@@ -45,8 +46,14 @@ func TryRecover(dataDir, backupDir string) (string, error) {
 		return b.Filename, nil
 	}
 
-	// All backups failed or none exist — remove corrupt DB so migrate creates fresh
-	_ = os.Remove(dbPath)
+	// All backups failed or none exist — rename corrupt DB so migrate creates fresh.
+	// The corrupt file is preserved for potential manual recovery.
+	if _, err := os.Stat(dbPath); err == nil {
+		corruptPath := dbPath + ".corrupt." + time.Now().Format("20060102-150405")
+		if renameErr := os.Rename(dbPath, corruptPath); renameErr != nil {
+			_ = os.Remove(dbPath)
+		}
+	}
 	return "", nil
 }
 

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -117,8 +118,22 @@ func TestTryRecoverNoBackups(t *testing.T) {
 	if restored != "" {
 		t.Errorf("TryRecover() = %q, want empty string", restored)
 	}
+	// Original file should be gone (renamed to .corrupt.*)
 	if _, err := os.Stat(dbPath); !os.IsNotExist(err) {
-		t.Error("corrupt panen.db was not removed")
+		t.Error("corrupt panen.db was not renamed")
+	}
+
+	// A .corrupt.* file should exist
+	entries, _ := os.ReadDir(dir)
+	found := false
+	for _, e := range entries {
+		if strings.HasPrefix(e.Name(), "panen.db.corrupt.") {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Error("corrupt file was not preserved as panen.db.corrupt.*")
 	}
 }
 
