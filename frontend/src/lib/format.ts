@@ -62,6 +62,11 @@ export function formatFileSize(bytes: number): string {
   return `${value.toFixed(1)} ${units[unitIndex]}`;
 }
 
+export function percentInRange(value: number, min: number, max: number): number {
+  if (max === min) return 50;
+  return Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
+}
+
 export function formatDate(isoString: string): string {
   if (!isoString) return "";
   const date = new Date(isoString);

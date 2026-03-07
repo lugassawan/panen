@@ -9,6 +9,7 @@ vi.mock("./i18n", () => ({
       "nav.lookup": "Stock Lookup",
       "nav.watchlist": "Watchlist",
       "nav.screener": "Screener",
+      "nav.comparison": "Compare",
       "nav.portfolio": "Portfolio",
       "nav.payday": "Payday",
       "nav.crashPlaybook": "Crash Playbook",
@@ -18,6 +19,11 @@ vi.mock("./i18n", () => ({
       "nav.settings": "Settings",
       "nav.searchPages": "Search pages...",
       "nav.noResults": "No results found",
+      "comparison.title": "Stock Comparison",
+      "comparison.subtitle": "Compare 2-4 stocks side by side",
+      "comparison.emptyTitle": "Compare Stocks",
+      "comparison.emptyDescription":
+        "Enter at least 2 tickers and click Compare to see side-by-side metrics.",
       "settings.title": "Settings",
       "settings.language": "Language",
       "settings.english": "English",
@@ -148,21 +154,22 @@ vi.mock("./lib/stores/theme.svelte", () => ({
 }));
 
 describe("App navigation", () => {
-  it("renders sidebar with 10 nav items", () => {
+  it("renders sidebar with 11 nav items", () => {
     render(App);
     const nav = screen.getByRole("navigation", { name: /main/i });
     const buttons = within(nav).getAllByRole("button");
-    expect(buttons).toHaveLength(10);
+    expect(buttons).toHaveLength(11);
     expect(buttons[0]).toHaveTextContent("Stock Lookup");
     expect(buttons[1]).toHaveTextContent("Watchlist");
     expect(buttons[2]).toHaveTextContent("Screener");
-    expect(buttons[3]).toHaveTextContent("Portfolio");
-    expect(buttons[4]).toHaveTextContent("Payday");
-    expect(buttons[5]).toHaveTextContent("Crash Playbook");
-    expect(buttons[6]).toHaveTextContent("Transactions");
-    expect(buttons[7]).toHaveTextContent("Alerts");
-    expect(buttons[8]).toHaveTextContent("Brokerage");
-    expect(buttons[9]).toHaveTextContent("Settings");
+    expect(buttons[3]).toHaveTextContent("Compare");
+    expect(buttons[4]).toHaveTextContent("Portfolio");
+    expect(buttons[5]).toHaveTextContent("Payday");
+    expect(buttons[6]).toHaveTextContent("Crash Playbook");
+    expect(buttons[7]).toHaveTextContent("Transactions");
+    expect(buttons[8]).toHaveTextContent("Alerts");
+    expect(buttons[9]).toHaveTextContent("Brokerage");
+    expect(buttons[10]).toHaveTextContent("Settings");
   });
 
   it("starts on Stock Lookup page by default", () => {
@@ -186,6 +193,17 @@ describe("App navigation", () => {
     await user.click(within(nav).getByText("Screener"));
 
     expect(await screen.findByText("Stock Screener")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Stock ticker")).not.toBeInTheDocument();
+  });
+
+  it("switches to Compare page when clicking Compare nav", async () => {
+    const user = userEvent.setup();
+    render(App);
+
+    const nav = screen.getByRole("navigation", { name: /main/i });
+    await user.click(within(nav).getByText("Compare"));
+
+    expect(await screen.findByText("Stock Comparison")).toBeInTheDocument();
     expect(screen.queryByLabelText("Stock ticker")).not.toBeInTheDocument();
   });
 
@@ -240,7 +258,7 @@ describe("App navigation", () => {
 
     const nav = screen.getByRole("navigation", { name: /main/i });
     const buttons = within(nav).getAllByRole("button");
-    const [lookupBtn, , , portfolioBtn] = buttons;
+    const [lookupBtn, , , , portfolioBtn] = buttons;
 
     expect(lookupBtn).toHaveAttribute("aria-current", "page");
     expect(portfolioBtn).not.toHaveAttribute("aria-current");

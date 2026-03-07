@@ -11,6 +11,7 @@ const PAGE_ORDER: Page[] = [
   "alerts",
   "brokerage",
   "settings",
+  "comparison",
 ];
 
 export interface ShortcutHandlers {

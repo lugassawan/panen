@@ -1,5 +1,6 @@
 <script lang="ts">
 import {
+  ArrowLeftRight,
   Bell,
   Bookmark,
   Briefcase,
@@ -39,6 +40,7 @@ const commands: CommandItem[] = [
   { id: "lookup", labelKey: "nav.lookup", icon: Search, shortcut: "1" },
   { id: "watchlist", labelKey: "nav.watchlist", icon: Bookmark, shortcut: "2" },
   { id: "screener", labelKey: "nav.screener", icon: Filter, shortcut: "3" },
+  { id: "comparison", labelKey: "nav.comparison", icon: ArrowLeftRight, shortcut: "" },
   { id: "portfolio", labelKey: "nav.portfolio", icon: Briefcase, shortcut: "4" },
   { id: "payday", labelKey: "nav.payday", icon: CalendarDays, shortcut: "5" },
   { id: "crashplaybook", labelKey: "nav.crashPlaybook", icon: Shield, shortcut: "6" },

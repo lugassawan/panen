@@ -8,6 +8,7 @@ import { theme } from "./lib/stores/theme.svelte";
 import type { Page } from "./lib/types";
 import AlertsPage from "./pages/alerts/AlertsPage.svelte";
 import BrokeragePage from "./pages/brokerage/BrokeragePage.svelte";
+import ComparisonPage from "./pages/comparison/ComparisonPage.svelte";
 import CrashPlaybookPage from "./pages/crashplaybook/CrashPlaybookPage.svelte";
 import PaydayPage from "./pages/payday/PaydayPage.svelte";
 import PortfolioPage from "./pages/portfolio/PortfolioPage.svelte";
@@ -36,6 +37,8 @@ function navigateTo(page: Page) {
       <WatchlistPage />
     {:else if currentPage === "screener"}
       <ScreenerPage />
+    {:else if currentPage === "comparison"}
+      <ComparisonPage />
     {:else if currentPage === "portfolio"}
       <PortfolioPage />
     {:else if currentPage === "payday"}
