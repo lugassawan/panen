@@ -6,6 +6,7 @@ import {
   CalendarDays,
   Filter,
   Landmark,
+  Receipt,
   Search,
   Settings,
   Shield,
@@ -41,9 +42,10 @@ const commands: CommandItem[] = [
   { id: "portfolio", labelKey: "nav.portfolio", icon: Briefcase, shortcut: "4" },
   { id: "payday", labelKey: "nav.payday", icon: CalendarDays, shortcut: "5" },
   { id: "crashplaybook", labelKey: "nav.crashPlaybook", icon: Shield, shortcut: "6" },
-  { id: "alerts", labelKey: "nav.alerts", icon: Bell, shortcut: "7" },
-  { id: "brokerage", labelKey: "nav.brokerage", icon: Landmark, shortcut: "8" },
-  { id: "settings", labelKey: "nav.settings", icon: Settings, shortcut: "9" },
+  { id: "transactions", labelKey: "nav.transactions", icon: Receipt, shortcut: "7" },
+  { id: "alerts", labelKey: "nav.alerts", icon: Bell, shortcut: "8" },
+  { id: "brokerage", labelKey: "nav.brokerage", icon: Landmark, shortcut: "9" },
+  { id: "settings", labelKey: "nav.settings", icon: Settings, shortcut: "" },
 ];
 
 let filtered = $derived(
@@ -145,9 +147,11 @@ function handleKeydown(e: KeyboardEvent) {
               <Icon size={16} strokeWidth={1.5} aria-hidden="true" />
               {t(item.labelKey)}
             </span>
-            <kbd class="rounded border border-border-default bg-bg-secondary px-1.5 py-0.5 text-xs text-text-muted">
-              {modifierKey}{item.shortcut}
-            </kbd>
+            {#if item.shortcut}
+              <kbd class="rounded border border-border-default bg-bg-secondary px-1.5 py-0.5 text-xs text-text-muted">
+                {modifierKey}{item.shortcut}
+              </kbd>
+            {/if}
           </li>
         {/each}
         {#if filtered.length === 0}

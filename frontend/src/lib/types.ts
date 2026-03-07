@@ -131,6 +131,7 @@ export type Page =
   | "portfolio"
   | "payday"
   | "crashplaybook"
+  | "transactions"
   | "alerts"
   | "brokerage"
   | "settings";
@@ -436,4 +437,34 @@ export interface FundamentalAlertResponse {
   status: AlertStatus;
   detectedAt: string;
   resolvedAt?: string;
+}
+
+export type TransactionType = "BUY" | "SELL" | "DIVIDEND";
+
+export interface TransactionRecordResponse {
+  id: string;
+  type: TransactionType;
+  date: string;
+  ticker: string;
+  portfolioId: string;
+  portfolioName: string;
+  lots: number;
+  price: number;
+  fee: number;
+  tax: number;
+  total: number;
+  createdAt: string;
+}
+
+export interface TransactionSummaryResponse {
+  totalBuyAmount: number;
+  totalSellAmount: number;
+  totalDividendAmount: number;
+  totalFees: number;
+  transactionCount: number;
+}
+
+export interface TransactionListResponse {
+  items: TransactionRecordResponse[];
+  summary: TransactionSummaryResponse;
 }

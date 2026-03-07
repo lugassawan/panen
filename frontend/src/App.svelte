@@ -14,6 +14,7 @@ import PortfolioPage from "./pages/portfolio/PortfolioPage.svelte";
 import ScreenerPage from "./pages/screener/ScreenerPage.svelte";
 import SettingsPage from "./pages/settings/SettingsPage.svelte";
 import StockLookupPage from "./pages/stock/StockLookupPage.svelte";
+import TransactionHistoryPage from "./pages/transactions/TransactionHistoryPage.svelte";
 import WatchlistPage from "./pages/watchlist/WatchlistPage.svelte";
 
 let currentPage = $state<Page>("lookup");
@@ -41,6 +42,8 @@ function navigateTo(page: Page) {
       <PaydayPage />
     {:else if currentPage === "crashplaybook"}
       <CrashPlaybookPage />
+    {:else if currentPage === "transactions"}
+      <TransactionHistoryPage />
     {:else if currentPage === "alerts"}
       <AlertsPage />
     {:else if currentPage === "brokerage"}
