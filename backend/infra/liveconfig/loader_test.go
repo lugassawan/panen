@@ -57,10 +57,10 @@ func (m *mockEmitter) eventCount() int {
 	return len(m.events)
 }
 
-func testConfig(url string) Config[[]string] {
-	return Config[[]string]{
+func testLoader(dir, url string, deps Deps) *Loader[[]string] {
+	cfg := Config[[]string]{
 		Name:          "test",
-		RemoteURL:     url,
+		RemotePath:    "test.json",
 		CacheFileName: "test.json",
 		BundledData:   []byte(`["bundled"]`),
 		ParseFunc: func(data []byte) ([]string, error) {
@@ -69,6 +69,9 @@ func testConfig(url string) Config[[]string] {
 			return v, err
 		},
 	}
+	l := NewLoader(dir, cfg, deps)
+	l.remoteURL = url // override for test server
+	return l
 }
 
 func TestRemoteSuccess(t *testing.T) {
@@ -80,7 +83,7 @@ func TestRemoteSuccess(t *testing.T) {
 	dir := t.TempDir()
 	settings := newMockSettings()
 	emitter := &mockEmitter{}
-	l := NewLoader(dir, testConfig(srv.URL), Deps{Settings: settings, Emitter: emitter})
+	l := testLoader(dir, srv.URL, Deps{Settings: settings, Emitter: emitter})
 
 	r := l.Load(context.Background())
 	if r.Source != SourceRemote {
@@ -114,7 +117,7 @@ func TestRemoteFailureCacheFallback(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	l := NewLoader(dir, testConfig(srv.URL), Deps{})
+	l := testLoader(dir, srv.URL, Deps{})
 	r := l.Load(context.Background())
 
 	if r.Source != SourceCache {
@@ -132,7 +135,7 @@ func TestCacheFailureBundledFallback(t *testing.T) {
 	defer srv.Close()
 
 	dir := t.TempDir()
-	l := NewLoader(dir, testConfig(srv.URL), Deps{})
+	l := testLoader(dir, srv.URL, Deps{})
 	r := l.Load(context.Background())
 
 	if r.Source != SourceBundled {
@@ -150,11 +153,9 @@ func TestTotalFailureReturnsZeroValue(t *testing.T) {
 	defer srv.Close()
 
 	dir := t.TempDir()
-	cfg := testConfig(srv.URL)
-	cfg.BundledData = []byte("invalid json")
-	cfg.ZeroValue = []string{"zero"}
-
-	l := NewLoader(dir, cfg, Deps{})
+	l := testLoader(dir, srv.URL, Deps{})
+	l.cfg.BundledData = []byte("invalid json")
+	l.cfg.ZeroValue = []string{"zero"}
 	r := l.Load(context.Background())
 
 	if r.Source != SourceBundled {
@@ -174,7 +175,7 @@ func TestChangeDetectionEmitsEvent(t *testing.T) {
 	dir := t.TempDir()
 	settings := newMockSettings()
 	emitter := &mockEmitter{}
-	l := NewLoader(dir, testConfig(srv.URL), Deps{Settings: settings, Emitter: emitter})
+	l := testLoader(dir, srv.URL, Deps{Settings: settings, Emitter: emitter})
 
 	// First load — no previous hash, should emit change
 	l.Load(context.Background())
@@ -206,7 +207,7 @@ func TestChangeDetectionNewHashEmitsAgain(t *testing.T) {
 	dir := t.TempDir()
 	settings := newMockSettings()
 	emitter := &mockEmitter{}
-	l := NewLoader(dir, testConfig(srv.URL), Deps{Settings: settings, Emitter: emitter})
+	l := testLoader(dir, srv.URL, Deps{Settings: settings, Emitter: emitter})
 
 	l.Load(context.Background())
 	// Clear refresh timestamp to force second remote fetch
@@ -236,7 +237,7 @@ func TestRefreshIntervalSkipsRemote(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	l := NewLoader(dir, testConfig(srv.URL), Deps{Settings: settings})
+	l := testLoader(dir, srv.URL, Deps{Settings: settings})
 	r := l.Load(context.Background())
 
 	if remoteHit {
@@ -259,7 +260,7 @@ func TestRefreshIntervalExpiredFetchesRemote(t *testing.T) {
 	old := time.Now().Add(-25 * time.Hour).Format(time.RFC3339)
 	_ = settings.SetSetting(context.Background(), "config_last_refresh_test", old)
 
-	l := NewLoader(dir, testConfig(srv.URL), Deps{Settings: settings})
+	l := testLoader(dir, srv.URL, Deps{Settings: settings})
 	r := l.Load(context.Background())
 
 	if r.Source != SourceRemote {
@@ -278,7 +279,7 @@ func TestReloadBypassesInterval(t *testing.T) {
 	// Set recent timestamp
 	_ = settings.SetSetting(context.Background(), "config_last_refresh_test", time.Now().Format(time.RFC3339))
 
-	l := NewLoader(dir, testConfig(srv.URL), Deps{Settings: settings})
+	l := testLoader(dir, srv.URL, Deps{Settings: settings})
 	l.Reload(context.Background())
 
 	s := l.Status()
@@ -294,7 +295,7 @@ func TestStatusReturnsMetadata(t *testing.T) {
 	defer srv.Close()
 
 	dir := t.TempDir()
-	l := NewLoader(dir, testConfig(srv.URL), Deps{})
+	l := testLoader(dir, srv.URL, Deps{})
 	l.Load(context.Background())
 
 	s := l.Status()
@@ -319,7 +320,7 @@ func TestNilDepsNoPanic(t *testing.T) {
 	defer srv.Close()
 
 	dir := t.TempDir()
-	l := NewLoader(dir, testConfig(srv.URL), Deps{})
+	l := testLoader(dir, srv.URL, Deps{})
 
 	// Should not panic with nil Settings and nil Emitter
 	r := l.Load(context.Background())
@@ -338,7 +339,7 @@ func TestLastResultReturnsLoadedData(t *testing.T) {
 	defer srv.Close()
 
 	dir := t.TempDir()
-	l := NewLoader(dir, testConfig(srv.URL), Deps{})
+	l := testLoader(dir, srv.URL, Deps{})
 
 	// Before any load, LastResult returns zero value
 	lr := l.LastResult()

@@ -9,13 +9,11 @@ import (
 	"github.com/lugassawan/panen/configs"
 )
 
-const remoteURL = "https://raw.githubusercontent.com/lugassawan/panen/main/configs/brokers.json"
-
 // NewLoader creates a liveconfig.Loader for broker configurations.
 func NewLoader(dataDir string, deps liveconfig.Deps) *liveconfig.Loader[[]*brokerconfig.BrokerConfig] {
 	return liveconfig.NewLoader(dataDir, liveconfig.Config[[]*brokerconfig.BrokerConfig]{
 		Name:          "brokers",
-		RemoteURL:     remoteURL,
+		RemotePath:    "brokers.json",
 		CacheFileName: "brokers.json",
 		BundledData:   configs.BrokersJSON,
 		ParseFunc:     parseBrokers,

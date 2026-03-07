@@ -10,19 +10,14 @@ import (
 
 	"github.com/lugassawan/panen/backend/domain/brokerconfig"
 	"github.com/lugassawan/panen/backend/infra/liveconfig"
-	"github.com/lugassawan/panen/configs"
 )
 
 const validJSON = `[{"code":"XC","name":"Ajaib","buyFeePct":0.15,"sellFeePct":0.15,"sellTaxPct":0.10,"notes":""}]`
 
-func testLoader(dir, url string) *liveconfig.Loader[[]*brokerconfig.BrokerConfig] {
-	return liveconfig.NewLoader(dir, liveconfig.Config[[]*brokerconfig.BrokerConfig]{
-		Name:          "brokers",
-		RemoteURL:     url,
-		CacheFileName: "brokers.json",
-		BundledData:   configs.BrokersJSON,
-		ParseFunc:     parseBrokers,
-	}, liveconfig.Deps{})
+func testBrokerLoader(dir, url string) *liveconfig.Loader[[]*brokerconfig.BrokerConfig] {
+	l := NewLoader(dir, liveconfig.Deps{})
+	l.SetRemoteURL(url)
+	return l
 }
 
 func TestLoaderRemoteSuccess(t *testing.T) {
@@ -32,7 +27,7 @@ func TestLoaderRemoteSuccess(t *testing.T) {
 	defer srv.Close()
 
 	dir := t.TempDir()
-	l := testLoader(dir, srv.URL)
+	l := testBrokerLoader(dir, srv.URL)
 	r := l.Load(context.Background())
 
 	if r.Source != liveconfig.SourceRemote {
@@ -64,7 +59,7 @@ func TestLoaderRemoteNon200(t *testing.T) {
 	defer srv.Close()
 
 	dir := t.TempDir()
-	l := testLoader(dir, srv.URL)
+	l := testBrokerLoader(dir, srv.URL)
 	r := l.Load(context.Background())
 
 	if r.Data == nil {
@@ -84,7 +79,7 @@ func TestLoaderCacheFallback(t *testing.T) {
 		t.Fatalf("write cache: %v", err)
 	}
 
-	l := testLoader(dir, srv.URL)
+	l := testBrokerLoader(dir, srv.URL)
 	r := l.Load(context.Background())
 
 	if r.Source != liveconfig.SourceCache {
@@ -97,7 +92,7 @@ func TestLoaderCacheFallback(t *testing.T) {
 
 func TestLoaderBundledFallback(t *testing.T) {
 	dir := t.TempDir()
-	l := testLoader(dir, "http://127.0.0.1:0/invalid")
+	l := testBrokerLoader(dir, "http://127.0.0.1:0/invalid")
 	r := l.Load(context.Background())
 
 	if r.Data == nil {

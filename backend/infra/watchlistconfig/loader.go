@@ -10,13 +10,11 @@ import (
 	"github.com/lugassawan/panen/configs"
 )
 
-const remoteURL = "https://raw.githubusercontent.com/lugassawan/panen/main/configs/indices.json"
-
 // NewIndexLoader creates a liveconfig.Loader for index compositions.
 func NewIndexLoader(dataDir string, deps liveconfig.Deps) *liveconfig.Loader[*IndexRegistry] {
 	return liveconfig.NewLoader(dataDir, liveconfig.Config[*IndexRegistry]{
 		Name:          "indices",
-		RemoteURL:     remoteURL,
+		RemotePath:    "indices.json",
 		CacheFileName: "indices.json",
 		BundledData:   configs.IndicesJSON,
 		ParseFunc:     parseIndices,

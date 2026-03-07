@@ -9,8 +9,6 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
-const debugLoggingKey = "debug_logging"
-
 // LogHandler handles debug mode toggling and log export requests.
 type LogHandler struct {
 	ctx      context.Context
@@ -27,7 +25,7 @@ func (h *LogHandler) Bind(ctx context.Context, s settings.Repository, logDir str
 
 // IsDebugMode returns whether debug logging is enabled.
 func (h *LogHandler) IsDebugMode() (bool, error) {
-	val, err := h.settings.GetSetting(h.ctx, debugLoggingKey)
+	val, err := h.settings.GetSetting(h.ctx, applog.DebugLoggingKey)
 	if err != nil {
 		return false, err
 	}
@@ -43,7 +41,7 @@ func (h *LogHandler) SetDebugMode(enabled bool) error {
 	} else {
 		applog.SetLevel(slog.LevelInfo)
 	}
-	return h.settings.SetSetting(h.ctx, debugLoggingKey, val)
+	return h.settings.SetSetting(h.ctx, applog.DebugLoggingKey, val)
 }
 
 // ExportLogs prompts the user to choose a save path, then creates a zip of recent logs.
@@ -61,7 +59,7 @@ func (h *LogHandler) ExportLogs() (string, error) {
 	if path == "" {
 		return "", nil
 	}
-	if err := applog.ExportLogs(h.logDir, path, 14); err != nil {
+	if err := applog.ExportLogs(h.logDir, path, applog.LogRetentionDays); err != nil {
 		return "", err
 	}
 	return path, nil

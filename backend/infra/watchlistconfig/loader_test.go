@@ -11,20 +11,14 @@ import (
 	"testing"
 
 	"github.com/lugassawan/panen/backend/infra/liveconfig"
-	"github.com/lugassawan/panen/configs"
 )
 
 const validIndicesJSON = `{"IDX30":["BBCA","BBRI","BMRI"],"LQ45":["BBCA","BBRI","BMRI","TLKM"]}`
 
-func testLoader(dir, url string) *liveconfig.Loader[*IndexRegistry] {
-	return liveconfig.NewLoader(dir, liveconfig.Config[*IndexRegistry]{
-		Name:          "indices",
-		RemoteURL:     url,
-		CacheFileName: "indices.json",
-		BundledData:   configs.IndicesJSON,
-		ParseFunc:     parseIndices,
-		ZeroValue:     &IndexRegistry{indices: map[string][]string{}},
-	}, liveconfig.Deps{})
+func testIndexLoader(dir, url string) *liveconfig.Loader[*IndexRegistry] {
+	l := NewIndexLoader(dir, liveconfig.Deps{})
+	l.SetRemoteURL(url)
+	return l
 }
 
 func TestLoaderRemoteSuccess(t *testing.T) {
@@ -34,7 +28,7 @@ func TestLoaderRemoteSuccess(t *testing.T) {
 	defer srv.Close()
 
 	dir := t.TempDir()
-	l := testLoader(dir, srv.URL)
+	l := testIndexLoader(dir, srv.URL)
 	r := l.Load(context.Background())
 
 	if r.Source != liveconfig.SourceRemote {
@@ -65,7 +59,7 @@ func TestLoaderRemoteNon200(t *testing.T) {
 	defer srv.Close()
 
 	dir := t.TempDir()
-	l := testLoader(dir, srv.URL)
+	l := testIndexLoader(dir, srv.URL)
 	r := l.Load(context.Background())
 
 	if r.Data == nil {
@@ -85,7 +79,7 @@ func TestLoaderCacheFallback(t *testing.T) {
 		t.Fatalf("write cache: %v", err)
 	}
 
-	l := testLoader(dir, srv.URL)
+	l := testIndexLoader(dir, srv.URL)
 	r := l.Load(context.Background())
 
 	if r.Source != liveconfig.SourceCache {
@@ -103,7 +97,7 @@ func TestLoaderCacheFallback(t *testing.T) {
 
 func TestLoaderBundledFallback(t *testing.T) {
 	dir := t.TempDir()
-	l := testLoader(dir, "http://127.0.0.1:0/invalid")
+	l := testIndexLoader(dir, "http://127.0.0.1:0/invalid")
 	r := l.Load(context.Background())
 
 	if r.Data == nil {

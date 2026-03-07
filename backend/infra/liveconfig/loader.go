@@ -27,10 +27,13 @@ const (
 	refreshInterval = 24 * time.Hour
 )
 
+// RemoteBaseURL is the base URL for fetching remote config files.
+const RemoteBaseURL = "https://raw.githubusercontent.com/lugassawan/panen/main/configs/"
+
 // Config describes a live-reloadable configuration resource.
 type Config[T any] struct {
 	Name          string
-	RemoteURL     string
+	RemotePath    string // relative path appended to RemoteBaseURL (e.g. "brokers.json")
 	CacheFileName string
 	BundledData   []byte
 	ParseFunc     func([]byte) (T, error)
@@ -71,10 +74,11 @@ type ConfigLoader interface {
 
 // Loader fetches, caches, and manages a single live config resource.
 type Loader[T any] struct {
-	cfg     Config[T]
-	deps    Deps
-	dataDir string
-	client  *http.Client
+	cfg       Config[T]
+	deps      Deps
+	dataDir   string
+	remoteURL string
+	client    *http.Client
 
 	mu          sync.RWMutex
 	lastResult  Result[T]
@@ -88,12 +92,14 @@ type Deps struct {
 }
 
 // NewLoader creates a Loader for the given config.
+// The remote URL is constructed from RemoteBaseURL + Config.RemotePath.
 func NewLoader[T any](dataDir string, cfg Config[T], deps Deps) *Loader[T] {
 	return &Loader[T]{
-		cfg:     cfg,
-		deps:    deps,
-		dataDir: dataDir,
-		client:  &http.Client{Timeout: 10 * time.Second},
+		cfg:       cfg,
+		deps:      deps,
+		dataDir:   dataDir,
+		remoteURL: RemoteBaseURL + cfg.RemotePath,
+		client:    &http.Client{Timeout: 10 * time.Second},
 	}
 }
 
@@ -174,11 +180,11 @@ func (l *Loader[T]) shouldFetchRemote(ctx context.Context) bool {
 }
 
 func (l *Loader[T]) fetchRemote(ctx context.Context) ([]byte, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, l.cfg.RemoteURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, l.remoteURL, nil)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := l.client.Do(req) //nolint:gosec // G107: URL is a compile-time constant from Config, not user input
+	resp, err := l.client.Do(req) //nolint:gosec // G107: URL is built from compile-time RemoteBaseURL constant
 	if err != nil {
 		return nil, err
 	}
@@ -266,6 +272,11 @@ func (l *Loader[T]) detectChange(ctx context.Context, newHash string) {
 
 func (l *Loader[T]) refreshKey() string {
 	return "config_last_refresh_" + l.cfg.Name
+}
+
+// SetRemoteURL overrides the remote URL. Intended for testing only.
+func (l *Loader[T]) SetRemoteURL(url string) {
+	l.remoteURL = url
 }
 
 func computeHash(data []byte) string {

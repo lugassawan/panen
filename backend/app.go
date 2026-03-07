@@ -148,10 +148,10 @@ func (a *App) Startup(ctx context.Context) {
 
 	settingsRepo := database.NewSettingsRepo(conn)
 
-	if dbg, err := settingsRepo.GetSetting(ctx, "debug_logging"); err == nil && dbg == "1" {
+	if dbg, err := settingsRepo.GetSetting(ctx, applog.DebugLoggingKey); err == nil && dbg == "1" {
 		applog.SetLevel(slog.LevelDebug)
 	}
-	if err := applog.RotateLogs(a.logDir, 14); err != nil {
+	if err := applog.RotateLogs(a.logDir, applog.LogRetentionDays); err != nil {
 		applog.Warn("log rotation", err, nil)
 	}
 	a.LogHandler.Bind(ctx, settingsRepo, a.logDir)
