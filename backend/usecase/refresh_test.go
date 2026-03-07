@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/lugassawan/panen/backend/domain/shared"
 	"github.com/lugassawan/panen/backend/domain/stock"
 )
 
@@ -136,7 +137,7 @@ func TestRefreshService(t *testing.T) {
 			}
 
 			// Check summary event.
-			summaries := emitter.eventsByName("refresh:summary")
+			summaries := emitter.eventsByName(shared.EventRefreshSummary)
 			if len(summaries) != 1 {
 				t.Fatalf("expected 1 refresh:summary event, got %d", len(summaries))
 			}
@@ -195,7 +196,7 @@ func TestRefreshServiceRetryThenSucceed(t *testing.T) {
 		t.Fatalf("RunNow() error = %v", err)
 	}
 
-	summaries := emitter.eventsByName("refresh:summary")
+	summaries := emitter.eventsByName(shared.EventRefreshSummary)
 	if len(summaries) != 1 {
 		t.Fatalf("expected 1 refresh:summary event, got %d", len(summaries))
 	}
@@ -313,7 +314,7 @@ func TestRefreshServiceStatusEvents(t *testing.T) {
 	}
 
 	// Should have emitted at least 2 status events: syncing and idle.
-	statusEvents := emitter.eventsByName("refresh:status")
+	statusEvents := emitter.eventsByName(shared.EventRefreshStatus)
 	if len(statusEvents) < 2 {
 		t.Fatalf("expected at least 2 refresh:status events, got %d", len(statusEvents))
 	}
@@ -358,7 +359,7 @@ func TestRefreshServiceProgressEvents(t *testing.T) {
 		t.Fatalf("RunNow() error = %v", err)
 	}
 
-	progressEvents := emitter.eventsByName("refresh:progress")
+	progressEvents := emitter.eventsByName(shared.EventRefreshProgress)
 	if len(progressEvents) != 2 {
 		t.Fatalf("expected 2 refresh:progress events, got %d", len(progressEvents))
 	}
