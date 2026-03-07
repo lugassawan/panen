@@ -14,7 +14,7 @@ import (
 
 func TestBrokerageServiceCreateHappy(t *testing.T) {
 	repo := newMockBrokerageRepo()
-	svc := NewBrokerageService(repo, newMockPortfolioRepo())
+	svc := NewBrokerageService(repo, newMockPortfolioRepo(), nil)
 
 	acct := &brokerage.Account{
 		ID: shared.NewID(), ProfileID: "p1", BrokerName: "Ajaib",
@@ -35,7 +35,7 @@ func TestBrokerageServiceCreateHappy(t *testing.T) {
 }
 
 func TestBrokerageServiceCreateEmptyName(t *testing.T) {
-	svc := NewBrokerageService(newMockBrokerageRepo(), newMockPortfolioRepo())
+	svc := NewBrokerageService(newMockBrokerageRepo(), newMockPortfolioRepo(), nil)
 
 	acct := &brokerage.Account{ID: shared.NewID(), BrokerName: "  "}
 	err := svc.Create(context.Background(), acct)
@@ -46,7 +46,7 @@ func TestBrokerageServiceCreateEmptyName(t *testing.T) {
 
 func TestBrokerageServiceListByProfileIDHappy(t *testing.T) {
 	repo := newMockBrokerageRepo()
-	svc := NewBrokerageService(repo, newMockPortfolioRepo())
+	svc := NewBrokerageService(repo, newMockPortfolioRepo(), nil)
 	ctx := context.Background()
 
 	acct := &brokerage.Account{
@@ -71,7 +71,7 @@ func TestBrokerageServiceListByProfileIDHappy(t *testing.T) {
 }
 
 func TestBrokerageServiceListByProfileIDEmpty(t *testing.T) {
-	svc := NewBrokerageService(newMockBrokerageRepo(), newMockPortfolioRepo())
+	svc := NewBrokerageService(newMockBrokerageRepo(), newMockPortfolioRepo(), nil)
 
 	got, err := svc.ListByProfileID(context.Background(), "nonexistent")
 	if err != nil {
@@ -105,7 +105,7 @@ func negativeFeeTests() []struct {
 }
 
 func TestBrokerageServiceCreateNegativeFee(t *testing.T) {
-	svc := NewBrokerageService(newMockBrokerageRepo(), newMockPortfolioRepo())
+	svc := NewBrokerageService(newMockBrokerageRepo(), newMockPortfolioRepo(), nil)
 
 	for _, tt := range negativeFeeTests() {
 		t.Run(tt.name, func(t *testing.T) {
@@ -123,7 +123,7 @@ func TestBrokerageServiceCreateNegativeFee(t *testing.T) {
 
 func TestBrokerageServiceGetByIDHappy(t *testing.T) {
 	repo := newMockBrokerageRepo()
-	svc := NewBrokerageService(repo, newMockPortfolioRepo())
+	svc := NewBrokerageService(repo, newMockPortfolioRepo(), nil)
 	ctx := context.Background()
 
 	acct := &brokerage.Account{
@@ -144,7 +144,7 @@ func TestBrokerageServiceGetByIDHappy(t *testing.T) {
 }
 
 func TestBrokerageServiceGetByIDEmptyID(t *testing.T) {
-	svc := NewBrokerageService(newMockBrokerageRepo(), newMockPortfolioRepo())
+	svc := NewBrokerageService(newMockBrokerageRepo(), newMockPortfolioRepo(), nil)
 
 	_, err := svc.GetByID(context.Background(), "")
 	if !errors.Is(err, ErrEmptyID) {
@@ -154,7 +154,7 @@ func TestBrokerageServiceGetByIDEmptyID(t *testing.T) {
 
 func TestBrokerageServiceUpdateHappy(t *testing.T) {
 	repo := newMockBrokerageRepo()
-	svc := NewBrokerageService(repo, newMockPortfolioRepo())
+	svc := NewBrokerageService(repo, newMockPortfolioRepo(), nil)
 	ctx := context.Background()
 
 	acct := &brokerage.Account{
@@ -185,7 +185,7 @@ func TestBrokerageServiceUpdateHappy(t *testing.T) {
 }
 
 func TestBrokerageServiceUpdateEmptyName(t *testing.T) {
-	svc := NewBrokerageService(newMockBrokerageRepo(), newMockPortfolioRepo())
+	svc := NewBrokerageService(newMockBrokerageRepo(), newMockPortfolioRepo(), nil)
 
 	acct := &brokerage.Account{ID: shared.NewID(), BrokerName: ""}
 	err := svc.Update(context.Background(), acct)
@@ -195,7 +195,7 @@ func TestBrokerageServiceUpdateEmptyName(t *testing.T) {
 }
 
 func TestBrokerageServiceUpdateNegativeFees(t *testing.T) {
-	svc := NewBrokerageService(newMockBrokerageRepo(), newMockPortfolioRepo())
+	svc := NewBrokerageService(newMockBrokerageRepo(), newMockPortfolioRepo(), nil)
 
 	for _, tt := range negativeFeeTests() {
 		t.Run(tt.name, func(t *testing.T) {
@@ -213,7 +213,7 @@ func TestBrokerageServiceUpdateNegativeFees(t *testing.T) {
 
 func TestBrokerageServiceDeleteHappy(t *testing.T) {
 	brokerageRepo := newMockBrokerageRepo()
-	svc := NewBrokerageService(brokerageRepo, newMockPortfolioRepo())
+	svc := NewBrokerageService(brokerageRepo, newMockPortfolioRepo(), nil)
 	ctx := context.Background()
 
 	acct := &brokerage.Account{
@@ -237,7 +237,7 @@ func TestBrokerageServiceDeleteHappy(t *testing.T) {
 func TestBrokerageServiceDeleteHasPortfolios(t *testing.T) {
 	brokerageRepo := newMockBrokerageRepo()
 	portfolioRepo := newMockPortfolioRepo()
-	svc := NewBrokerageService(brokerageRepo, portfolioRepo)
+	svc := NewBrokerageService(brokerageRepo, portfolioRepo, nil)
 	ctx := context.Background()
 
 	acct := &brokerage.Account{
@@ -265,7 +265,7 @@ func TestBrokerageServiceDeleteHasPortfolios(t *testing.T) {
 }
 
 func TestBrokerageServiceDeleteEmptyID(t *testing.T) {
-	svc := NewBrokerageService(newMockBrokerageRepo(), newMockPortfolioRepo())
+	svc := NewBrokerageService(newMockBrokerageRepo(), newMockPortfolioRepo(), nil)
 
 	err := svc.Delete(context.Background(), "")
 	if !errors.Is(err, ErrEmptyID) {
@@ -289,7 +289,8 @@ func seedAccount(t *testing.T, repo *mockBrokerageRepo, acct *brokerage.Account)
 
 func TestSyncFeesFromConfigMatchingAccounts(t *testing.T) {
 	repo := newMockBrokerageRepo()
-	svc := NewBrokerageService(repo, newMockPortfolioRepo())
+	emitter := &mockEventEmitter{}
+	svc := NewBrokerageService(repo, newMockPortfolioRepo(), emitter)
 	ctx := context.Background()
 
 	acct := &brokerage.Account{
@@ -314,11 +315,16 @@ func TestSyncFeesFromConfigMatchingAccounts(t *testing.T) {
 	if got.SellFeePct != 0.30 {
 		t.Errorf("SellFeePct = %v, want 0.30", got.SellFeePct)
 	}
+
+	events := emitter.eventsByName(shared.EventBrokerFeesSynced)
+	if len(events) != 1 {
+		t.Fatalf("expected 1 %s event, got %d", shared.EventBrokerFeesSynced, len(events))
+	}
 }
 
 func TestSyncFeesFromConfigSkipsManual(t *testing.T) {
 	repo := newMockBrokerageRepo()
-	svc := NewBrokerageService(repo, newMockPortfolioRepo())
+	svc := NewBrokerageService(repo, newMockPortfolioRepo(), nil)
 
 	acct := &brokerage.Account{
 		ID: shared.NewID(), ProfileID: "p1", BrokerName: "Ajaib",
@@ -339,7 +345,7 @@ func TestSyncFeesFromConfigSkipsManual(t *testing.T) {
 
 func TestSyncFeesFromConfigSkipsUnmatched(t *testing.T) {
 	repo := newMockBrokerageRepo()
-	svc := NewBrokerageService(repo, newMockPortfolioRepo())
+	svc := NewBrokerageService(repo, newMockPortfolioRepo(), nil)
 
 	acct := &brokerage.Account{
 		ID: shared.NewID(), ProfileID: "p1", BrokerName: "Custom",
@@ -359,7 +365,7 @@ func TestSyncFeesFromConfigSkipsUnmatched(t *testing.T) {
 
 func TestSyncFeesFromConfigSkipsAlreadyMatching(t *testing.T) {
 	repo := newMockBrokerageRepo()
-	svc := NewBrokerageService(repo, newMockPortfolioRepo())
+	svc := NewBrokerageService(repo, newMockPortfolioRepo(), nil)
 
 	acct := &brokerage.Account{
 		ID: shared.NewID(), ProfileID: "p1", BrokerName: "Ajaib",
@@ -378,7 +384,7 @@ func TestSyncFeesFromConfigSkipsAlreadyMatching(t *testing.T) {
 }
 
 func TestSyncFeesFromConfigEmptyConfigs(t *testing.T) {
-	svc := NewBrokerageService(newMockBrokerageRepo(), newMockPortfolioRepo())
+	svc := NewBrokerageService(newMockBrokerageRepo(), newMockPortfolioRepo(), nil)
 
 	count, err := svc.SyncFeesFromConfig(context.Background(), "p1", nil)
 	if err != nil {

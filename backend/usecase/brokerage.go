@@ -9,17 +9,23 @@ import (
 	"github.com/lugassawan/panen/backend/domain/brokerage"
 	"github.com/lugassawan/panen/backend/domain/brokerconfig"
 	"github.com/lugassawan/panen/backend/domain/portfolio"
+	"github.com/lugassawan/panen/backend/domain/shared"
 )
 
 // BrokerageService handles brokerage account operations.
 type BrokerageService struct {
 	brokerages brokerage.Repository
 	portfolios portfolio.Repository
+	emitter    EventEmitter
 }
 
 // NewBrokerageService creates a new BrokerageService.
-func NewBrokerageService(brokerages brokerage.Repository, portfolios portfolio.Repository) *BrokerageService {
-	return &BrokerageService{brokerages: brokerages, portfolios: portfolios}
+func NewBrokerageService(
+	brokerages brokerage.Repository,
+	portfolios portfolio.Repository,
+	emitter EventEmitter,
+) *BrokerageService {
+	return &BrokerageService{brokerages: brokerages, portfolios: portfolios, emitter: emitter}
 }
 
 // Create validates and persists a brokerage account.
@@ -103,6 +109,9 @@ func (s *BrokerageService) SyncFeesFromConfig(
 			return count, err
 		}
 		count++
+	}
+	if count > 0 && s.emitter != nil {
+		s.emitter.Emit(shared.EventBrokerFeesSynced, map[string]any{"count": count})
 	}
 	return count, nil
 }

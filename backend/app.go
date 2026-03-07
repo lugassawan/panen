@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/lugassawan/panen/backend/domain/brokerconfig"
 	"github.com/lugassawan/panen/backend/domain/user"
 	"github.com/lugassawan/panen/backend/infra/applog"
 	"github.com/lugassawan/panen/backend/infra/backup"
@@ -130,6 +129,8 @@ func (a *App) Startup(ctx context.Context) {
 	watchlistItemRepo := database.NewWatchlistItemRepo(conn)
 	yahoo := scraper.NewYahoo()
 
+	wailsEmitter := presenter.NewWailsEmitter(ctx)
+
 	stocks := usecase.NewStockService(stockRepo, yahoo)
 	peakRepo := database.NewPeakRepo(conn)
 	portfolios := usecase.NewPortfolioService(
@@ -140,7 +141,7 @@ func (a *App) Startup(ctx context.Context) {
 		stockRepo,
 		peakRepo,
 	)
-	brokerages := usecase.NewBrokerageService(brokerageRepo, portfolioRepo)
+	brokerages := usecase.NewBrokerageService(brokerageRepo, portfolioRepo, wailsEmitter)
 
 	profileID, err := ensureDefaultUser(ctx, userRepo)
 	if err != nil {
@@ -158,7 +159,6 @@ func (a *App) Startup(ctx context.Context) {
 	a.LogHandler.Bind(ctx, settingsRepo, a.logDir)
 
 	tickerCollector := database.NewTickerCollector(conn)
-	wailsEmitter := presenter.NewWailsEmitter(ctx)
 
 	liveDeps := liveconfig.Deps{
 		Settings: settingsRepo,
@@ -213,7 +213,9 @@ func (a *App) Startup(ctx context.Context) {
 	a.RegisterLoader("brokers", brokerLoader, func(_ context.Context) {
 		configs := brokerLoader.LastResult().Data
 		a.BrokerConfigHandler.Bind(configs)
-		syncBrokerFees(ctx, brokerages, wailsEmitter, profileID, configs)
+		if _, err := brokerages.SyncFeesFromConfig(ctx, profileID, configs); err != nil {
+			applog.Warn("broker fee sync", err, nil)
+		}
 	})
 	a.RegisterLoader("indices", indexLoader, func(_ context.Context) {
 		swappableIndexReg.Swap(indexLoader.LastResult().Data)
@@ -256,23 +258,6 @@ func (a *App) Startup(ctx context.Context) {
 	refreshSvc.Start(ctx)
 
 	go a.CheckForUpdateOnStartup()
-}
-
-func syncBrokerFees(
-	ctx context.Context,
-	svc *usecase.BrokerageService,
-	emitter *presenter.WailsEmitter,
-	profileID string,
-	configs []*brokerconfig.BrokerConfig,
-) {
-	count, err := svc.SyncFeesFromConfig(ctx, profileID, configs)
-	if err != nil {
-		applog.Warn("broker fee sync", err, nil)
-		return
-	}
-	if count > 0 {
-		emitter.Emit("brokers:fees-synced", map[string]any{"count": count})
-	}
 }
 
 // Shutdown stops background services and closes the database connection.

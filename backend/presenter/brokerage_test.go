@@ -11,7 +11,7 @@ func newTestBrokerageHandler() *BrokerageHandler {
 	ctx := context.Background()
 	brokerageRepo := newMockBrokerageRepo()
 	portfolioRepo := newMockPortfolioRepo()
-	svc := usecase.NewBrokerageService(brokerageRepo, portfolioRepo)
+	svc := usecase.NewBrokerageService(brokerageRepo, portfolioRepo, nil)
 	return NewBrokerageHandler(ctx, "profile-1", svc)
 }
 
