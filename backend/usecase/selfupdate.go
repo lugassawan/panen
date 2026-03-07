@@ -14,14 +14,9 @@ import (
 	"github.com/lugassawan/panen/backend/infra/updater"
 )
 
-const (
-	// EventUpdateProgress is the Wails event name for update progress.
-	EventUpdateProgress = "update:progress"
+const checksumFileName = "SHA256SUMS.txt"
 
-	checksumFileName = "SHA256SUMS.txt"
-)
-
-// UpdateProgress is the payload emitted with EventUpdateProgress.
+// UpdateProgress is the payload emitted with shared.EventUpdateProgress.
 type UpdateProgress struct {
 	State           string `json:"state"`
 	DownloadedBytes int64  `json:"downloadedBytes"`
@@ -267,7 +262,7 @@ func (s *SelfUpdateService) emitProgress(
 	downloaded, total int64,
 	version string,
 ) {
-	s.emitter.Emit(EventUpdateProgress, UpdateProgress{
+	s.emitter.Emit(shared.EventUpdateProgress, UpdateProgress{
 		State:           state,
 		DownloadedBytes: downloaded,
 		TotalBytes:      total,
@@ -283,7 +278,7 @@ func (s *SelfUpdateService) emitError(
 	if info != nil {
 		version = info.Version
 	}
-	s.emitter.Emit(EventUpdateProgress, UpdateProgress{
+	s.emitter.Emit(shared.EventUpdateProgress, UpdateProgress{
 		State:   "error",
 		Version: version,
 		Error:   err.Error(),

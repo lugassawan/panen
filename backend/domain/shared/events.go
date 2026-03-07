@@ -9,4 +9,5 @@ const (
 	EventAlertsUpdated    = "alerts:updated"
 	EventConfigChanged    = "config:changed"
 	EventBrokerFeesSynced = "brokers:fees-synced"
+	EventUpdateProgress   = "update:progress"
 )

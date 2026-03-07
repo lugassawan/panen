@@ -152,7 +152,7 @@ func TestSelfUpdateHappyPath(t *testing.T) {
 		t.Fatalf("PerformUpdate: %v", err)
 	}
 
-	events := emitter.eventsByName(EventUpdateProgress)
+	events := emitter.eventsByName(shared.EventUpdateProgress)
 	if len(events) == 0 {
 		t.Fatal("no progress events emitted")
 	}
@@ -285,7 +285,7 @@ func TestSelfUpdateChecksumMismatch(t *testing.T) {
 	}
 
 	// Verify error event was emitted
-	events := emitter.eventsByName(EventUpdateProgress)
+	events := emitter.eventsByName(shared.EventUpdateProgress)
 	var hasError bool
 	for _, e := range events {
 		if p, ok := e.data.(UpdateProgress); ok && p.State == "error" {
