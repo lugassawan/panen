@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 	"math"
 	"strconv"
 	"sync"
@@ -16,6 +15,7 @@ import (
 	"github.com/lugassawan/panen/backend/domain/shared"
 	"github.com/lugassawan/panen/backend/domain/stock"
 	"github.com/lugassawan/panen/backend/domain/valuation"
+	"github.com/lugassawan/panen/backend/infra/applog"
 )
 
 const (
@@ -119,7 +119,7 @@ func (s *CrashPlaybookService) GetMarketStatus(ctx context.Context) (*crashplayb
 			Source:     s.provider.Source(),
 		}
 		if upsertErr := s.stockData.Upsert(ctx, data); upsertErr != nil {
-			slog.Warn("failed to persist IHSG data", logKeyErr, upsertErr)
+			applog.Warn("failed to persist IHSG data", upsertErr, nil)
 		}
 	}
 

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 	"strings"
 	"time"
 
@@ -16,9 +15,8 @@ import (
 	"github.com/lugassawan/panen/backend/domain/stock"
 	"github.com/lugassawan/panen/backend/domain/trailingstop"
 	"github.com/lugassawan/panen/backend/domain/valuation"
+	"github.com/lugassawan/panen/backend/infra/applog"
 )
-
-const logKeyErr = "err"
 
 // HoldingWithValuation is a use-case-layer composite carrying a holding
 // together with its optional stock data and valuation result.
@@ -363,13 +361,13 @@ func (s *PortfolioService) syncHoldingPeak(
 			UpdatedAt: now,
 		}
 		if upsertErr := s.peaks.Upsert(ctx, peak); upsertErr != nil {
-			slog.Warn("failed to persist peak", "holdingID", h.ID, logKeyErr, upsertErr)
+			applog.Warn("failed to persist peak", upsertErr, applog.Fields{"holdingID": h.ID})
 		}
 	} else if newPeak > existing.PeakPrice {
 		existing.PeakPrice = newPeak
 		existing.UpdatedAt = now
 		if upsertErr := s.peaks.Upsert(ctx, existing); upsertErr != nil {
-			slog.Warn("failed to update peak", "holdingID", h.ID, logKeyErr, upsertErr)
+			applog.Warn("failed to update peak", upsertErr, applog.Fields{"holdingID": h.ID})
 		}
 	}
 }
