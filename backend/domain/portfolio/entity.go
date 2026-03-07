@@ -105,3 +105,49 @@ func NewBuyTransaction(holdingID string, date time.Time, price float64, lots int
 		CreatedAt: time.Now().UTC(),
 	}
 }
+
+// SellTransaction represents an immutable record of a stock sale.
+type SellTransaction struct {
+	ID           string
+	HoldingID    string
+	Date         time.Time
+	Price        float64
+	Lots         int
+	Fee          float64
+	Tax          float64
+	RealizedGain float64
+	CreatedAt    time.Time
+}
+
+// ComputeSellFee calculates the transaction fee for a sale.
+func ComputeSellFee(price float64, lots int, sellFeePct float64) float64 {
+	shares := float64(lots) * 100
+	return price * shares * sellFeePct / 100
+}
+
+// ComputeSellTax calculates the transaction tax for a sale.
+func ComputeSellTax(price float64, lots int, sellTaxPct float64) float64 {
+	shares := float64(lots) * 100
+	return price * shares * sellTaxPct / 100
+}
+
+// NewSellTransaction creates a new SellTransaction with generated ID and timestamp.
+func NewSellTransaction(
+	holdingID string,
+	date time.Time,
+	price float64,
+	lots int,
+	fee, tax, realizedGain float64,
+) *SellTransaction {
+	return &SellTransaction{
+		ID:           shared.NewID(),
+		HoldingID:    holdingID,
+		Date:         date,
+		Price:        price,
+		Lots:         lots,
+		Fee:          fee,
+		Tax:          tax,
+		RealizedGain: realizedGain,
+		CreatedAt:    time.Now().UTC(),
+	}
+}
