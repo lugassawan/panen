@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/lugassawan/panen/backend/domain/shared"
 	"github.com/lugassawan/panen/backend/infra/platform"
+	"github.com/lugassawan/panen/backend/infra/updater"
 )
 
 const (
@@ -168,7 +168,7 @@ func (s *SelfUpdateService) PerformUpdate(ctx context.Context) error {
 		return err
 	}
 
-	expectedHash, err := parseChecksumFile(checksumData, archiveName)
+	expectedHash, err := updater.ParseChecksumFile(checksumData, archiveName)
 	if err != nil {
 		s.emitError(info, err)
 		return err
@@ -311,27 +311,4 @@ func findAssets(
 		)
 	}
 	return archiveURL, checksumURL, nil
-}
-
-// parseChecksumFile parses a SHA256SUMS.txt-style file.
-// Format: "<hex-hash>  <filename>\n"
-func parseChecksumFile(
-	content []byte,
-	archiveName string,
-) (string, error) {
-	text := string(content)
-	for line := range strings.SplitSeq(text, "\n") {
-		line = strings.TrimSpace(line)
-		if line == "" {
-			continue
-		}
-		hash, name, ok := strings.Cut(line, "  ")
-		if !ok {
-			continue
-		}
-		if strings.TrimSpace(name) == archiveName {
-			return strings.TrimSpace(hash), nil
-		}
-	}
-	return "", fmt.Errorf("checksum for %q not found", archiveName)
 }

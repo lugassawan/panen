@@ -3,7 +3,6 @@ package updater
 import (
 	"context"
 	"fmt"
-	"io"
 	"os"
 
 	"github.com/lugassawan/panen/backend/infra/github"
@@ -47,14 +46,4 @@ func (d *Downloader) Download(
 		return fmt.Errorf("close file: %w", err)
 	}
 	return nil
-}
-
-// DownloadToWriter fetches the asset at url and writes it to dest.
-func (d *Downloader) DownloadToWriter(
-	ctx context.Context,
-	url string,
-	dest io.Writer,
-	progressFn func(downloaded, total int64),
-) error {
-	return d.client.DownloadAsset(ctx, url, dest, progressFn)
 }

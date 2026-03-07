@@ -40,7 +40,7 @@ function startUpdate() {
   >
     <!-- Dialog -->
     <div
-      class="mx-4 w-full max-w-md rounded-xl border border-border-default bg-bg-elevated p-6 shadow-xl"
+      class="relative mx-4 w-full max-w-md rounded-xl border border-border-default bg-bg-elevated p-6 shadow-xl"
       role="dialog"
       aria-modal="true"
       aria-label={t("settings.updateDownloading")}
@@ -105,10 +105,6 @@ function startUpdate() {
               {t("settings.updateReady")}
             </h3>
           </div>
-
-          <p class="text-sm text-text-secondary">
-            {t("settings.updateReady")}
-          </p>
 
           <div class="flex justify-end gap-2">
             <Button variant="secondary" size="sm" onclick={dismiss}>
