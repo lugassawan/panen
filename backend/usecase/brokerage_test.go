@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/lugassawan/panen/backend/domain/brokerage"
+	"github.com/lugassawan/panen/backend/domain/brokerconfig"
 	"github.com/lugassawan/panen/backend/domain/portfolio"
 	"github.com/lugassawan/panen/backend/domain/shared"
 )
@@ -269,5 +270,121 @@ func TestBrokerageServiceDeleteEmptyID(t *testing.T) {
 	err := svc.Delete(context.Background(), "")
 	if !errors.Is(err, ErrEmptyID) {
 		t.Errorf("Delete() error = %v, want ErrEmptyID", err)
+	}
+}
+
+func syncFeeConfigs() []*brokerconfig.BrokerConfig {
+	return []*brokerconfig.BrokerConfig{
+		{Code: "AJ", BuyFeePct: 0.20, SellFeePct: 0.30, SellTaxPct: 0.1},
+		{Code: "ST", BuyFeePct: 0.12, SellFeePct: 0.22, SellTaxPct: 0.1},
+	}
+}
+
+func seedAccount(t *testing.T, repo *mockBrokerageRepo, acct *brokerage.Account) {
+	t.Helper()
+	if err := repo.Create(context.Background(), acct); err != nil {
+		t.Fatalf("Create() error = %v", err)
+	}
+}
+
+func TestSyncFeesFromConfigMatchingAccounts(t *testing.T) {
+	repo := newMockBrokerageRepo()
+	svc := NewBrokerageService(repo, newMockPortfolioRepo())
+	ctx := context.Background()
+
+	acct := &brokerage.Account{
+		ID: shared.NewID(), ProfileID: "p1", BrokerName: "Ajaib",
+		BrokerCode: "AJ", BuyFeePct: 0.15, SellFeePct: 0.25, SellTaxPct: 0.1,
+		CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(),
+	}
+	seedAccount(t, repo, acct)
+
+	count, err := svc.SyncFeesFromConfig(ctx, "p1", syncFeeConfigs())
+	if err != nil {
+		t.Fatalf("SyncFeesFromConfig() error = %v", err)
+	}
+	if count != 1 {
+		t.Errorf("count = %d, want 1", count)
+	}
+
+	got, _ := repo.GetByID(ctx, acct.ID)
+	if got.BuyFeePct != 0.20 {
+		t.Errorf("BuyFeePct = %v, want 0.20", got.BuyFeePct)
+	}
+	if got.SellFeePct != 0.30 {
+		t.Errorf("SellFeePct = %v, want 0.30", got.SellFeePct)
+	}
+}
+
+func TestSyncFeesFromConfigSkipsManual(t *testing.T) {
+	repo := newMockBrokerageRepo()
+	svc := NewBrokerageService(repo, newMockPortfolioRepo())
+
+	acct := &brokerage.Account{
+		ID: shared.NewID(), ProfileID: "p1", BrokerName: "Ajaib",
+		BrokerCode: "AJ", BuyFeePct: 0.15, SellFeePct: 0.25, SellTaxPct: 0.1,
+		IsManualFee: true,
+		CreatedAt:   time.Now().UTC(), UpdatedAt: time.Now().UTC(),
+	}
+	seedAccount(t, repo, acct)
+
+	count, err := svc.SyncFeesFromConfig(context.Background(), "p1", syncFeeConfigs())
+	if err != nil {
+		t.Fatalf("SyncFeesFromConfig() error = %v", err)
+	}
+	if count != 0 {
+		t.Errorf("count = %d, want 0", count)
+	}
+}
+
+func TestSyncFeesFromConfigSkipsUnmatched(t *testing.T) {
+	repo := newMockBrokerageRepo()
+	svc := NewBrokerageService(repo, newMockPortfolioRepo())
+
+	acct := &brokerage.Account{
+		ID: shared.NewID(), ProfileID: "p1", BrokerName: "Custom",
+		BrokerCode: "XX", BuyFeePct: 0.15, SellFeePct: 0.25, SellTaxPct: 0.1,
+		CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(),
+	}
+	seedAccount(t, repo, acct)
+
+	count, err := svc.SyncFeesFromConfig(context.Background(), "p1", syncFeeConfigs())
+	if err != nil {
+		t.Fatalf("SyncFeesFromConfig() error = %v", err)
+	}
+	if count != 0 {
+		t.Errorf("count = %d, want 0", count)
+	}
+}
+
+func TestSyncFeesFromConfigSkipsAlreadyMatching(t *testing.T) {
+	repo := newMockBrokerageRepo()
+	svc := NewBrokerageService(repo, newMockPortfolioRepo())
+
+	acct := &brokerage.Account{
+		ID: shared.NewID(), ProfileID: "p1", BrokerName: "Ajaib",
+		BrokerCode: "AJ", BuyFeePct: 0.20, SellFeePct: 0.30, SellTaxPct: 0.1,
+		CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(),
+	}
+	seedAccount(t, repo, acct)
+
+	count, err := svc.SyncFeesFromConfig(context.Background(), "p1", syncFeeConfigs())
+	if err != nil {
+		t.Fatalf("SyncFeesFromConfig() error = %v", err)
+	}
+	if count != 0 {
+		t.Errorf("count = %d, want 0", count)
+	}
+}
+
+func TestSyncFeesFromConfigEmptyConfigs(t *testing.T) {
+	svc := NewBrokerageService(newMockBrokerageRepo(), newMockPortfolioRepo())
+
+	count, err := svc.SyncFeesFromConfig(context.Background(), "p1", nil)
+	if err != nil {
+		t.Fatalf("SyncFeesFromConfig() error = %v", err)
+	}
+	if count != 0 {
+		t.Errorf("count = %d, want 0", count)
 	}
 }

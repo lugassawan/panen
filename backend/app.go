@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/lugassawan/panen/backend/domain/brokerconfig"
 	"github.com/lugassawan/panen/backend/domain/user"
 	"github.com/lugassawan/panen/backend/infra/applog"
 	"github.com/lugassawan/panen/backend/infra/backup"
@@ -210,7 +211,9 @@ func (a *App) Startup(ctx context.Context) {
 
 	a.Init(ctx)
 	a.RegisterLoader("brokers", brokerLoader, func(_ context.Context) {
-		a.BrokerConfigHandler.Bind(brokerLoader.LastResult().Data)
+		configs := brokerLoader.LastResult().Data
+		a.BrokerConfigHandler.Bind(configs)
+		syncBrokerFees(ctx, brokerages, wailsEmitter, profileID, configs)
 	})
 	a.RegisterLoader("indices", indexLoader, func(_ context.Context) {
 		swappableIndexReg.Swap(indexLoader.LastResult().Data)
@@ -253,6 +256,23 @@ func (a *App) Startup(ctx context.Context) {
 	refreshSvc.Start(ctx)
 
 	go a.CheckForUpdateOnStartup()
+}
+
+func syncBrokerFees(
+	ctx context.Context,
+	svc *usecase.BrokerageService,
+	emitter *presenter.WailsEmitter,
+	profileID string,
+	configs []*brokerconfig.BrokerConfig,
+) {
+	count, err := svc.SyncFeesFromConfig(ctx, profileID, configs)
+	if err != nil {
+		applog.Warn("broker fee sync", err, nil)
+		return
+	}
+	if count > 0 {
+		emitter.Emit("brokers:fees-synced", map[string]any{"count": count})
+	}
 }
 
 // Shutdown stops background services and closes the database connection.

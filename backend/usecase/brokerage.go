@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/lugassawan/panen/backend/domain/brokerage"
+	"github.com/lugassawan/panen/backend/domain/brokerconfig"
 	"github.com/lugassawan/panen/backend/domain/portfolio"
 )
 
@@ -67,6 +68,43 @@ func (s *BrokerageService) Update(ctx context.Context, a *brokerage.Account) err
 	}
 	a.UpdatedAt = time.Now().UTC()
 	return s.brokerages.Update(ctx, a)
+}
+
+// SyncFeesFromConfig updates fees on non-manual accounts whose BrokerCode
+// matches a config entry. Returns the number of accounts updated.
+func (s *BrokerageService) SyncFeesFromConfig(
+	ctx context.Context,
+	profileID string,
+	configs []*brokerconfig.BrokerConfig,
+) (int, error) {
+	accounts, err := s.brokerages.ListNonManualByProfileID(ctx, profileID)
+	if err != nil {
+		return 0, err
+	}
+	configMap := make(map[string]*brokerconfig.BrokerConfig, len(configs))
+	for _, c := range configs {
+		configMap[c.Code] = c
+	}
+
+	var count int
+	for _, a := range accounts {
+		c, ok := configMap[a.BrokerCode]
+		if !ok {
+			continue
+		}
+		if a.BuyFeePct == c.BuyFeePct && a.SellFeePct == c.SellFeePct && a.SellTaxPct == c.SellTaxPct {
+			continue
+		}
+		a.BuyFeePct = c.BuyFeePct
+		a.SellFeePct = c.SellFeePct
+		a.SellTaxPct = c.SellTaxPct
+		a.UpdatedAt = time.Now().UTC()
+		if err := s.brokerages.Update(ctx, a); err != nil {
+			return count, err
+		}
+		count++
+	}
+	return count, nil
 }
 
 // Delete removes a brokerage account if it has no linked portfolios.
