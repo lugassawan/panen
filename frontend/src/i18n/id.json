@@ -460,7 +460,9 @@
     "creating": "Membuat...",
     "createAccount": "Buat Akun",
     "saving": "Menyimpan...",
-    "saveChanges": "Simpan Perubahan"
+    "saveChanges": "Simpan Perubahan",
+    "searchBroker": "Cari sekuritas...",
+    "feesSynced": "Biaya sekuritas diperbarui untuk {count} akun"
   },
   "alerts": {
     "title": "Peringatan",
