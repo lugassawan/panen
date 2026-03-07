@@ -5,6 +5,7 @@ import {
   ListBrokerageAccounts,
   ListBrokerConfigs,
 } from "../../../wailsjs/go/backend/App";
+import { EventsOn } from "../../../wailsjs/runtime/runtime";
 import BrokerageAccountForm from "../../components/BrokerageAccountForm.svelte";
 import ConfirmDialog from "../../components/ConfirmDialog.svelte";
 import { t } from "../../i18n";
@@ -86,6 +87,14 @@ function cancelDelete() {
 }
 
 load();
+
+$effect(() => {
+  const cancel = EventsOn("brokers:fees-synced", (data: { count: number }) => {
+    toastStore.add(t("brokerage.feesSynced", { count: data.count }), "info");
+    load();
+  });
+  return cancel;
+});
 </script>
 
 <div class="mx-auto max-w-4xl px-4 py-8">
