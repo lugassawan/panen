@@ -4,6 +4,7 @@ package updater
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"time"
@@ -73,9 +74,20 @@ func (i *windowsInstaller) CleanupBackup(installPath string) error {
 }
 
 func copyFileWin(src, dst string) error {
-	data, err := os.ReadFile(src)
+	in, err := os.Open(src)
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(dst, data, 0o755)
+	defer in.Close()
+
+	out, err := os.OpenFile(
+		dst, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755,
+	)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, in)
+	return err
 }

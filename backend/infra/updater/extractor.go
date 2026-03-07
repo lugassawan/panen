@@ -156,12 +156,14 @@ func sanitizePath(destDir, name string) (string, error) {
 		)
 	}
 	clean := filepath.Clean(name)
-	if strings.HasPrefix(clean, "..") {
+	// #nosec G305 — canonical zip-slip guard: verify joined path stays under destDir
+	target := filepath.Join(destDir, clean)
+	if !strings.HasPrefix(
+		target, filepath.Clean(destDir)+string(os.PathSeparator),
+	) {
 		return "", fmt.Errorf(
 			"archive entry escapes destination: %s", name,
 		)
 	}
-	// #nosec G305 — path validated above: not absolute, no ".." prefix
-	target := filepath.Join(destDir, clean)
 	return target, nil
 }

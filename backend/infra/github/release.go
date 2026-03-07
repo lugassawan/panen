@@ -116,7 +116,8 @@ func (c *Client) DownloadAsset(
 		return fmt.Errorf("blocked non-release URL: %s", url)
 	}
 
-	dlClient := &http.Client{Timeout: downloadTimeout}
+	ctx, cancel := context.WithTimeout(ctx, downloadTimeout)
+	defer cancel()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
@@ -124,7 +125,7 @@ func (c *Client) DownloadAsset(
 	}
 	req.Header.Set("Accept", "application/octet-stream")
 
-	resp, err := dlClient.Do(req) //nolint:gosec // URL is validated against allowlist above
+	resp, err := c.http.Do(req) //nolint:gosec // URL is validated against allowlist above
 	if err != nil {
 		return fmt.Errorf("download asset: %w", err)
 	}

@@ -11,6 +11,36 @@ import { updateStore } from "../stores/update.svelte";
 
 import Button from "./Button.svelte";
 
+let dialogEl = $state<HTMLDivElement | null>(null);
+
+$effect(() => {
+  dialogEl?.focus();
+});
+
+function trapFocus(e: KeyboardEvent) {
+  if (e.key === "Escape") {
+    dismiss();
+    return;
+  }
+  if (e.key !== "Tab" || !dialogEl) return;
+
+  const focusable = dialogEl.querySelectorAll<HTMLElement>(
+    'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+  );
+  if (focusable.length === 0) return;
+
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+
+  if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault();
+    first.focus();
+  }
+}
+
 function dismiss() {
   updateStore.reset();
 }
@@ -31,19 +61,16 @@ function startUpdate() {
 
 {#if updateStore.isActive || updateStore.state === "error"}
   <!-- Overlay -->
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-    onkeydown={(e) => {
-      if (e.key === "Escape") dismiss();
-    }}
-  >
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
     <!-- Dialog -->
     <div
+      bind:this={dialogEl}
       class="relative mx-4 w-full max-w-md rounded-xl border border-border-default bg-bg-elevated p-6 shadow-xl"
       role="dialog"
       aria-modal="true"
       aria-label={t("settings.updateDownloading")}
+      tabindex="-1"
+      onkeydown={trapFocus}
     >
       {#if updateStore.state === "downloading"}
         <div class="space-y-4">
