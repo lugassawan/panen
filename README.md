@@ -73,6 +73,7 @@ panen/
 │   ├── lib/components/  # Reusable UI primitives (Button, Input, Select, etc.)
 │   ├── components/      # Shared domain components (ConfirmDialog, Sidebar)
 │   ├── pages/           # Page components organized by domain
+│   ├── i18n/            # Internationalization (en/id translations)
 │   ├── assets/fonts/    # Self-hosted WOFF2 font files
 │   └── ...              # Stores, types, utilities
 ├── tools/lint/        # Custom golangci-lint plugin (panenlint)

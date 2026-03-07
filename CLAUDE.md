@@ -20,13 +20,13 @@ panen/
 │   ├── presenter/       # Per-domain handlers, DTOs, converters
 │   ├── domain/          # Entities, value objects, repository interfaces
 │   ├── usecase/         # Application services (orchestration + validation)
-│   └── infra/           # Database, scraper, platform implementations
+│   └── infra/           # Database, scraper, platform, applog implementations
 ├── frontend/src/        # Svelte 5 components and TypeScript
+│   └── i18n/            # Internationalization (en/id translations)
 ├── frontend/wailsjs/    # Auto-generated Wails bindings (gitignored)
 ├── tools/lint/          # Custom golangci-lint plugin (panenlint)
 ├── build/               # Build assets (app icon)
-├── docs/                # Documentation
-│   └── design-system.md # Design system reference (tokens, components, patterns)
+├── docs/                # Documentation (design-system.md)
 ├── scripts/             # Release and install scripts
 ├── main.go              # Wails entry point
 └── wails.json           # Wails project config
@@ -59,10 +59,11 @@ make release-check     # Validate VERSION against wails.json productVersion
 - **Go**: Standard library style, `gofmt` formatting, tab indentation
 - **Frontend**: 2-space indentation, double quotes, semicolons (Biome enforced)
 - **Branches**: `feat/`, `fix/`, `chore/` prefixes
-- **Worktrees**: Only use git worktrees when running parallel agents on independent tasks — never for single sequential work or when targeting main/master (pre-commit hook blocks direct commits). After work is done, clean up with `git worktree remove <path>` (use `--force` if it has uncommitted changes) and `git branch -D <branch>` to delete the worktree branch
+- **Worktrees**: Do NOT default to worktrees. Only use git worktrees when running parallel agents working on independent tasks simultaneously — a single agent on one task should use a regular branch, never a worktree. Never target main/master (pre-commit hook blocks direct commits). After work is done, clean up with `git worktree remove <path>` (use `--force` if it has uncommitted changes) and `git branch -D <branch>` to delete the worktree branch
 - **Lint warnings**: Always fix the root cause before considering suppression. Refactor code, extract helpers, or restructure queries to satisfy the linter. Only use `//nolint` or `// biome-ignore` as a last resort when a fix is genuinely impossible, and always include a justification comment explaining why.
 - **Code review**: Run code review before creating PRs (e.g., via available code-review skills or agents) unless one was already performed in the current session. Address reviewer feedback to maintain code quality.
 - **PRs**: Title uses `type: description` (same types as commits); body follows `.github/pull_request_template.md`
+- **Deferred tasks**: When planning surfaces improvement ideas not implemented immediately, create GitHub issues to track them. These issues do NOT belong in the PR's `## Issue` section — that section is reserved for issues the PR directly closes/fixes/resolves.
 
 ## Custom Linter (panenlint)
 
@@ -133,6 +134,7 @@ Full reference: `docs/design-system.md`
 - Semantic colors (`bg-primary`, `text-secondary`, `border-default`) adapt to light/dark via CSS variables in `:root` / `.dark`
 - Theme store (`lib/stores/theme.svelte.ts`): light/dark/system, persists to `localStorage`, toggles `.dark` class on `<html>`
 - Mode store (`lib/stores/mode.svelte.ts`): value/dividend, switches accent colors globally
+- Additional stores: `sync.svelte.ts`, `command-palette.svelte.ts`, `toast.svelte.ts`, `alerts.svelte.ts`
 
 ### Typography
 
@@ -142,7 +144,7 @@ Full reference: `docs/design-system.md`
 
 ### Components
 
-Reusable components in `frontend/src/lib/components/`: Button, Input, Select, Badge, Alert, ThemeToggle, ModeTabs, StockCard, SyncIndicator
+Reusable components in `frontend/src/lib/components/`: Alert, Badge, Button, CommandPalette, DataTimestamp, EmptyState, Input, ModeTabs, Select, SortableHeader, StockCard, SyncIndicator, ThemeToggle, Toast, ToastContainer, Tooltip
 
 ### Key Rules
 
@@ -153,7 +155,14 @@ Reusable components in `frontend/src/lib/components/`: Button, Input, Select, Ba
 - Three-layer depth: `bg-secondary` (sidebar) → `bg-primary` (canvas) → `bg-elevated` (cards)
 - Sidebar width: `w-sidebar` (220px)
 - No SvelteKit APIs (`$lib`, `$app/environment`) — use relative imports
-- `localStorage` only for UI preferences (theme); all other state via Go backend
+- `localStorage` only for UI preferences (theme, locale); all other state via Go backend
+
+## Internationalization
+
+- Translation files: `en.json`, `id.json` in `frontend/src/i18n/`
+- Svelte 5 runes-based locale store (`locale.svelte.ts`)
+- `t()` helper from `i18n/index.ts` for user-facing strings
+- Persists to `localStorage`, detects system language
 
 ## Architecture
 
