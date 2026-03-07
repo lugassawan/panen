@@ -6,3 +6,4 @@ export const EventRefreshError = "refresh:error";
 export const EventAlertsUpdated = "alerts:updated";
 export const EventConfigChanged = "config:changed";
 export const EventBrokerFeesSynced = "brokers:fees-synced";
+export const EventUpdateProgress = "update:progress";
