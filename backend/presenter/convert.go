@@ -6,6 +6,7 @@ import (
 	"github.com/lugassawan/panen/backend/domain/alert"
 	"github.com/lugassawan/panen/backend/domain/brokerage"
 	"github.com/lugassawan/panen/backend/domain/checklist"
+	"github.com/lugassawan/panen/backend/domain/dashboard"
 	"github.com/lugassawan/panen/backend/domain/dividend"
 	"github.com/lugassawan/panen/backend/domain/portfolio"
 	"github.com/lugassawan/panen/backend/domain/stock"
@@ -377,6 +378,62 @@ func newTransactionSummaryResponse(s *transaction.Summary) TransactionSummaryRes
 		TotalDividendAmount: s.TotalDividendAmount,
 		TotalFees:           s.TotalFees,
 		TransactionCount:    s.TransactionCount,
+	}
+}
+
+func newDashboardOverviewResponse(o *dashboard.Overview) *DashboardOverviewResponse {
+	portfolios := make([]PortfolioSummaryResponse, len(o.Portfolios))
+	for i, ps := range o.Portfolios {
+		portfolios[i] = PortfolioSummaryResponse{
+			ID: ps.ID, Name: ps.Name, Mode: ps.Mode,
+			MarketValue: ps.MarketValue, CostBasis: ps.CostBasis,
+			PLAmount: ps.PLAmount, PLPercent: ps.PLPercent, Weight: ps.Weight,
+		}
+	}
+
+	gainers := make([]HoldingPLResponse, len(o.TopGainers))
+	for i, h := range o.TopGainers {
+		gainers[i] = newHoldingPLResponse(h)
+	}
+	losers := make([]HoldingPLResponse, len(o.TopLosers))
+	for i, h := range o.TopLosers {
+		losers[i] = newHoldingPLResponse(h)
+	}
+
+	portfolioAlloc := make([]AllocationItemResponse, len(o.PortfolioAllocation))
+	for i, a := range o.PortfolioAllocation {
+		portfolioAlloc[i] = AllocationItemResponse{Label: a.Label, Value: a.Value, Pct: a.Pct}
+	}
+	sectorAlloc := make([]AllocationItemResponse, len(o.SectorAllocation))
+	for i, a := range o.SectorAllocation {
+		sectorAlloc[i] = AllocationItemResponse{Label: a.Label, Value: a.Value, Pct: a.Pct}
+	}
+
+	txns := make([]TransactionRecordResponse, len(o.RecentTransactions))
+	for i, r := range o.RecentTransactions {
+		txns[i] = newTransactionRecordResponse(r)
+	}
+
+	return &DashboardOverviewResponse{
+		TotalMarketValue:    o.TotalMarketValue,
+		TotalCostBasis:      o.TotalCostBasis,
+		TotalPLAmount:       o.TotalPLAmount,
+		TotalPLPercent:      o.TotalPLPercent,
+		TotalDividendIncome: o.TotalDividendIncome,
+		Portfolios:          portfolios,
+		TopGainers:          gainers,
+		TopLosers:           losers,
+		PortfolioAllocation: portfolioAlloc,
+		SectorAllocation:    sectorAlloc,
+		RecentTransactions:  txns,
+	}
+}
+
+func newHoldingPLResponse(h dashboard.HoldingPL) HoldingPLResponse {
+	return HoldingPLResponse{
+		Ticker: h.Ticker, PortfolioID: h.PortfolioID, PortfolioName: h.PortfolioName,
+		MarketValue: h.MarketValue, CostBasis: h.CostBasis,
+		PLAmount: h.PLAmount, PLPercent: h.PLPercent,
 	}
 }
 
