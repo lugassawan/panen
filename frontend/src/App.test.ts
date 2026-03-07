@@ -196,6 +196,17 @@ describe("App navigation", () => {
     expect(screen.queryByLabelText("Stock ticker")).not.toBeInTheDocument();
   });
 
+  it("switches to Compare page when clicking Compare nav", async () => {
+    const user = userEvent.setup();
+    render(App);
+
+    const nav = screen.getByRole("navigation", { name: /main/i });
+    await user.click(within(nav).getByText("Compare"));
+
+    expect(await screen.findByText("Stock Comparison")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Stock ticker")).not.toBeInTheDocument();
+  });
+
   it("switches to Portfolio page when clicking Portfolio nav", async () => {
     const user = userEvent.setup();
     render(App);

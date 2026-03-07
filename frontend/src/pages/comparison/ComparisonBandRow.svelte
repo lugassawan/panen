@@ -1,5 +1,5 @@
 <script lang="ts">
-import { formatDecimal } from "../../lib/format";
+import { formatDecimal, percentInRange } from "../../lib/format";
 import type { BandStats, StockValuationResponse } from "../../lib/types";
 
 let {
@@ -13,11 +13,6 @@ let {
   bandKey: "pbvBand" | "perBand";
   valueKey: "pbv" | "per";
 } = $props();
-
-function percentInRange(value: number, min: number, max: number): number {
-  if (max === min) return 50;
-  return Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
-}
 </script>
 
 <tr class="border-t border-border-default">

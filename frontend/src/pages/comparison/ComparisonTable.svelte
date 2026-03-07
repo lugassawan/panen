@@ -2,7 +2,7 @@
 import { t } from "../../i18n";
 import Badge from "../../lib/components/Badge.svelte";
 import DataTimestamp from "../../lib/components/DataTimestamp.svelte";
-import { formatRupiah } from "../../lib/format";
+import { formatRupiah, percentInRange } from "../../lib/format";
 import type { StockValuationResponse, Verdict } from "../../lib/types";
 import { getVerdictDisplay } from "../../lib/verdict";
 import ComparisonBandRow from "./ComparisonBandRow.svelte";
@@ -16,11 +16,6 @@ import {
 let { results }: { results: (StockValuationResponse | null)[] } = $props();
 
 let successResults = $derived(results.filter((r): r is StockValuationResponse => r !== null));
-
-function percentInRange(value: number, min: number, max: number): number {
-  if (max === min) return 50;
-  return Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
-}
 
 function getMetricValues(metric: MetricConfig): (number | null)[] {
   return results.map((r) => (r ? (r[metric.key] as number) : null));

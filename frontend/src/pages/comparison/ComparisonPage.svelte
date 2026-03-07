@@ -94,7 +94,6 @@ async function compare() {
 
 let results = $derived(slots.map((s) => s.result));
 let successCount = $derived(results.filter((r) => r !== null).length);
-let totalFilled = $derived(slots.filter((s) => s.code.trim()).length);
 </script>
 
 <div class="mx-auto max-w-5xl px-4 py-8">
@@ -196,9 +195,9 @@ let totalFilled = $derived(slots.filter((s) => s.code.trim()).length);
       >
         {comparing ? t("comparison.comparing") : t("comparison.compare")}
       </button>
-      {#if hasCompared && successCount < totalFilled}
+      {#if hasCompared && successCount < filledCount}
         <span class="text-xs text-warning">
-          {t("comparison.partialResults", { success: successCount, total: totalFilled })}
+          {t("comparison.partialResults", { success: successCount, total: filledCount })}
         </span>
       {/if}
     </div>
