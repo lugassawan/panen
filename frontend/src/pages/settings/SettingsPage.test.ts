@@ -44,6 +44,20 @@ vi.mock("../../i18n", () => ({
       "settings.noBackups": "No backups yet",
       "settings.backupTooltip":
         "Daily backups are created automatically on startup. Backups older than 7 days are removed.",
+      "settings.debugAndLogs": "Debug & Logs",
+      "settings.debugMode": "Debug Mode",
+      "settings.debugModeTooltip":
+        "Enable verbose logging for troubleshooting. Increases log file size.",
+      "settings.debugEnabled": "Debug mode enabled",
+      "settings.debugDisabled": "Debug mode disabled",
+      "settings.logFiles": "Log Files",
+      "settings.logSize": "Total Size",
+      "settings.logDateRange": "Date Range",
+      "settings.exportLogs": "Export Logs",
+      "settings.exportingLogs": "Exporting...",
+      "settings.logsExported": "Logs exported successfully",
+      "settings.logsExportError": "Export failed: {error}",
+      "settings.noLogs": "No logs yet",
       "common.loading": "Loading...",
       "format.lastUpdated": "Last updated",
       "format.notSynced": "Not synced yet",
@@ -92,6 +106,10 @@ const mockCheckForUpdate = vi.fn();
 const mockOpenReleaseURL = vi.fn();
 const mockGetBackupStatus = vi.fn();
 const mockCreateManualBackup = vi.fn();
+const mockIsDebugMode = vi.fn();
+const mockSetDebugMode = vi.fn();
+const mockExportLogs = vi.fn();
+const mockGetLogStats = vi.fn();
 
 vi.mock("../../../wailsjs/go/backend/App", () => ({
   GetRefreshSettings: (...args: unknown[]) => mockGetRefreshSettings(...args),
@@ -102,6 +120,10 @@ vi.mock("../../../wailsjs/go/backend/App", () => ({
   OpenReleaseURL: (...args: unknown[]) => mockOpenReleaseURL(...args),
   GetBackupStatus: (...args: unknown[]) => mockGetBackupStatus(...args),
   CreateManualBackup: (...args: unknown[]) => mockCreateManualBackup(...args),
+  IsDebugMode: (...args: unknown[]) => mockIsDebugMode(...args),
+  SetDebugMode: (...args: unknown[]) => mockSetDebugMode(...args),
+  ExportLogs: (...args: unknown[]) => mockExportLogs(...args),
+  GetLogStats: (...args: unknown[]) => mockGetLogStats(...args),
 }));
 
 import SettingsPage from "./SettingsPage.svelte";
@@ -115,11 +137,22 @@ describe("SettingsPage", () => {
     mockCheckForUpdate.mockReset();
     mockGetBackupStatus.mockReset();
     mockCreateManualBackup.mockReset();
+    mockIsDebugMode.mockReset();
+    mockSetDebugMode.mockReset();
+    mockExportLogs.mockReset();
+    mockGetLogStats.mockReset();
     mockGetBackupStatus.mockResolvedValue({
       lastBackupDate: "",
       backupCount: 0,
       totalSizeBytes: 0,
       dbSizeBytes: 0,
+    });
+    mockIsDebugMode.mockResolvedValue(false);
+    mockGetLogStats.mockResolvedValue({
+      fileCount: 0,
+      totalBytes: 0,
+      oldestDate: "",
+      newestDate: "",
     });
   });
 
@@ -210,5 +243,94 @@ describe("SettingsPage", () => {
       expect(screen.getByText("3")).toBeInTheDocument();
       expect(screen.getByRole("button", { name: /Create Backup/i })).toBeInTheDocument();
     });
+  });
+
+  it("renders debug and logs section", async () => {
+    mockGetRefreshSettings.mockResolvedValueOnce({
+      autoRefreshEnabled: true,
+      intervalMinutes: 720,
+      lastRefreshedAt: "",
+    });
+    mockGetAppVersion.mockResolvedValueOnce("1.0.0");
+
+    render(SettingsPage);
+
+    await waitFor(() => {
+      expect(screen.getByText("Debug & Logs")).toBeInTheDocument();
+      expect(screen.getByText("Debug Mode")).toBeInTheDocument();
+      expect(screen.getByText("Log Files")).toBeInTheDocument();
+      expect(screen.getByText("Total Size")).toBeInTheDocument();
+    });
+  });
+
+  it("renders log stats with file count and date range", async () => {
+    mockGetRefreshSettings.mockResolvedValueOnce({
+      autoRefreshEnabled: true,
+      intervalMinutes: 720,
+      lastRefreshedAt: "",
+    });
+    mockGetAppVersion.mockResolvedValueOnce("1.0.0");
+    mockGetLogStats.mockResolvedValueOnce({
+      fileCount: 5,
+      totalBytes: 10240,
+      oldestDate: "2026-03-01",
+      newestDate: "2026-03-07",
+    });
+
+    render(SettingsPage);
+
+    await waitFor(() => {
+      expect(screen.getByText("5")).toBeInTheDocument();
+      expect(screen.getByText("10240 B")).toBeInTheDocument();
+      expect(screen.getByText("2026-03-01 — 2026-03-07")).toBeInTheDocument();
+    });
+  });
+
+  it("renders export logs button", async () => {
+    mockGetRefreshSettings.mockResolvedValueOnce({
+      autoRefreshEnabled: true,
+      intervalMinutes: 720,
+      lastRefreshedAt: "",
+    });
+    mockGetAppVersion.mockResolvedValueOnce("1.0.0");
+    mockGetLogStats.mockResolvedValueOnce({
+      fileCount: 2,
+      totalBytes: 512,
+      oldestDate: "2026-03-06",
+      newestDate: "2026-03-07",
+    });
+
+    render(SettingsPage);
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /Export Logs/i })).toBeInTheDocument();
+    });
+  });
+
+  it("calls SetDebugMode when debug checkbox is toggled", async () => {
+    mockGetRefreshSettings.mockResolvedValueOnce({
+      autoRefreshEnabled: true,
+      intervalMinutes: 720,
+      lastRefreshedAt: "",
+    });
+    mockGetAppVersion.mockResolvedValueOnce("1.0.0");
+    mockSetDebugMode.mockResolvedValue(undefined);
+
+    render(SettingsPage);
+
+    await waitFor(() => {
+      expect(screen.getByText("Debug Mode")).toBeInTheDocument();
+    });
+
+    const checkboxes = screen.getAllByRole("checkbox");
+    const debugCheckbox = checkboxes.find(
+      (cb) => !cb.closest("label")?.textContent?.includes("Auto Refresh"),
+    );
+    if (debugCheckbox) {
+      debugCheckbox.click();
+      await waitFor(() => {
+        expect(mockSetDebugMode).toHaveBeenCalledWith(true);
+      });
+    }
   });
 });

@@ -72,7 +72,20 @@
     "backupCreated": "Cadangan berhasil dibuat",
     "backupError": "Cadangan gagal: {error}",
     "noBackups": "Belum ada cadangan",
-    "backupTooltip": "Cadangan harian dibuat otomatis saat aplikasi dimulai. Cadangan lebih dari 7 hari akan dihapus."
+    "backupTooltip": "Cadangan harian dibuat otomatis saat aplikasi dimulai. Cadangan lebih dari 7 hari akan dihapus.",
+    "debugAndLogs": "Debug & Log",
+    "debugMode": "Mode Debug",
+    "debugModeTooltip": "Aktifkan logging detail untuk pemecahan masalah. Meningkatkan ukuran file log.",
+    "debugEnabled": "Mode debug diaktifkan",
+    "debugDisabled": "Mode debug dinonaktifkan",
+    "logFiles": "File Log",
+    "logSize": "Ukuran Total",
+    "logDateRange": "Rentang Tanggal",
+    "exportLogs": "Ekspor Log",
+    "exportingLogs": "Mengekspor...",
+    "logsExported": "Log berhasil diekspor",
+    "logsExportError": "Ekspor gagal: {error}",
+    "noLogs": "Belum ada log"
   },
   "format": {
     "justNow": "baru saja",

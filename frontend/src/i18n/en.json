@@ -72,7 +72,20 @@
     "backupCreated": "Backup created successfully",
     "backupError": "Backup failed: {error}",
     "noBackups": "No backups yet",
-    "backupTooltip": "Daily backups are created automatically on startup. Backups older than 7 days are removed."
+    "backupTooltip": "Daily backups are created automatically on startup. Backups older than 7 days are removed.",
+    "debugAndLogs": "Debug & Logs",
+    "debugMode": "Debug Mode",
+    "debugModeTooltip": "Enable verbose logging for troubleshooting. Increases log file size.",
+    "debugEnabled": "Debug mode enabled",
+    "debugDisabled": "Debug mode disabled",
+    "logFiles": "Log Files",
+    "logSize": "Total Size",
+    "logDateRange": "Date Range",
+    "exportLogs": "Export Logs",
+    "exportingLogs": "Exporting...",
+    "logsExported": "Logs exported successfully",
+    "logsExportError": "Export failed: {error}",
+    "noLogs": "No logs yet"
   },
   "format": {
     "justNow": "just now",

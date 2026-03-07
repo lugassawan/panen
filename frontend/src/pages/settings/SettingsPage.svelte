@@ -3,10 +3,14 @@ import { onMount } from "svelte";
 import {
   CheckForUpdate,
   CreateManualBackup,
+  ExportLogs,
   GetAppVersion,
   GetBackupStatus,
+  GetLogStats,
   GetRefreshSettings,
+  IsDebugMode,
   OpenReleaseURL,
+  SetDebugMode,
   TriggerRefresh,
   UpdateRefreshSettings,
 } from "../../../wailsjs/go/backend/App";
@@ -45,6 +49,15 @@ let backupStatus = $state<{
 } | null>(null);
 let backupCreating = $state(false);
 
+let debugMode = $state(false);
+let logStats = $state<{
+  fileCount: number;
+  totalBytes: number;
+  oldestDate: string;
+  newestDate: string;
+} | null>(null);
+let exportingLogs = $state(false);
+
 onMount(async () => {
   try {
     const settings = await GetRefreshSettings();
@@ -63,6 +76,18 @@ onMount(async () => {
 
   try {
     backupStatus = await GetBackupStatus();
+  } catch {
+    // non-critical
+  }
+
+  try {
+    debugMode = await IsDebugMode();
+  } catch {
+    // non-critical
+  }
+
+  try {
+    logStats = await GetLogStats();
   } catch {
     // non-critical
   }
@@ -102,6 +127,33 @@ async function checkForUpdates() {
 
 function openRelease(url: string) {
   OpenReleaseURL(url);
+}
+
+async function toggleDebugMode() {
+  const newValue = !debugMode;
+  try {
+    await SetDebugMode(newValue);
+    debugMode = newValue;
+    toastStore.add(t(newValue ? "settings.debugEnabled" : "settings.debugDisabled"), "success");
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    toastStore.add(msg, "error");
+  }
+}
+
+async function exportLogs() {
+  exportingLogs = true;
+  try {
+    const path = await ExportLogs();
+    if (path) {
+      toastStore.add(t("settings.logsExported"), "success");
+    }
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    toastStore.add(t("settings.logsExportError", { error: msg }), "error");
+  } finally {
+    exportingLogs = false;
+  }
 }
 
 async function createBackup() {
@@ -234,6 +286,54 @@ async function createBackup() {
           class="w-full rounded border border-green-700 px-3 py-2 text-sm font-medium text-green-700 transition-fast hover:bg-green-100 disabled:opacity-60 focus-ring dark:hover:bg-green-900/30"
         >
           {backupCreating ? t("settings.creatingBackup") : t("settings.createBackup")}
+        </button>
+      </div>
+    </div>
+
+    <div>
+      <p class="mb-3 text-sm text-text-secondary">{t("settings.debugAndLogs")}</p>
+      <div class="space-y-4 rounded-lg border border-border-default bg-bg-elevated p-4">
+        <label class="flex items-center justify-between">
+          <Tooltip text={t("settings.debugModeTooltip")}>
+            <span class="text-sm text-text-primary underline decoration-dotted cursor-help">{t("settings.debugMode")}</span>
+          </Tooltip>
+          <input
+            type="checkbox"
+            checked={debugMode}
+            onchange={toggleDebugMode}
+            class="h-4 w-4 rounded border-border-default text-green-700 focus-ring"
+          />
+        </label>
+
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-text-primary">{t("settings.logFiles")}</span>
+          <span class="font-mono text-sm text-text-secondary">
+            {logStats?.fileCount ?? 0}
+          </span>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-text-primary">{t("settings.logSize")}</span>
+          <span class="font-mono text-sm text-text-secondary">
+            {formatFileSize(logStats?.totalBytes ?? 0)}
+          </span>
+        </div>
+
+        {#if logStats && logStats.oldestDate && logStats.newestDate}
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-text-primary">{t("settings.logDateRange")}</span>
+            <span class="font-mono text-sm text-text-secondary">
+              {logStats.oldestDate} — {logStats.newestDate}
+            </span>
+          </div>
+        {/if}
+
+        <button
+          onclick={exportLogs}
+          disabled={exportingLogs || (logStats?.fileCount ?? 0) === 0}
+          class="w-full rounded border border-green-700 px-3 py-2 text-sm font-medium text-green-700 transition-fast hover:bg-green-100 disabled:opacity-60 focus-ring dark:hover:bg-green-900/30"
+        >
+          {exportingLogs ? t("settings.exportingLogs") : t("settings.exportLogs")}
         </button>
       </div>
     </div>
