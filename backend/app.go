@@ -148,18 +148,19 @@ func (a *App) Startup(ctx context.Context) {
 	brokerLoader := brokerConfigLoader.NewLoader(dataDir, liveDeps)
 	brokerResult := brokerLoader.Load(ctx)
 
-	indexLoader := watchlistconfig.NewIndexLoader(dataDir)
-	indexRegistry := indexLoader.Load(ctx)
+	indexLoader := watchlistconfig.NewIndexLoader(dataDir, liveDeps)
+	indexResult := indexLoader.Load(ctx)
 	sectorRegistry := watchlistconfig.NewSectorRegistry()
+	swappableIndexReg := watchlistconfig.NewSwappableIndexRegistry(indexResult.Data)
 	watchlistSvc := usecase.NewWatchlistService(
 		watchlistRepo,
 		watchlistItemRepo,
 		stockRepo,
-		indexRegistry,
+		swappableIndexReg,
 		sectorRegistry,
 	)
 
-	screenerSvc := usecase.NewScreenerService(stockRepo, indexRegistry, sectorRegistry)
+	screenerSvc := usecase.NewScreenerService(stockRepo, swappableIndexReg, sectorRegistry)
 	a.ScreenerHandler.Bind(ctx, screenerSvc)
 
 	priceHistoryRepo := database.NewPriceHistoryRepo(conn)
