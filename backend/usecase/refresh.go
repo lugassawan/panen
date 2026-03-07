@@ -15,9 +15,6 @@ import (
 )
 
 const (
-	eventRefreshError   = "refresh:error"
-	eventRefreshSummary = "refresh:summary"
-
 	stateIdle    = "idle"
 	stateSyncing = "syncing"
 	stateError   = "error"
@@ -160,7 +157,7 @@ func (r *RefreshService) loop(ctx context.Context) {
 	defer close(r.done)
 
 	if err := r.refresh(ctx); err != nil {
-		r.emitter.Emit(eventRefreshError, err.Error())
+		r.emitter.Emit(shared.EventRefreshError, err.Error())
 	}
 
 	interval := r.readInterval()
@@ -180,7 +177,7 @@ func (r *RefreshService) loop(ctx context.Context) {
 				ticker.Reset(interval)
 			}
 			if err := r.refresh(ctx); err != nil {
-				r.emitter.Emit(eventRefreshError, err.Error())
+				r.emitter.Emit(shared.EventRefreshError, err.Error())
 			}
 		}
 	}
@@ -212,7 +209,7 @@ func (r *RefreshService) setStatus(s RefreshStatus) {
 	r.mu.Lock()
 	r.status = s
 	r.mu.Unlock()
-	r.emitter.Emit("refresh:status", s)
+	r.emitter.Emit(shared.EventRefreshStatus, s)
 }
 
 func (r *RefreshService) refresh(ctx context.Context) error {
@@ -251,11 +248,11 @@ func (r *RefreshService) refresh(ctx context.Context) error {
 		}
 		progress.Index = i
 		progress.Total = total
-		r.emitter.Emit("refresh:progress", progress)
+		r.emitter.Emit(shared.EventRefreshProgress, progress)
 	}
 
 	duration := time.Since(start)
-	r.emitter.Emit(eventRefreshSummary, RefreshSummary{
+	r.emitter.Emit(shared.EventRefreshSummary, RefreshSummary{
 		Total:    total,
 		Fetched:  fetched,
 		Skipped:  skipped,
@@ -269,7 +266,7 @@ func (r *RefreshService) refresh(ctx context.Context) error {
 	if err == nil {
 		cfg.LastRefreshedAt = now
 		if saveErr := r.settings.SaveRefreshSettings(ctx, cfg); saveErr != nil {
-			r.emitter.Emit(eventRefreshError, saveErr.Error())
+			r.emitter.Emit(shared.EventRefreshError, saveErr.Error())
 		}
 	}
 
@@ -295,7 +292,7 @@ func (r *RefreshService) emitAlertCount(ctx context.Context) {
 	if err != nil {
 		return
 	}
-	r.emitter.Emit("alerts:updated", count)
+	r.emitter.Emit(shared.EventAlertsUpdated, count)
 }
 
 func (r *RefreshService) refreshTicker(ctx context.Context, ticker string) RefreshProgress {

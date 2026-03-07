@@ -13,6 +13,7 @@
  */
 
 import { EventsOn } from "../../../wailsjs/runtime/runtime";
+import { EventRefreshProgress, EventRefreshStatus, EventRefreshSummary } from "../events";
 import type { RefreshProgress, RefreshStatus, RefreshSummary } from "../types";
 
 const browser = typeof window !== "undefined";
@@ -23,13 +24,13 @@ function createSyncStore() {
   let lastSummary = $state<RefreshSummary | null>(null);
 
   if (browser) {
-    EventsOn("refresh:status", (data: RefreshStatus) => {
+    EventsOn(EventRefreshStatus, (data: RefreshStatus) => {
       status = data;
     });
-    EventsOn("refresh:progress", (data: RefreshProgress) => {
+    EventsOn(EventRefreshProgress, (data: RefreshProgress) => {
       currentProgress = data;
     });
-    EventsOn("refresh:summary", (data: RefreshSummary) => {
+    EventsOn(EventRefreshSummary, (data: RefreshSummary) => {
       lastSummary = data;
       currentProgress = null;
     });
