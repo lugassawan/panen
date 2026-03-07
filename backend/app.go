@@ -12,6 +12,7 @@ import (
 	brokerConfigLoader "github.com/lugassawan/panen/backend/infra/brokerconfig"
 	"github.com/lugassawan/panen/backend/infra/database"
 	"github.com/lugassawan/panen/backend/infra/github"
+	"github.com/lugassawan/panen/backend/infra/liveconfig"
 	"github.com/lugassawan/panen/backend/infra/platform"
 	"github.com/lugassawan/panen/backend/infra/scraper"
 	"github.com/lugassawan/panen/backend/infra/watchlistconfig"
@@ -143,8 +144,9 @@ func (a *App) Startup(ctx context.Context) {
 		wailsRuntime.LogFatalf(ctx, "ensure default user: %v", err)
 	}
 
-	loader := brokerConfigLoader.NewLoader(dataDir)
-	brokerConfigs := loader.Load(ctx)
+	liveDeps := liveconfig.Deps{}
+	brokerLoader := brokerConfigLoader.NewLoader(dataDir, liveDeps)
+	brokerResult := brokerLoader.Load(ctx)
 
 	indexLoader := watchlistconfig.NewIndexLoader(dataDir)
 	indexRegistry := indexLoader.Load(ctx)
@@ -195,7 +197,7 @@ func (a *App) Startup(ctx context.Context) {
 	a.PortfolioHandler.Bind(ctx, portfolios, sectorRegistry)
 	a.DividendHandler.Bind(ctx, dividendSvc)
 	a.BrokerageHandler.Bind(ctx, profileID, brokerages)
-	a.BrokerConfigHandler.Bind(brokerConfigs)
+	a.BrokerConfigHandler.Bind(brokerResult.Data)
 	a.WatchlistHandler.Bind(ctx, profileID, watchlistSvc)
 	a.RefreshHandler.Bind(ctx, refreshSvc, settingsRepo)
 
