@@ -1,5 +1,6 @@
 <script lang="ts">
 import { Receipt } from "lucide-svelte";
+import { ListPortfolios, ListTransactions } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
 import EmptyState from "../../lib/components/EmptyState.svelte";
 import Input from "../../lib/components/Input.svelte";
@@ -13,7 +14,6 @@ import type {
   TransactionRecordResponse,
   TransactionType,
 } from "../../lib/types";
-import { ListPortfolios, ListTransactions } from "../../wailsjs/go/backend/App";
 
 type FilterType = "ALL" | TransactionType;
 
