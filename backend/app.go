@@ -129,6 +129,8 @@ func (a *App) Startup(ctx context.Context) {
 	watchlistItemRepo := database.NewWatchlistItemRepo(conn)
 	yahoo := scraper.NewYahoo()
 
+	wailsEmitter := presenter.NewWailsEmitter(ctx)
+
 	stocks := usecase.NewStockService(stockRepo, yahoo)
 	peakRepo := database.NewPeakRepo(conn)
 	portfolios := usecase.NewPortfolioService(
@@ -139,7 +141,7 @@ func (a *App) Startup(ctx context.Context) {
 		stockRepo,
 		peakRepo,
 	)
-	brokerages := usecase.NewBrokerageService(brokerageRepo, portfolioRepo)
+	brokerages := usecase.NewBrokerageService(brokerageRepo, portfolioRepo, wailsEmitter)
 
 	profileID, err := ensureDefaultUser(ctx, userRepo)
 	if err != nil {
@@ -157,7 +159,6 @@ func (a *App) Startup(ctx context.Context) {
 	a.LogHandler.Bind(ctx, settingsRepo, a.logDir)
 
 	tickerCollector := database.NewTickerCollector(conn)
-	wailsEmitter := presenter.NewWailsEmitter(ctx)
 
 	liveDeps := liveconfig.Deps{
 		Settings: settingsRepo,
@@ -210,7 +211,11 @@ func (a *App) Startup(ctx context.Context) {
 
 	a.Init(ctx)
 	a.RegisterLoader("brokers", brokerLoader, func(_ context.Context) {
-		a.BrokerConfigHandler.Bind(brokerLoader.LastResult().Data)
+		configs := brokerLoader.LastResult().Data
+		a.BrokerConfigHandler.Bind(configs)
+		if _, err := brokerages.SyncFeesFromConfig(ctx, profileID, configs); err != nil {
+			applog.Warn("broker fee sync", err, nil)
+		}
 	})
 	a.RegisterLoader("indices", indexLoader, func(_ context.Context) {
 		swappableIndexReg.Swap(indexLoader.LastResult().Data)

@@ -59,3 +59,34 @@ func TestListBrokerConfigsEmpty(t *testing.T) {
 		t.Errorf("got %d configs for nil input, want 0", len(result))
 	}
 }
+
+func TestSearchBrokerConfigs(t *testing.T) {
+	configs := []*brokerconfig.BrokerConfig{
+		{Code: "AJ", Name: "Ajaib", BuyFeePct: 0.15, SellFeePct: 0.25, SellTaxPct: 0.1},
+		{Code: "ST", Name: "Stockbit", BuyFeePct: 0.10, SellFeePct: 0.20, SellTaxPct: 0.1},
+		{Code: "IP", Name: "IPOT", BuyFeePct: 0.19, SellFeePct: 0.29, SellTaxPct: 0.1},
+	}
+	handler := NewBrokerConfigHandler(configs)
+
+	tests := []struct {
+		name  string
+		query string
+		want  int
+	}{
+		{name: "empty query returns all", query: "", want: 3},
+		{name: "match by name", query: "Ajaib", want: 1},
+		{name: "match by code", query: "IP", want: 1},
+		{name: "match by name substring", query: "Stock", want: 1},
+		{name: "case insensitive", query: "ajaib", want: 1},
+		{name: "no results", query: "XYZ", want: 0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := handler.SearchBrokerConfigs(tt.query)
+			if len(result) != tt.want {
+				t.Errorf("SearchBrokerConfigs(%q) returned %d results, want %d", tt.query, len(result), tt.want)
+			}
+		})
+	}
+}

@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/lugassawan/panen/backend/domain/shared"
 	"github.com/lugassawan/panen/backend/infra/applog"
 )
 
@@ -263,7 +264,7 @@ func (l *Loader[T]) detectChange(ctx context.Context, newHash string) {
 	})
 
 	if l.deps.Emitter != nil {
-		l.deps.Emitter.Emit("config:changed", map[string]string{
+		l.deps.Emitter.Emit(shared.EventConfigChanged, map[string]string{
 			"name": l.cfg.Name,
 			"hash": newHash,
 		})

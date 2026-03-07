@@ -460,7 +460,9 @@
     "creating": "Creating...",
     "createAccount": "Create Account",
     "saving": "Saving...",
-    "saveChanges": "Save Changes"
+    "saveChanges": "Save Changes",
+    "searchBroker": "Search brokers...",
+    "feesSynced": "Broker fees updated for {count} account(s)"
   },
   "alerts": {
     "title": "Alerts",

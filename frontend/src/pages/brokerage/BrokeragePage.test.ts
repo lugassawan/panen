@@ -9,6 +9,10 @@ const mockDeleteBrokerageAccount = vi.fn();
 const mockCreateBrokerageAccount = vi.fn();
 const mockUpdateBrokerageAccount = vi.fn();
 
+vi.mock("../../../wailsjs/runtime/runtime", () => ({
+  EventsOn: vi.fn(() => () => {}),
+}));
+
 vi.mock("../../../wailsjs/go/backend/App", () => ({
   ListBrokerageAccounts: (...args: unknown[]) => mockListBrokerageAccounts(...args),
   ListBrokerConfigs: (...args: unknown[]) => mockListBrokerConfigs(...args),

@@ -30,6 +30,12 @@ const brokerConfigs: BrokerConfigResponse[] = [
   },
 ];
 
+async function selectBroker(user: ReturnType<typeof userEvent.setup>, name: string) {
+  const combobox = screen.getByRole("combobox");
+  await user.click(combobox);
+  await user.click(screen.getByText(name));
+}
+
 describe("BrokerageAccountForm", () => {
   beforeEach(() => {
     mockCreateBrokerageAccount.mockReset();
@@ -46,10 +52,12 @@ describe("BrokerageAccountForm", () => {
     expect(screen.getByRole("button", { name: /create/i })).toBeInTheDocument();
   });
 
-  it("renders broker picker when configs provided", () => {
+  it("renders broker picker when configs provided", async () => {
     render(BrokerageAccountForm, { props: { onSaved: vi.fn(), brokerConfigs } });
+    const user = userEvent.setup();
 
     expect(screen.getByLabelText(/broker$/i)).toBeInTheDocument();
+    await user.click(screen.getByRole("combobox"));
     expect(screen.getByText(/ajaib sekuritas/i)).toBeInTheDocument();
   });
 
@@ -57,8 +65,7 @@ describe("BrokerageAccountForm", () => {
     render(BrokerageAccountForm, { props: { onSaved: vi.fn(), brokerConfigs } });
     const user = userEvent.setup();
 
-    const select = screen.getByLabelText(/broker$/i);
-    await user.selectOptions(select, "XC");
+    await selectBroker(user, "Ajaib Sekuritas");
 
     expect(screen.getByLabelText(/broker name/i)).toHaveValue("Ajaib Sekuritas");
     expect(screen.getByLabelText(/buy fee/i)).toHaveValue(0.15);
@@ -80,7 +87,7 @@ describe("BrokerageAccountForm", () => {
     render(BrokerageAccountForm, { props: { onSaved, brokerConfigs } });
     const user = userEvent.setup();
 
-    await user.selectOptions(screen.getByLabelText(/broker$/i), "XC");
+    await selectBroker(user, "Ajaib Sekuritas");
     await user.click(screen.getByRole("button", { name: /create/i }));
 
     expect(mockCreateBrokerageAccount).toHaveBeenCalledWith(
@@ -110,7 +117,7 @@ describe("BrokerageAccountForm", () => {
     render(BrokerageAccountForm, { props: { onSaved: vi.fn(), brokerConfigs } });
     const user = userEvent.setup();
 
-    await user.selectOptions(screen.getByLabelText(/broker$/i), "XC");
+    await selectBroker(user, "Ajaib Sekuritas");
     await user.click(screen.getByRole("button", { name: /create/i }));
 
     expect(screen.getByRole("alert")).toHaveTextContent(/network error/i);

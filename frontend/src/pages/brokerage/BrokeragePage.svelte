@@ -5,10 +5,12 @@ import {
   ListBrokerageAccounts,
   ListBrokerConfigs,
 } from "../../../wailsjs/go/backend/App";
+import { EventsOn } from "../../../wailsjs/runtime/runtime";
 import BrokerageAccountForm from "../../components/BrokerageAccountForm.svelte";
 import ConfirmDialog from "../../components/ConfirmDialog.svelte";
 import { t } from "../../i18n";
 import Button from "../../lib/components/Button.svelte";
+import { EventBrokerFeesSynced } from "../../lib/events";
 import { formatPercent } from "../../lib/format";
 import { toastStore } from "../../lib/stores/toast.svelte";
 import type { BrokerageAccountResponse, BrokerConfigResponse } from "../../lib/types";
@@ -86,6 +88,14 @@ function cancelDelete() {
 }
 
 load();
+
+$effect(() => {
+  const cancel = EventsOn(EventBrokerFeesSynced, (data: { count: number }) => {
+    toastStore.add(t("brokerage.feesSynced", { count: data.count }), "info");
+    load();
+  });
+  return cancel;
+});
 </script>
 
 <div class="mx-auto max-w-4xl px-4 py-8">

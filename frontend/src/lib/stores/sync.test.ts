@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { EventRefreshProgress, EventRefreshStatus, EventRefreshSummary } from "../events";
 
 // Capture event handlers registered by the store
 const eventHandlers: Record<string, (...args: unknown[]) => void> = {};
@@ -37,7 +38,7 @@ describe("sync store", () => {
 
   it("updates state on refresh:status event", async () => {
     const sync = await loadSync();
-    eventHandlers["refresh:status"]({
+    eventHandlers[EventRefreshStatus]({
       state: "syncing",
       lastRefresh: "2026-03-04T10:00:00Z",
     });
@@ -48,7 +49,7 @@ describe("sync store", () => {
 
   it("updates current ticker and progress on refresh:progress event", async () => {
     const sync = await loadSync();
-    eventHandlers["refresh:progress"]({
+    eventHandlers[EventRefreshProgress]({
       ticker: "BBCA",
       index: 2,
       total: 10,
@@ -67,7 +68,7 @@ describe("sync store", () => {
     const sync = await loadSync();
 
     // First set some progress
-    eventHandlers["refresh:progress"]({
+    eventHandlers[EventRefreshProgress]({
       ticker: "BBRI",
       index: 4,
       total: 5,
@@ -76,7 +77,7 @@ describe("sync store", () => {
     expect(sync.currentTicker).toBe("BBRI");
 
     // Then receive summary
-    eventHandlers["refresh:summary"]({
+    eventHandlers[EventRefreshSummary]({
       total: 5,
       fetched: 3,
       skipped: 1,
@@ -98,7 +99,7 @@ describe("sync store", () => {
     const sync = await loadSync();
 
     // index 0 of 4 → (0+1)/4 = 25%
-    eventHandlers["refresh:progress"]({
+    eventHandlers[EventRefreshProgress]({
       ticker: "TLKM",
       index: 0,
       total: 4,
@@ -107,7 +108,7 @@ describe("sync store", () => {
     expect(sync.progressPercent).toBe(25);
 
     // index 1 of 4 → (1+1)/4 = 50%
-    eventHandlers["refresh:progress"]({
+    eventHandlers[EventRefreshProgress]({
       ticker: "ASII",
       index: 1,
       total: 4,
@@ -116,7 +117,7 @@ describe("sync store", () => {
     expect(sync.progressPercent).toBe(50);
 
     // index 3 of 4 → (3+1)/4 = 100%
-    eventHandlers["refresh:progress"]({
+    eventHandlers[EventRefreshProgress]({
       ticker: "UNVR",
       index: 3,
       total: 4,
@@ -129,10 +130,10 @@ describe("sync store", () => {
     const sync = await loadSync();
     expect(sync.isSyncing).toBe(false);
 
-    eventHandlers["refresh:status"]({ state: "syncing", lastRefresh: "" });
+    eventHandlers[EventRefreshStatus]({ state: "syncing", lastRefresh: "" });
     expect(sync.isSyncing).toBe(true);
 
-    eventHandlers["refresh:status"]({ state: "idle", lastRefresh: "" });
+    eventHandlers[EventRefreshStatus]({ state: "idle", lastRefresh: "" });
     expect(sync.isSyncing).toBe(false);
   });
 
@@ -141,7 +142,7 @@ describe("sync store", () => {
     expect(sync.hasError).toBe(false);
     expect(sync.errorMessage).toBeNull();
 
-    eventHandlers["refresh:status"]({
+    eventHandlers[EventRefreshStatus]({
       state: "error",
       lastRefresh: "",
       error: "network timeout",

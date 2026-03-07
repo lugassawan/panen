@@ -2,9 +2,9 @@
 import { untrack } from "svelte";
 import { CreateBrokerageAccount, UpdateBrokerageAccount } from "../../wailsjs/go/backend/App";
 import { t } from "../i18n";
+import BrokerPicker from "../lib/components/BrokerPicker.svelte";
 import Button from "../lib/components/Button.svelte";
 import Input from "../lib/components/Input.svelte";
-import Select from "../lib/components/Select.svelte";
 import type { BrokerageAccountResponse, BrokerConfigResponse } from "../lib/types";
 
 let {
@@ -111,17 +111,12 @@ async function submit() {
   {#if brokerConfigs.length > 0}
     <div>
       <label for="broker-select" class="mb-1 block text-sm text-text-secondary">{t("brokerage.broker")}</label>
-      <Select
+      <BrokerPicker
+        {brokerConfigs}
         id="broker-select"
         bind:value={brokerCode}
-        onchange={(e) => onBrokerSelect(e.currentTarget.value)}
-      >
-        <option value="">{t("brokerage.selectBroker")}</option>
-        {#each brokerConfigs as config}
-          <option value={config.code}>{config.name} ({config.code})</option>
-        {/each}
-        <option value="OTHER">{t("brokerage.otherManual")}</option>
-      </Select>
+        onselect={onBrokerSelect}
+      />
     </div>
   {/if}
 

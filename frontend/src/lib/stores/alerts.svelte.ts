@@ -11,6 +11,7 @@
  */
 
 import { EventsOn } from "../../../wailsjs/runtime/runtime";
+import { EventAlertsUpdated } from "../events";
 import type { FundamentalAlertResponse } from "../types";
 
 const browser = typeof window !== "undefined";
@@ -21,7 +22,7 @@ function createAlertsStore() {
   let loading = $state(false);
 
   if (browser) {
-    EventsOn("alerts:updated", (count: number) => {
+    EventsOn(EventAlertsUpdated, (count: number) => {
       activeCount = count;
     });
   }
