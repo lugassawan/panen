@@ -19,6 +19,9 @@ const (
 	brokerageListByProfileID = `SELECT id, profile_id, broker_name, broker_code, buy_fee_pct,
 		sell_fee_pct, sell_tax_pct, is_manual_fee, created_at, updated_at FROM brokerage_accounts
 		WHERE profile_id = ? ORDER BY created_at`
+	brokerageListNonManual = `SELECT id, profile_id, broker_name, broker_code, buy_fee_pct,
+		sell_fee_pct, sell_tax_pct, is_manual_fee, created_at, updated_at FROM brokerage_accounts
+		WHERE profile_id = ? AND is_manual_fee = 0 ORDER BY created_at`
 	brokerageUpdate = `UPDATE brokerage_accounts SET broker_name = ?, broker_code = ?, buy_fee_pct = ?,
 		sell_fee_pct = ?, sell_tax_pct = ?, is_manual_fee = ?, updated_at = ? WHERE id = ?`
 	brokerageDelete = `DELETE FROM brokerage_accounts WHERE id = ?`
@@ -65,7 +68,33 @@ func (r *BrokerageRepo) GetByID(ctx context.Context, id string) (*brokerage.Acco
 }
 
 func (r *BrokerageRepo) ListByProfileID(ctx context.Context, profileID string) ([]*brokerage.Account, error) {
-	rows, err := r.db.QueryContext(ctx, brokerageListByProfileID, profileID)
+	return r.queryAccounts(ctx, brokerageListByProfileID, profileID)
+}
+
+func (r *BrokerageRepo) ListNonManualByProfileID(ctx context.Context, profileID string) ([]*brokerage.Account, error) {
+	return r.queryAccounts(ctx, brokerageListNonManual, profileID)
+}
+
+func (r *BrokerageRepo) Update(ctx context.Context, a *brokerage.Account) error {
+	res, err := r.db.ExecContext(ctx, brokerageUpdate,
+		a.BrokerName, a.BrokerCode, a.BuyFeePct, a.SellFeePct,
+		a.SellTaxPct, boolToInt(a.IsManualFee), formatTime(a.UpdatedAt), a.ID)
+	if err != nil {
+		return err
+	}
+	return checkRowsAffected(res)
+}
+
+func (r *BrokerageRepo) Delete(ctx context.Context, id string) error {
+	res, err := r.db.ExecContext(ctx, brokerageDelete, id)
+	if err != nil {
+		return err
+	}
+	return checkRowsAffected(res)
+}
+
+func (r *BrokerageRepo) queryAccounts(ctx context.Context, query string, args ...any) ([]*brokerage.Account, error) {
+	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -90,22 +119,4 @@ func (r *BrokerageRepo) ListByProfileID(ctx context.Context, profileID string) (
 		accounts = append(accounts, &a)
 	}
 	return accounts, rows.Err()
-}
-
-func (r *BrokerageRepo) Update(ctx context.Context, a *brokerage.Account) error {
-	res, err := r.db.ExecContext(ctx, brokerageUpdate,
-		a.BrokerName, a.BrokerCode, a.BuyFeePct, a.SellFeePct,
-		a.SellTaxPct, boolToInt(a.IsManualFee), formatTime(a.UpdatedAt), a.ID)
-	if err != nil {
-		return err
-	}
-	return checkRowsAffected(res)
-}
-
-func (r *BrokerageRepo) Delete(ctx context.Context, id string) error {
-	res, err := r.db.ExecContext(ctx, brokerageDelete, id)
-	if err != nil {
-		return err
-	}
-	return checkRowsAffected(res)
 }

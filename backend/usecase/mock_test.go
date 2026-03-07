@@ -156,6 +156,21 @@ func (r *mockBrokerageRepo) ListByProfileID(_ context.Context, profileID string)
 	return result, nil
 }
 
+func (r *mockBrokerageRepo) ListNonManualByProfileID(
+	_ context.Context,
+	profileID string,
+) ([]*brokerage.Account, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	var result []*brokerage.Account
+	for _, a := range r.items {
+		if a.ProfileID == profileID && !a.IsManualFee {
+			result = append(result, a)
+		}
+	}
+	return result, nil
+}
+
 func (r *mockBrokerageRepo) Update(_ context.Context, a *brokerage.Account) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()

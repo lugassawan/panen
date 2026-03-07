@@ -1,6 +1,10 @@
 package presenter
 
-import "github.com/lugassawan/panen/backend/domain/brokerconfig"
+import (
+	"strings"
+
+	"github.com/lugassawan/panen/backend/domain/brokerconfig"
+)
 
 // BrokerConfigHandler serves broker configuration data loaded at startup.
 type BrokerConfigHandler struct {
@@ -22,14 +26,34 @@ func (h *BrokerConfigHandler) Bind(configs []*brokerconfig.BrokerConfig) {
 func (h *BrokerConfigHandler) ListBrokerConfigs() []*BrokerConfigResponse {
 	result := make([]*BrokerConfigResponse, len(h.configs))
 	for i, c := range h.configs {
-		result[i] = &BrokerConfigResponse{
-			Code:       c.Code,
-			Name:       c.Name,
-			BuyFeePct:  c.BuyFeePct,
-			SellFeePct: c.SellFeePct,
-			SellTaxPct: c.SellTaxPct,
-			Notes:      c.Notes,
+		result[i] = toBrokerConfigResponse(c)
+	}
+	return result
+}
+
+// SearchBrokerConfigs returns broker configurations matching the query.
+// Empty query returns all configs. Matches case-insensitively on Name and Code.
+func (h *BrokerConfigHandler) SearchBrokerConfigs(query string) []*BrokerConfigResponse {
+	if query == "" {
+		return h.ListBrokerConfigs()
+	}
+	q := strings.ToLower(query)
+	var result []*BrokerConfigResponse
+	for _, c := range h.configs {
+		if strings.Contains(strings.ToLower(c.Name), q) || strings.Contains(strings.ToLower(c.Code), q) {
+			result = append(result, toBrokerConfigResponse(c))
 		}
 	}
 	return result
+}
+
+func toBrokerConfigResponse(c *brokerconfig.BrokerConfig) *BrokerConfigResponse {
+	return &BrokerConfigResponse{
+		Code:       c.Code,
+		Name:       c.Name,
+		BuyFeePct:  c.BuyFeePct,
+		SellFeePct: c.SellFeePct,
+		SellTaxPct: c.SellTaxPct,
+		Notes:      c.Notes,
+	}
 }
