@@ -13,6 +13,7 @@ var migrations = []string{
 	migrationV9,
 	migrationV10,
 	migrationV11,
+	migrationV12,
 }
 
 const migrationV1 = `
@@ -245,4 +246,18 @@ CREATE TABLE fundamental_alerts (
 );
 CREATE INDEX idx_fundamental_alerts_ticker ON fundamental_alerts(ticker, status);
 CREATE INDEX idx_fundamental_alerts_status ON fundamental_alerts(status, detected_at);
+`
+
+const migrationV12 = `
+CREATE TABLE sell_transactions (
+	id            TEXT PRIMARY KEY,
+	holding_id    TEXT NOT NULL REFERENCES holdings(id) ON DELETE CASCADE,
+	date          TEXT NOT NULL,
+	price         REAL NOT NULL,
+	lots          INTEGER NOT NULL,
+	fee           REAL NOT NULL DEFAULT 0,
+	tax           REAL NOT NULL DEFAULT 0,
+	realized_gain REAL NOT NULL DEFAULT 0,
+	created_at    TEXT NOT NULL
+);
 `
