@@ -295,9 +295,18 @@ func (a *releaseCheckerAdapter) LatestRelease(ctx context.Context) (*usecase.Rel
 	if err != nil {
 		return nil, err
 	}
+	assets := make([]usecase.ReleaseAsset, len(rel.Assets))
+	for i, ga := range rel.Assets {
+		assets[i] = usecase.ReleaseAsset{
+			Name:        ga.Name,
+			DownloadURL: ga.BrowserDownloadURL,
+			Size:        ga.Size,
+		}
+	}
 	return &usecase.ReleaseInfo{
 		Version:    rel.Version(),
 		ReleaseURL: rel.HTMLURL,
+		Assets:     assets,
 	}, nil
 }
 
