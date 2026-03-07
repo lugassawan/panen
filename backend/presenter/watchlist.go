@@ -17,7 +17,15 @@ type WatchlistHandler struct {
 func NewWatchlistHandler(
 	ctx context.Context, profileID string, watchlists *usecase.WatchlistService,
 ) *WatchlistHandler {
-	return &WatchlistHandler{ctx: ctx, profileID: profileID, watchlists: watchlists}
+	h := &WatchlistHandler{}
+	h.Bind(ctx, profileID, watchlists)
+	return h
+}
+
+func (h *WatchlistHandler) Bind(ctx context.Context, profileID string, watchlists *usecase.WatchlistService) {
+	h.ctx = ctx
+	h.profileID = profileID
+	h.watchlists = watchlists
 }
 
 // ListWatchlists returns all watchlists for the current user.

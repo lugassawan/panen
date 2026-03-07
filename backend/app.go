@@ -39,9 +39,26 @@ type App struct {
 	refresh *usecase.RefreshService
 }
 
-// NewApp creates a new App instance.
+// NewApp creates all handlers upfront so embedded pointers are never nil.
+// Dependencies are wired later in Startup via Bind calls.
 func NewApp() *App {
-	return &App{}
+	return &App{
+		StockHandler:            &presenter.StockHandler{},
+		PortfolioHandler:        &presenter.PortfolioHandler{},
+		BrokerageHandler:        &presenter.BrokerageHandler{},
+		BrokerConfigHandler:     &presenter.BrokerConfigHandler{},
+		WatchlistHandler:        &presenter.WatchlistHandler{},
+		RefreshHandler:          &presenter.RefreshHandler{},
+		ChecklistHandler:        &presenter.ChecklistHandler{},
+		UpdateHandler:           &presenter.UpdateHandler{},
+		PaydayHandler:           &presenter.PaydayHandler{},
+		CrashPlaybookHandler:    &presenter.CrashPlaybookHandler{},
+		ScreenerHandler:         &presenter.ScreenerHandler{},
+		DividendHandler:         &presenter.DividendHandler{},
+		PriceHistoryHandler:     &presenter.PriceHistoryHandler{},
+		DividendCalendarHandler: &presenter.DividendCalendarHandler{},
+		AlertHandler:            &presenter.AlertHandler{},
+	}
 }
 
 // Startup initialises infrastructure, constructs services, and ensures a default user profile.
@@ -107,15 +124,15 @@ func (a *App) Startup(ctx context.Context) {
 	)
 
 	screenerSvc := usecase.NewScreenerService(stockRepo, indexRegistry, sectorRegistry)
-	a.ScreenerHandler = presenter.NewScreenerHandler(ctx, screenerSvc)
+	a.ScreenerHandler.Bind(ctx, screenerSvc)
 
 	priceHistoryRepo := database.NewPriceHistoryRepo(conn)
 	priceHistorySvc := usecase.NewPriceHistoryService(priceHistoryRepo, yahoo)
-	a.PriceHistoryHandler = presenter.NewPriceHistoryHandler(ctx, priceHistorySvc)
+	a.PriceHistoryHandler.Bind(ctx, priceHistorySvc)
 
 	divHistoryRepo := database.NewDividendHistoryRepo(conn)
 	divHistorySvc := usecase.NewDividendHistoryService(divHistoryRepo, yahoo, holdingRepo, portfolioRepo, stockRepo)
-	a.DividendCalendarHandler = presenter.NewDividendCalendarHandler(ctx, divHistorySvc)
+	a.DividendCalendarHandler.Bind(ctx, divHistorySvc)
 
 	settingsRepo := database.NewSettingsRepo(conn)
 	tickerCollector := database.NewTickerCollector(conn)
@@ -131,27 +148,27 @@ func (a *App) Startup(ctx context.Context) {
 
 	dividendSvc := usecase.NewDividendService(portfolioRepo, holdingRepo, stockRepo)
 
-	a.StockHandler = presenter.NewStockHandler(ctx, stocks)
-	a.PortfolioHandler = presenter.NewPortfolioHandler(ctx, portfolios, sectorRegistry)
-	a.DividendHandler = presenter.NewDividendHandler(ctx, dividendSvc)
-	a.BrokerageHandler = presenter.NewBrokerageHandler(ctx, profileID, brokerages)
-	a.BrokerConfigHandler = presenter.NewBrokerConfigHandler(brokerConfigs)
-	a.WatchlistHandler = presenter.NewWatchlistHandler(ctx, profileID, watchlistSvc)
-	a.RefreshHandler = presenter.NewRefreshHandler(ctx, refreshSvc, settingsRepo)
+	a.StockHandler.Bind(ctx, stocks)
+	a.PortfolioHandler.Bind(ctx, portfolios, sectorRegistry)
+	a.DividendHandler.Bind(ctx, dividendSvc)
+	a.BrokerageHandler.Bind(ctx, profileID, brokerages)
+	a.BrokerConfigHandler.Bind(brokerConfigs)
+	a.WatchlistHandler.Bind(ctx, profileID, watchlistSvc)
+	a.RefreshHandler.Bind(ctx, refreshSvc, settingsRepo)
 
 	alertSvc := usecase.NewAlertService(alertRepo)
-	a.AlertHandler = presenter.NewAlertHandler(ctx, alertSvc)
+	a.AlertHandler.Bind(ctx, alertSvc)
 
 	checklistRepo := database.NewChecklistResultRepo(conn)
 	checklistSvc := usecase.NewChecklistService(
 		checklistRepo, portfolioRepo, holdingRepo, brokerageRepo, stockRepo, alertSvc,
 	)
-	a.ChecklistHandler = presenter.NewChecklistHandler(ctx, checklistSvc)
+	a.ChecklistHandler.Bind(ctx, checklistSvc)
 
 	paydayRepo := database.NewPaydayRepo(conn)
 	cashFlowRepo := database.NewCashFlowRepo(conn)
 	paydaySvc := usecase.NewPaydayService(paydayRepo, cashFlowRepo, portfolioRepo, settingsRepo)
-	a.PaydayHandler = presenter.NewPaydayHandler(ctx, paydaySvc)
+	a.PaydayHandler.Bind(ctx, paydaySvc)
 
 	crashCapitalRepo := database.NewCrashCapitalRepo(conn)
 	crashPlaybookSvc := usecase.NewCrashPlaybookService(
@@ -163,12 +180,12 @@ func (a *App) Startup(ctx context.Context) {
 		settingsRepo,
 		refreshSvc,
 	)
-	a.CrashPlaybookHandler = presenter.NewCrashPlaybookHandler(ctx, crashPlaybookSvc, portfolioRepo)
+	a.CrashPlaybookHandler.Bind(ctx, crashPlaybookSvc, portfolioRepo)
 
 	ghClient := github.NewClient()
 	updateChecker := &releaseCheckerAdapter{client: ghClient}
 	updateSvc := usecase.NewUpdateService(updateChecker, Version())
-	a.UpdateHandler = presenter.NewUpdateHandler(ctx, updateSvc, settingsRepo)
+	a.UpdateHandler.Bind(ctx, updateSvc, settingsRepo)
 
 	refreshSvc.Start(ctx)
 

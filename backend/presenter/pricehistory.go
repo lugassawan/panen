@@ -14,7 +14,14 @@ type PriceHistoryHandler struct {
 
 // NewPriceHistoryHandler creates a new PriceHistoryHandler.
 func NewPriceHistoryHandler(ctx context.Context, priceHistory *usecase.PriceHistoryService) *PriceHistoryHandler {
-	return &PriceHistoryHandler{ctx: ctx, priceHistory: priceHistory}
+	h := &PriceHistoryHandler{}
+	h.Bind(ctx, priceHistory)
+	return h
+}
+
+func (h *PriceHistoryHandler) Bind(ctx context.Context, priceHistory *usecase.PriceHistoryService) {
+	h.ctx = ctx
+	h.priceHistory = priceHistory
 }
 
 // GetPriceHistory returns historical closing prices for a ticker.

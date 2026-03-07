@@ -14,7 +14,14 @@ type DividendHandler struct {
 
 // NewDividendHandler creates a new DividendHandler.
 func NewDividendHandler(ctx context.Context, dividends *usecase.DividendService) *DividendHandler {
-	return &DividendHandler{ctx: ctx, dividends: dividends}
+	h := &DividendHandler{}
+	h.Bind(ctx, dividends)
+	return h
+}
+
+func (h *DividendHandler) Bind(ctx context.Context, dividends *usecase.DividendService) {
+	h.ctx = ctx
+	h.dividends = dividends
 }
 
 // GetDividendRanking returns ranked dividend stocks for a portfolio.

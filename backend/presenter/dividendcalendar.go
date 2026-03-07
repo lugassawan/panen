@@ -17,7 +17,14 @@ func NewDividendCalendarHandler(
 	ctx context.Context,
 	divHist *usecase.DividendHistoryService,
 ) *DividendCalendarHandler {
-	return &DividendCalendarHandler{ctx: ctx, divHist: divHist}
+	h := &DividendCalendarHandler{}
+	h.Bind(ctx, divHist)
+	return h
+}
+
+func (h *DividendCalendarHandler) Bind(ctx context.Context, divHist *usecase.DividendHistoryService) {
+	h.ctx = ctx
+	h.divHist = divHist
 }
 
 // GetDividendHistory returns historical dividend events for a ticker.

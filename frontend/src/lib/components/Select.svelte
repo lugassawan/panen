@@ -28,7 +28,7 @@ let {
     {disabled}
     aria-label={ariaLabel}
     {onchange}
-    class="w-full appearance-none rounded border border-border-default bg-bg-elevated py-2 pr-8 pl-3 text-sm text-text-primary outline-none transition-colors transition-fast hover:border-border-strong focus-border disabled:opacity-60 focus-ring {extraClass}"
+    class="w-full appearance-none rounded border border-border-default bg-bg-elevated py-2 pr-8 pl-3 text-sm text-text-primary outline-none transition-fast hover:border-border-strong focus-border disabled:opacity-60 focus-ring {extraClass}"
   >
     {@render children()}
   </select>

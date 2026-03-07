@@ -2,8 +2,8 @@ package presenter
 
 import "testing"
 
-func TestAlertHandlerNilReceiver(t *testing.T) {
-	var h *AlertHandler
+func TestAlertHandlerUnbound(t *testing.T) {
+	h := &AlertHandler{}
 
 	t.Run("GetAlertCount returns zero", func(t *testing.T) {
 		count, err := h.GetAlertCount()

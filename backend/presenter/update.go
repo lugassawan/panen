@@ -28,7 +28,15 @@ func NewUpdateHandler(
 	update *usecase.UpdateService,
 	settings settings.Repository,
 ) *UpdateHandler {
-	return &UpdateHandler{ctx: ctx, update: update, settings: settings}
+	h := &UpdateHandler{}
+	h.Bind(ctx, update, settings)
+	return h
+}
+
+func (h *UpdateHandler) Bind(ctx context.Context, update *usecase.UpdateService, settings settings.Repository) {
+	h.ctx = ctx
+	h.update = update
+	h.settings = settings
 }
 
 // CheckForUpdate checks for updates and returns the result for the frontend.

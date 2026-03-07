@@ -1,7 +1,9 @@
 <script lang="ts">
 import { Bell } from "lucide-svelte";
 import { t } from "../../i18n";
+import EmptyState from "../../lib/components/EmptyState.svelte";
 import { alerts } from "../../lib/stores/alerts.svelte";
+import { mode } from "../../lib/stores/mode.svelte";
 import type { AlertSeverity, FundamentalAlertResponse } from "../../lib/types";
 import AlertCard from "./AlertCard.svelte";
 
@@ -63,7 +65,7 @@ $effect(() => {
         onclick={() => (activeFilter = tab.key)}
         class="rounded-md px-3 py-1.5 text-sm font-medium transition-fast focus-ring
           {activeFilter === tab.key
-          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+          ? mode.config.activeHighlight
           : 'text-text-secondary hover:bg-bg-tertiary hover:text-text-primary'}"
       >
         {t(tab.labelKey)}
@@ -74,10 +76,7 @@ $effect(() => {
   {#if alerts.loading}
     <p class="text-sm text-text-secondary">{t("common.loading")}</p>
   {:else if sortedAlerts.length === 0}
-    <div class="flex flex-col items-center justify-center py-16 text-center">
-      <Bell size={48} strokeWidth={1} class="text-text-tertiary mb-4" />
-      <p class="text-text-secondary">{t("alerts.empty")}</p>
-    </div>
+    <EmptyState icon={Bell} title={t("alerts.empty")} />
   {:else}
     <div class="flex flex-col gap-3">
       {#each sortedAlerts as alert (alert.id)}

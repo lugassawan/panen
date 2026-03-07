@@ -14,6 +14,7 @@ import type { Component } from "svelte";
 import { t } from "../i18n";
 import SyncIndicator from "../lib/components/SyncIndicator.svelte";
 import { alerts } from "../lib/stores/alerts.svelte";
+import { mode } from "../lib/stores/mode.svelte";
 import type { Page } from "../lib/types";
 
 let { currentPage, onNavigate }: { currentPage: Page; onNavigate: (page: Page) => void } = $props();
@@ -53,7 +54,7 @@ $effect(() => {
         <button
           onclick={() => onNavigate(item.page)}
           class="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm font-medium transition-fast focus-ring {currentPage === item.page
-            ? 'bg-green-100 text-green-800 font-semibold dark:bg-green-900/30 dark:text-green-400'
+            ? `${mode.config.activeHighlight} font-semibold`
             : 'text-text-secondary hover:bg-bg-tertiary hover:text-text-primary'}"
           aria-current={currentPage === item.page ? "page" : undefined}
         >

@@ -21,7 +21,19 @@ func NewPortfolioHandler(
 	portfolios *usecase.PortfolioService,
 	sectors usecase.SectorRegistry,
 ) *PortfolioHandler {
-	return &PortfolioHandler{ctx: ctx, portfolios: portfolios, sectors: sectors}
+	h := &PortfolioHandler{}
+	h.Bind(ctx, portfolios, sectors)
+	return h
+}
+
+func (h *PortfolioHandler) Bind(
+	ctx context.Context,
+	portfolios *usecase.PortfolioService,
+	sectors usecase.SectorRegistry,
+) {
+	h.ctx = ctx
+	h.portfolios = portfolios
+	h.sectors = sectors
 }
 
 // GetHoldingSectors returns the sector for each ticker.
