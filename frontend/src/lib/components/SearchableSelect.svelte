@@ -33,9 +33,8 @@ let {
   footer?: Snippet<[{ close: () => void }]>;
 } = $props();
 
-const listboxId = id
-  ? `${id}-listbox`
-  : `searchable-select-listbox-${Math.random().toString(36).slice(2, 8)}`;
+const fallbackListboxId = `searchable-select-listbox-${Math.random().toString(36).slice(2, 8)}`;
+let listboxId = $derived(id ? `${id}-listbox` : fallbackListboxId);
 
 let open = $state(false);
 let query = $state("");
@@ -174,6 +173,7 @@ $effect(() => {
             data-active={i === activeIndex}
             onmouseenter={() => (activeIndex = i)}
             onclick={() => selectItem(keyFn(item))}
+            onkeydown={(e: KeyboardEvent) => { if (e.key === "Enter") selectItem(keyFn(item)); }}
             class="cursor-pointer px-3 py-2 text-sm {i === activeIndex ? 'bg-bg-tertiary' : ''}"
           >
             {@render children({ item, active: i === activeIndex })}
