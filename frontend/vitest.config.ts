@@ -7,6 +7,7 @@ export default defineConfig({
     conditions: ["browser"],
   },
   test: {
+    pool: "threads",
     environment: "jsdom",
     include: ["src/**/*.test.ts"],
     exclude: ["src/**/*.integration.test.ts"],

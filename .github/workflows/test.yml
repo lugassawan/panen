@@ -7,6 +7,15 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "tools/**"
+      - "main.go"
+      - "go.mod"
+      - "go.sum"
+      - "Makefile"
+      - ".github/workflows/test.yml"
 
 permissions:
   contents: read
@@ -49,7 +58,11 @@ jobs:
 
   test-frontend:
     runs-on: ubuntu-latest
-    name: Frontend Tests
+    name: Frontend Tests (${{ matrix.shard }})
+
+    strategy:
+      matrix:
+        shard: [1/3, 2/3, 3/3]
 
     steps:
       - uses: actions/checkout@v4
@@ -69,7 +82,8 @@ jobs:
         run: wails generate module
 
       - name: Run unit tests
-        run: make test-frontend
+        run: cd frontend && pnpm vitest run --shard ${{ matrix.shard }}
 
       - name: Run integration tests
+        if: matrix.shard == '1/3'
         run: make test-integration

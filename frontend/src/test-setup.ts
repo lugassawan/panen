@@ -7,6 +7,13 @@ import { afterEach } from "vitest";
 // format expectations have their own i18n mock.
 Object.defineProperty(navigator, "language", { writable: true, value: "en-US" });
 
+// Persist locale in localStorage so the i18n module picks it up reliably.
+try {
+  localStorage.setItem("panen-locale", "en");
+} catch {
+  // localStorage may be unavailable
+}
+
 afterEach(() => {
   cleanup();
 });
