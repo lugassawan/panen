@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -95,12 +96,12 @@ func (s *WatchlistService) RenameWatchlist(ctx context.Context, id, name string)
 
 	w, err := s.watchlists.GetByID(ctx, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("rename watchlist: %w", err)
 	}
 
 	siblings, err := s.watchlists.ListByProfileID(ctx, w.ProfileID)
 	if err != nil {
-		return err
+		return fmt.Errorf("rename watchlist: %w", err)
 	}
 	for _, sib := range siblings {
 		if sib.ID == id {
@@ -130,7 +131,7 @@ func (s *WatchlistService) AddTicker(ctx context.Context, watchlistID, ticker st
 
 	exists, err := s.items.ExistsByWatchlistAndTicker(ctx, watchlistID, ticker)
 	if err != nil {
-		return err
+		return fmt.Errorf("add ticker: %w", err)
 	}
 	if exists {
 		return watchlist.ErrTickerAlreadyInWatchlist

@@ -65,15 +65,15 @@ func (s *PortfolioService) Create(ctx context.Context, p *portfolio.Portfolio) e
 	// Defense-in-depth: re-validate even though presenter parses these before construction.
 	// The usecase is a standalone API boundary callable by future non-presenter callers.
 	if _, err := portfolio.ParseMode(string(p.Mode)); err != nil {
-		return err
+		return fmt.Errorf("create portfolio: %w", err)
 	}
 	if _, err := portfolio.ParseRiskProfile(string(p.RiskProfile)); err != nil {
-		return err
+		return fmt.Errorf("create portfolio: %w", err)
 	}
 
 	siblings, err := s.portfolios.ListByBrokerageAccountID(ctx, p.BrokerageAccountID)
 	if err != nil {
-		return err
+		return fmt.Errorf("create portfolio: %w", err)
 	}
 	for _, sib := range siblings {
 		if sib.Mode == p.Mode {
@@ -101,12 +101,12 @@ func (s *PortfolioService) Update(ctx context.Context, p *portfolio.Portfolio) e
 		return ErrEmptyName
 	}
 	if _, err := portfolio.ParseRiskProfile(string(p.RiskProfile)); err != nil {
-		return err
+		return fmt.Errorf("update portfolio: %w", err)
 	}
 
 	existing, err := s.portfolios.GetByID(ctx, p.ID)
 	if err != nil {
-		return err
+		return fmt.Errorf("update portfolio: %w", err)
 	}
 	if p.Mode != existing.Mode {
 		return ErrModeImmutable
@@ -123,12 +123,15 @@ func (s *PortfolioService) Delete(ctx context.Context, id string) error {
 	}
 	holdings, err := s.holdings.ListByPortfolioID(ctx, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("delete portfolio: %w", err)
 	}
 	if len(holdings) > 0 {
 		return fmt.Errorf("%w: %d holding(s) linked", ErrHasHoldings, len(holdings))
 	}
-	return s.portfolios.Delete(ctx, id)
+	if err := s.portfolios.Delete(ctx, id); err != nil {
+		return fmt.Errorf("delete portfolio: %w", err)
+	}
+	return nil
 }
 
 // ListByBrokerageAccountID returns all portfolios for a brokerage account.
@@ -297,7 +300,7 @@ func enrichHolding(
 func (s *PortfolioService) SyncPeaks(ctx context.Context, portfolioID string) error {
 	p, err := s.portfolios.GetByID(ctx, portfolioID)
 	if err != nil {
-		return err
+		return fmt.Errorf("sync peaks: %w", err)
 	}
 	if p.Mode != portfolio.ModeValue {
 		return nil
@@ -305,7 +308,7 @@ func (s *PortfolioService) SyncPeaks(ctx context.Context, portfolioID string) er
 
 	holdings, err := s.holdings.ListByPortfolioID(ctx, portfolioID)
 	if err != nil {
-		return err
+		return fmt.Errorf("sync peaks: %w", err)
 	}
 	if len(holdings) == 0 {
 		return nil
@@ -317,7 +320,7 @@ func (s *PortfolioService) SyncPeaks(ctx context.Context, portfolioID string) er
 	}
 	existingPeaks, err := s.peaks.ListByHoldingIDs(ctx, holdingIDs)
 	if err != nil {
-		return err
+		return fmt.Errorf("sync peaks: %w", err)
 	}
 	peakMap := make(map[string]*trailingstop.HoldingPeak, len(existingPeaks))
 	for _, pk := range existingPeaks {
@@ -480,7 +483,7 @@ func (s *PortfolioService) checkDuplicateHolding(
 ) error {
 	siblings, err := s.portfolios.ListByBrokerageAccountID(ctx, brokerageAccountID)
 	if err != nil {
-		return err
+		return fmt.Errorf("check duplicate holding: %w", err)
 	}
 	for _, sib := range siblings {
 		if sib.ID == portfolioID {

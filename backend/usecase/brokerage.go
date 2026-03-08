@@ -123,10 +123,13 @@ func (s *BrokerageService) Delete(ctx context.Context, id string) error {
 	}
 	linked, err := s.portfolios.ListByBrokerageAccountID(ctx, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("delete brokerage: %w", err)
 	}
 	if len(linked) > 0 {
 		return fmt.Errorf("%w: %d portfolio(s) linked", ErrHasDependents, len(linked))
 	}
-	return s.brokerages.Delete(ctx, id)
+	if err := s.brokerages.Delete(ctx, id); err != nil {
+		return fmt.Errorf("delete brokerage: %w", err)
+	}
+	return nil
 }
