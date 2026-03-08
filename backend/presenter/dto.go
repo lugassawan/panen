@@ -17,6 +17,15 @@ type BackupStatusResponse struct {
 	DbSizeBytes    int64  `json:"dbSizeBytes"`
 }
 
+// ImportPreviewResponse is the frontend-facing response for an import preview.
+type ImportPreviewResponse struct {
+	FilePath   string `json:"filePath"`
+	AppVersion string `json:"appVersion"`
+	ExportedAt string `json:"exportedAt"`
+	Checksum   string `json:"checksum"`
+	DbSize     int64  `json:"dbSize"`
+}
+
 // FundamentalAlertResponse is the frontend-facing response for a fundamental change alert.
 type FundamentalAlertResponse struct {
 	ID         string  `json:"id"`
