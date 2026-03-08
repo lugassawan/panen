@@ -401,6 +401,17 @@ type DashboardOverviewResponse struct {
 	RecentTransactions  []TransactionRecordResponse `json:"recentTransactions"`
 }
 
+func emptyDashboardOverview() *DashboardOverviewResponse {
+	return &DashboardOverviewResponse{
+		Portfolios:          []PortfolioSummaryResponse{},
+		TopGainers:          []HoldingPLResponse{},
+		TopLosers:           []HoldingPLResponse{},
+		PortfolioAllocation: []AllocationItemResponse{},
+		SectorAllocation:    []AllocationItemResponse{},
+		RecentTransactions:  []TransactionRecordResponse{},
+	}
+}
+
 // PortfolioSummaryResponse is the frontend-facing response for a portfolio summary in the dashboard.
 type PortfolioSummaryResponse struct {
 	ID          string  `json:"id"`

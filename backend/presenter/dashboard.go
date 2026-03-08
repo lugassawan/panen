@@ -18,17 +18,6 @@ func (h *DashboardHandler) Bind(ctx context.Context, dashboard *usecase.Dashboar
 	h.dashboard = dashboard
 }
 
-func emptyDashboardOverview() *DashboardOverviewResponse {
-	return &DashboardOverviewResponse{
-		Portfolios:          []PortfolioSummaryResponse{},
-		TopGainers:          []HoldingPLResponse{},
-		TopLosers:           []HoldingPLResponse{},
-		PortfolioAllocation: []AllocationItemResponse{},
-		SectorAllocation:    []AllocationItemResponse{},
-		RecentTransactions:  []TransactionRecordResponse{},
-	}
-}
-
 // GetDashboardOverview returns aggregated performance data across all portfolios.
 func (h *DashboardHandler) GetDashboardOverview() (*DashboardOverviewResponse, error) {
 	if h.dashboard == nil {
