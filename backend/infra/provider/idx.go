@@ -19,6 +19,9 @@ const (
 	idxBaseURL     = "https://www.idx.co.id/primary/ListingDev/GetStockInfo"
 	idxUserAgent   = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 	idxMaxResponse = 2 << 20 // 2 MB
+
+	// IDXSource is the provider identifier used in stock data records and registry.
+	IDXSource = "idx"
 )
 
 // IDXProvider fetches stock data from the Indonesia Stock Exchange (IDX) website.
@@ -60,7 +63,7 @@ func NewIDXProvider(opts ...IDXOption) *IDXProvider {
 }
 
 // Source returns the provider identifier.
-func (p *IDXProvider) Source() string { return "idx" }
+func (p *IDXProvider) Source() string { return IDXSource }
 
 // idxStockResponse maps the relevant fields from the IDX stock info API.
 type idxStockResponse struct {
