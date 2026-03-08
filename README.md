@@ -144,7 +144,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full development guide, including
 - [Risk Profiles](docs/risk-profiles.md) -- Conservative, Moderate, and Aggressive parameters
 - [Crash Playbook](docs/crash-playbook.md) -- Building and using crash playbooks
 - [Design System](docs/design-system.md) -- Tokens, theming, and component reference
-- [Changelog](CHANGELOG.md) -- Version history
 
 ## License
 
