@@ -25,9 +25,9 @@ describe("formatError", () => {
     );
   });
 
-  it("falls back to raw message for unknown codes", () => {
+  it("falls back to message portion for unknown codes", () => {
     expect(formatError("ERR_UNKNOWN|something went wrong")).toBe(
-      "ERR_UNKNOWN|something went wrong",
+      "something went wrong",
     );
   });
 

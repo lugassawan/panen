@@ -13,6 +13,7 @@ export function formatError(raw: string): string {
       const key = `error.${code}`;
       const translated = t(key);
       if (translated !== key) return translated;
+      return raw.substring(idx + 1);
     }
   }
   return raw;

@@ -18,15 +18,22 @@ func TestAppErrorFields(t *testing.T) {
 	if err.Code != "ERR_EMPTY_NAME" {
 		t.Errorf("Code = %q, want ERR_EMPTY_NAME", err.Code)
 	}
-	if err.Message != "name is required" {
-		t.Errorf("Message = %q, want %q", err.Message, "name is required")
+	if err.Err.Error() != "name is required" {
+		t.Errorf("Err.Error() = %q, want %q", err.Err.Error(), "name is required")
 	}
 }
 
 func TestNewAppErrorPreservesMessage(t *testing.T) {
 	sentinel := errors.New("custom error")
 	appErr := NewAppError("ERR_CUSTOM", sentinel)
-	if appErr.Message != "custom error" {
-		t.Errorf("Message = %q, want %q", appErr.Message, "custom error")
+	if appErr.Err.Error() != "custom error" {
+		t.Errorf("Err.Error() = %q, want %q", appErr.Err.Error(), "custom error")
+	}
+}
+
+func TestAppErrorUnwrap(t *testing.T) {
+	appErr := NewAppError("ERR_HAS_HOLDINGS", ErrHasHoldings)
+	if !errors.Is(appErr, ErrHasHoldings) {
+		t.Error("errors.Is should match the wrapped sentinel")
 	}
 }
