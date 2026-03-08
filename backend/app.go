@@ -80,23 +80,23 @@ type repos struct {
 
 // services groups all application service instances.
 type services struct {
-	stocks         *usecase.StockService
-	portfolios     *usecase.PortfolioService
-	brokerages     *usecase.BrokerageService
-	watchlists     *usecase.WatchlistService
-	screener       *usecase.ScreenerService
-	priceHistory   *usecase.PriceHistoryService
-	divHistory     *usecase.DividendHistoryService
-	refresh        *usecase.RefreshService
-	dividends      *usecase.DividendService
-	alerts         *usecase.AlertService
-	checklists     *usecase.ChecklistService
-	payday         *usecase.PaydayService
-	transactions   *usecase.TransactionService
-	dashboard      *usecase.DashboardService
-	crashPlaybook  *usecase.CrashPlaybookService
-	update         *usecase.UpdateService
-	selfUpdate     *usecase.SelfUpdateService
+	stocks        *usecase.StockService
+	portfolios    *usecase.PortfolioService
+	brokerages    *usecase.BrokerageService
+	watchlists    *usecase.WatchlistService
+	screener      *usecase.ScreenerService
+	priceHistory  *usecase.PriceHistoryService
+	divHistory    *usecase.DividendHistoryService
+	refresh       *usecase.RefreshService
+	dividends     *usecase.DividendService
+	alerts        *usecase.AlertService
+	checklists    *usecase.ChecklistService
+	payday        *usecase.PaydayService
+	transactions  *usecase.TransactionService
+	dashboard     *usecase.DashboardService
+	crashPlaybook *usecase.CrashPlaybookService
+	update        *usecase.UpdateService
+	selfUpdate    *usecase.SelfUpdateService
 }
 
 // NewApp creates all handlers upfront so embedded pointers are never nil.
