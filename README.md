@@ -44,16 +44,6 @@ Panen ("Harvest" in Bahasa Indonesia) is an open-source desktop application that
 - **Light and dark themes** -- System-aware with manual override
 - **Local-first and private** -- All data on your device, no accounts, no telemetry, no server
 
-### Screenshots
-
-![Dashboard](docs/screenshots/dashboard.png)
-
-![Value Mode - Stock Analysis](docs/screenshots/value-analysis.png)
-
-![Dividend Mode - Income Tracking](docs/screenshots/dividend-tracking.png)
-
-![Crash Playbook](docs/screenshots/crash-playbook.png)
-
 ## Installation
 
 ### macOS and Linux

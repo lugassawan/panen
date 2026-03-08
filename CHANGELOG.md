@@ -4,7 +4,7 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [1.0.0] - 2026-03-08
+## [Unreleased] - 1.0.0
 
 Community-ready release with pluggable data providers, data portability, CI pipeline, and full documentation.
 
@@ -25,7 +25,7 @@ Community-ready release with pluggable data providers, data portability, CI pipe
 - Extracted shared scan helpers for database repositories ([#114](https://github.com/lugassawan/panen/pull/114))
 - Replaced inline empty states with shared EmptyState component ([#113](https://github.com/lugassawan/panen/pull/113))
 
-## [0.6.0] - 2026-02-22
+## [0.6.0] - 2026-03-08
 
 Robustness and polish release with backup/recovery, logging, live config, and broker fee picker.
 
@@ -46,7 +46,7 @@ Robustness and polish release with backup/recovery, logging, live config, and br
 - Extracted shared applog package ([#98](https://github.com/lugassawan/panen/pull/98))
 - Updated documentation with i18n, new components, and conventions ([#99](https://github.com/lugassawan/panen/pull/99), [#116](https://github.com/lugassawan/panen/pull/116))
 
-## [0.5.0] - 2026-02-08
+## [0.5.0] - 2026-03-08
 
 Feature-complete release with portfolio dashboard, charts, comparison, transaction history, and dividend calendar.
 
@@ -55,15 +55,15 @@ Feature-complete release with portfolio dashboard, charts, comparison, transacti
 - Portfolio dashboard as landing page ([#107](https://github.com/lugassawan/panen/pull/107))
 - Stock comparison view ([#106](https://github.com/lugassawan/panen/pull/106))
 - Transaction history view ([#105](https://github.com/lugassawan/panen/pull/105))
+- Charts and visualizations for portfolio detail ([#81](https://github.com/lugassawan/panen/pull/81))
 
-## [0.4.0] - 2026-01-25
+## [0.4.0] - 2026-03-07
 
 Charts, dividend calendar, internationalization, and theme support.
 
 ### Added
 
 - Price history chart ([#84](https://github.com/lugassawan/panen/pull/84))
-- Charts and visualizations for portfolio detail ([#81](https://github.com/lugassawan/panen/pull/81))
 - Fundamental change alerts ([#88](https://github.com/lugassawan/panen/pull/88))
 - Internationalization with English and Bahasa Indonesia ([#87](https://github.com/lugassawan/panen/pull/87))
 - Dividend calendar ([#86](https://github.com/lugassawan/panen/pull/86))
@@ -74,7 +74,7 @@ Charts, dividend calendar, internationalization, and theme support.
 - UX polish, accessibility, and user guidance improvements ([#79](https://github.com/lugassawan/panen/pull/79), [#80](https://github.com/lugassawan/panen/pull/80))
 - Refactored codebase and improved test coverage ([#74](https://github.com/lugassawan/panen/pull/74))
 
-## [0.3.0] - 2026-01-11
+## [0.3.0] - 2026-03-05
 
 Monthly payday assistant, crash playbook, screener, DCA logic, and trailing stop.
 
@@ -92,7 +92,7 @@ Monthly payday assistant, crash playbook, screener, DCA logic, and trailing stop
 - Pre-commit hook linter failure handling ([#73](https://github.com/lugassawan/panen/pull/73))
 - Select component styling and warning suppression ([#70](https://github.com/lugassawan/panen/pull/70))
 
-## [0.2.0] - 2025-12-28
+## [0.2.0] - 2026-03-04
 
 Brokerage accounts, portfolio management, watchlist, background refresh, and conviction checklists.
 
@@ -113,7 +113,7 @@ Brokerage accounts, portfolio management, watchlist, background refresh, and con
 - Self-hosted fonts and migrated to lucide-svelte icons ([#51](https://github.com/lugassawan/panen/pull/51))
 - Refactored backend structure and conventions ([#62](https://github.com/lugassawan/panen/pull/62))
 
-## [0.1.0] - 2025-12-14
+## [0.1.0] - 2026-03-02
 
 Initial release with single stock lookup, Yahoo Finance scraper, and valuation engine.
 
@@ -132,11 +132,3 @@ Initial release with single stock lookup, Yahoo Finance scraper, and valuation e
 ### Fixed
 
 - Cookie and crumb authentication for Yahoo Finance scraper ([#17](https://github.com/lugassawan/panen/pull/17))
-
-[1.0.0]: https://github.com/lugassawan/panen/compare/v0.6.0...v1.0.0
-[0.6.0]: https://github.com/lugassawan/panen/compare/v0.5.0...v0.6.0
-[0.5.0]: https://github.com/lugassawan/panen/compare/v0.4.0...v0.5.0
-[0.4.0]: https://github.com/lugassawan/panen/compare/v0.3.0...v0.4.0
-[0.3.0]: https://github.com/lugassawan/panen/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/lugassawan/panen/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/lugassawan/panen/releases/tag/v0.1.0
