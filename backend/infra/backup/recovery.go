@@ -8,14 +8,18 @@ import (
 	"time"
 
 	"github.com/lugassawan/panen/backend/infra/applog"
+	"github.com/lugassawan/panen/backend/infra/database"
 
 	_ "modernc.org/sqlite"
 )
 
+// DBFilename is the SQLite database filename used by panen.
+const DBFilename = "panen.db"
+
 // TryRecover checks the database at dataDir/panen.db and restores from backup if needed.
 // Returns the backup filename that was restored from, or "" if no restore was needed/possible.
 func TryRecover(dataDir, backupDir string) (string, error) {
-	dbPath := filepath.Join(dataDir, "panen.db")
+	dbPath := filepath.Join(dataDir, DBFilename)
 
 	if _, err := os.Stat(dbPath); err == nil {
 		if err := quickCheck(dbPath); err == nil {
@@ -71,7 +75,7 @@ func restoreAndValidate(src, dbPath string) error {
 
 // quickCheck opens a temporary connection and runs PRAGMA quick_check.
 func quickCheck(dbPath string) error {
-	conn, err := sql.Open("sqlite", dbPath+"?_pragma=busy_timeout%3d5000")
+	conn, err := sql.Open(database.SQLiteDriver, dbPath+"?_pragma=busy_timeout%3d5000")
 	if err != nil {
 		return err
 	}

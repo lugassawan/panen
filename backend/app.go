@@ -242,7 +242,7 @@ func (a *App) initDataDir(ctx context.Context) string {
 		wailsRuntime.LogFatalf(ctx, "resolve backup dir: %v", err)
 	}
 	a.backupDir = backupDir
-	a.dbPath = filepath.Join(dataDir, "panen.db")
+	a.dbPath = filepath.Join(dataDir, backup.DBFilename)
 
 	if restored, err := backup.TryRecover(dataDir, backupDir); err != nil {
 		wailsRuntime.LogWarningf(ctx, "recovery check: %v", err)

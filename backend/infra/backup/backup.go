@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/lugassawan/panen/backend/infra/applog"
+	"github.com/lugassawan/panen/backend/infra/database"
 
 	_ "modernc.org/sqlite"
 )
@@ -165,7 +166,7 @@ func uniquePath(dir, base string) string {
 
 // checkpoint opens a temporary connection to run WAL checkpoint.
 func checkpoint(dbPath string) error {
-	conn, err := sql.Open("sqlite", dbPath+"?_pragma=busy_timeout%3d5000")
+	conn, err := sql.Open(database.SQLiteDriver, dbPath+"?_pragma=busy_timeout%3d5000")
 	if err != nil {
 		return err
 	}
