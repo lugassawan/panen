@@ -12,13 +12,7 @@ type AlertHandler struct {
 	alerts *usecase.AlertService
 }
 
-// NewAlertHandler creates a new AlertHandler.
-func NewAlertHandler(ctx context.Context, alerts *usecase.AlertService) *AlertHandler {
-	h := &AlertHandler{}
-	h.Bind(ctx, alerts)
-	return h
-}
-
+// Bind wires the handler to its dependencies.
 func (h *AlertHandler) Bind(ctx context.Context, alerts *usecase.AlertService) {
 	h.ctx = ctx
 	h.alerts = alerts
