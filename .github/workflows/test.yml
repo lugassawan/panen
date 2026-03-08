@@ -65,14 +65,17 @@ jobs:
 
       - uses: jdx/mise-action@v3
 
+      - name: Install Wails CLI
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.11.0
+
       - name: Install frontend dependencies
         run: cd frontend && pnpm install
 
-      - name: Create Wails binding stubs
-        run: |
-          mkdir -p frontend/wailsjs/go/backend frontend/wailsjs/runtime
-          echo 'export {}' > frontend/wailsjs/go/backend/App.js
-          echo 'export {}' > frontend/wailsjs/runtime/runtime.js
+      - name: Create frontend dist placeholder
+        run: mkdir -p frontend/dist && echo '<html></html>' > frontend/dist/index.html
+
+      - name: Generate Wails bindings
+        run: wails generate module
 
       - name: Run unit tests
         run: make test-frontend
