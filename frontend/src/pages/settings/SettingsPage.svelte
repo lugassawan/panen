@@ -220,7 +220,10 @@ async function checkProviderHealth() {
 
 async function toggleProvider(name: string, enabled: boolean) {
   try {
-    await SetProviderEnabled(name, enabled);
+    const ok = await SetProviderEnabled(name, enabled);
+    if (!ok && !enabled) {
+      toastStore.add(t("settings.providerCannotDisableLast"), "error");
+    }
     providers = await GetProviderStatus();
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);

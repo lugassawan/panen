@@ -23,11 +23,15 @@ func (h *ProviderHandler) GetProviderStatus() []ProviderStatusResponse {
 	infos := h.registry.List()
 	result := make([]ProviderStatusResponse, len(infos))
 	for i, info := range infos {
+		var lastCheck string
+		if !info.LastCheck.IsZero() {
+			lastCheck = formatDTO(info.LastCheck)
+		}
 		result[i] = ProviderStatusResponse{
 			Name:      info.Name,
 			Priority:  info.Priority,
 			Status:    string(info.Status),
-			LastCheck: formatDTO(info.LastCheck),
+			LastCheck: lastCheck,
 			LastError: info.LastError,
 			Enabled:   info.Enabled,
 		}

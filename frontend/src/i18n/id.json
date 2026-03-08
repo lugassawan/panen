@@ -132,7 +132,8 @@
     "providerDown": "Mati",
     "providerUnknown": "Tidak Diketahui",
     "providerCheckHealth": "Periksa Kesehatan",
-    "providerCheckingHealth": "Memeriksa..."
+    "providerCheckingHealth": "Memeriksa...",
+    "providerCannotDisableLast": "Tidak dapat menonaktifkan penyedia terakhir"
   },
   "format": {
     "justNow": "baru saja",

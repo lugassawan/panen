@@ -132,7 +132,8 @@
     "providerDown": "Down",
     "providerUnknown": "Unknown",
     "providerCheckHealth": "Check Health",
-    "providerCheckingHealth": "Checking..."
+    "providerCheckingHealth": "Checking...",
+    "providerCannotDisableLast": "Cannot disable the last provider"
   },
   "format": {
     "justNow": "just now",
