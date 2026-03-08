@@ -153,6 +153,11 @@ func (s *BackupService) ListBackups(backupDir string) ([]BackupInfo, error) {
 	return backups, nil
 }
 
+// Checkpoint runs a WAL checkpoint on the database file.
+func (s *BackupService) Checkpoint(dbPath string) error {
+	return checkpoint(dbPath)
+}
+
 // uniquePath returns a path like base.db, or base-1.db, base-2.db if the file already exists.
 func uniquePath(dir, base string) string {
 	dst := filepath.Join(dir, base+".db")
