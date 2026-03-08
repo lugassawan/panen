@@ -5,6 +5,7 @@ import { untrack } from "svelte";
 import { GetDashboardOverview } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
 import { accentPalette, defaultChartOptions } from "../../lib/chartColors.svelte";
+import Alert from "../../lib/components/Alert.svelte";
 import EmptyState from "../../lib/components/EmptyState.svelte";
 import SkeletonCard from "../../lib/components/SkeletonCard.svelte";
 import { formatDate, formatPercent, formatRupiah } from "../../lib/format";
@@ -118,7 +119,7 @@ function txnTypeBadge(type: string): string {
 </script>
 
 <div class="mx-auto max-w-6xl space-y-6 p-6">
-  <h2 class="font-display text-2xl font-bold text-text-primary">{t("dashboard.title")}</h2>
+  <h1 class="text-2xl font-display font-bold text-text-primary">{t("dashboard.title")}</h1>
 
   {#if state === "loading"}
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -143,7 +144,7 @@ function txnTypeBadge(type: string): string {
       {/snippet}
     </EmptyState>
   {:else if state === "error"}
-    <p class="text-sm text-loss">{errorMsg}</p>
+    <Alert variant="negative">{errorMsg}</Alert>
   {:else if data}
     <!-- Summary Cards -->
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">

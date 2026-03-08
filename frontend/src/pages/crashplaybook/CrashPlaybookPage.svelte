@@ -11,6 +11,7 @@ import {
   SaveDeploymentSettings,
 } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
+import Alert from "../../lib/components/Alert.svelte";
 import Button from "../../lib/components/Button.svelte";
 import EmptyState from "../../lib/components/EmptyState.svelte";
 import LoadingState from "../../lib/components/LoadingState.svelte";
@@ -156,8 +157,10 @@ $effect(() => {
   {#if state === "loading"}
     <LoadingState message={t("crashPlaybook.loading")} class="py-16" />
   {:else if state === "error"}
-    <div class="mt-6 rounded-lg border border-negative bg-negative-bg p-4">
-      <p class="text-sm text-negative">{error}</p>
+    <div class="mt-6">
+      <Alert variant="negative">
+        {error}
+      </Alert>
       <div class="mt-3">
         <Button variant="secondary" size="sm" onclick={loadPortfolios}>{t("common.retry")}</Button>
       </div>

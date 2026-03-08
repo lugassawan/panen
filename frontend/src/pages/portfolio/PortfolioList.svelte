@@ -35,7 +35,7 @@ let { portfolios, onView, onEdit, onDelete, onCreate }: Props = $props();
     >
       <button
         type="button"
-        class="flex-1 text-left"
+        class="flex-1 rounded text-left focus-ring"
         onclick={() => onView(portfolio)}
       >
         <div class="flex items-center gap-2">

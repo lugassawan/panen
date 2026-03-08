@@ -6,6 +6,7 @@ import {
   RunScreen,
 } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
+import Alert from "../../lib/components/Alert.svelte";
 import Badge from "../../lib/components/Badge.svelte";
 import EmptyState from "../../lib/components/EmptyState.svelte";
 import LoadingState from "../../lib/components/LoadingState.svelte";
@@ -133,8 +134,8 @@ loadReferenceData();
 <div class="flex h-full flex-col bg-bg-primary">
   <!-- Page Header -->
   <div class="border-b border-border-default px-6 py-4">
-    <h2 class="text-lg font-semibold text-text-primary">{t("screener.title")}</h2>
-    <p class="mt-0.5 text-sm text-text-secondary">{t("screener.subtitle")}</p>
+    <h1 class="text-2xl font-display font-bold text-text-primary">{t("screener.title")}</h1>
+    <p class="mt-1 text-sm text-text-secondary">{t("screener.subtitle")}</p>
   </div>
 
   <!-- Filters -->
@@ -156,15 +157,17 @@ loadReferenceData();
   {:else if state === "loading"}
     <LoadingState message={t("screener.screening")} class="flex-1 py-16" />
   {:else if state === "error"}
-    <div class="mx-6 mt-4 rounded border border-negative/20 bg-negative-bg px-4 py-3 text-sm text-negative" role="alert">
-      <p>{error}</p>
-      <button
-        type="button"
-        class="mt-2 text-xs font-medium underline hover:opacity-80 focus-ring rounded"
-        onclick={runScreen}
-      >
-        {t("common.retry")}
-      </button>
+    <div class="mx-6 mt-4">
+      <Alert variant="negative">
+        {error}
+        <button
+          type="button"
+          class="mt-2 block text-xs font-medium underline hover:opacity-80 focus-ring rounded"
+          onclick={runScreen}
+        >
+          {t("common.retry")}
+        </button>
+      </Alert>
     </div>
   {:else if state === "results"}
     <!-- Summary -->
@@ -200,7 +203,7 @@ loadReferenceData();
                 { key: "roe", label: "ROE" },
                 { key: "der", label: "DER" },
                 { key: "dividendYield", label: "DY" },
-                { key: "verdict", label: "Verdict" },
+                { key: "verdict", label: t("screener.verdict") },
                 { key: "score", label: t("screener.score") },
               ] as col}
                 <SortableHeader

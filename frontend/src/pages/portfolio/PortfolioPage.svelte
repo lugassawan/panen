@@ -8,6 +8,7 @@ import {
   ListPortfolios,
 } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
+import Alert from "../../lib/components/Alert.svelte";
 import ConfirmDialog from "../../lib/components/ConfirmDialog.svelte";
 import SkeletonTable from "../../lib/components/SkeletonTable.svelte";
 import { toastStore } from "../../lib/stores/toast.svelte";
@@ -93,7 +94,7 @@ async function confirmDelete() {
   deleteError = null;
   try {
     await DeletePortfolio(deletingPortfolio.id);
-    toastStore.add("Portfolio deleted", "success");
+    toastStore.add(t("common.portfolioDeleted"), "success");
     deletingPortfolio = null;
     await load();
   } catch (e: unknown) {
@@ -110,9 +111,7 @@ load();
   {#if state === "loading"}
     <SkeletonTable rows={5} columns={7} label={t("portfolio.loading")} />
   {:else if state === "error"}
-    <div class="rounded border border-negative/20 bg-negative-bg px-4 py-3 text-sm text-negative" role="alert">
-      {error}
-    </div>
+    <Alert variant="negative">{error}</Alert>
   {:else if state === "onboarding"}
     <PortfolioOnboarding
       {brokerConfigs}
@@ -225,11 +224,11 @@ load();
       deleteError = null;
     }}
   >
-    <p>Are you sure you want to delete <strong>{deletingPortfolio.name}</strong>?</p>
+    <p>{t("common.confirmDeleteMessage", { name: deletingPortfolio.name })}</p>
     <p class="mt-1">{t("common.cannotUndo")}</p>
     {#if deleteError}
-      <div class="mt-3 rounded border border-negative/20 bg-negative-bg px-3 py-2 text-sm text-negative" role="alert">
-        {deleteError}
+      <div class="mt-3">
+        <Alert variant="negative">{deleteError}</Alert>
       </div>
     {/if}
   </ConfirmDialog>

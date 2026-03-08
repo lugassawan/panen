@@ -87,8 +87,8 @@ function percentInRange(value: number, min: number, max: number): number {
 
   <!-- Error -->
   {#if error}
-    <div class="mb-6 rounded border border-negative/20 bg-negative-bg px-4 py-3 text-sm text-negative" role="alert">
-      {error}
+    <div class="mb-6">
+      <AlertComponent variant="negative">{error}</AlertComponent>
     </div>
   {/if}
 
@@ -105,7 +105,7 @@ function percentInRange(value: number, min: number, max: number): number {
       </div>
       <p class="mt-1 text-sm text-text-secondary">{verdict.description}</p>
       <p class="mt-1 text-xs text-text-muted">
-        {result.ticker} &middot; {result.riskProfile} risk profile
+        {result.ticker} &middot; {result.riskProfile} {t("common.riskProfile")}
       </p>
     </div>
 
