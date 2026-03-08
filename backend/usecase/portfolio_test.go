@@ -828,6 +828,14 @@ func TestPortfolioServiceClearHoldingsEmpty(t *testing.T) {
 	}
 }
 
+func TestPortfolioServiceClearHoldingsEmptyID(t *testing.T) {
+	f := setupPortfolioTest(t)
+	_, err := f.svc.ClearHoldings(f.ctx, "")
+	if !errors.Is(err, ErrEmptyID) {
+		t.Errorf("ClearHoldings() error = %v, want ErrEmptyID", err)
+	}
+}
+
 func TestPortfolioServiceClearHoldingsNotFound(t *testing.T) {
 	f := setupPortfolioTest(t)
 

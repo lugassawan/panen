@@ -146,6 +146,7 @@ func (s *PortfolioService) RemoveHolding(ctx context.Context, portfolioID, holdi
 	if h.PortfolioID != portfolioID {
 		return fmt.Errorf("remove holding: %w", shared.ErrNotFound)
 	}
+	// CASCADE in the database handles associated buy_transactions and peaks.
 	if err := s.holdings.Delete(ctx, holdingID); err != nil {
 		return fmt.Errorf("remove holding: %w", err)
 	}

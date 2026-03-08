@@ -81,14 +81,10 @@ describe("HoldingsTable", () => {
       props: { holdings, onChecklist: vi.fn(), onRemove },
     });
 
-    // Trash buttons are the ones containing SVG icons (non-text buttons)
-    const rows = screen.getAllByRole("row");
-    // rows[0] is header, rows[1] is BBCA, rows[2] is BBRI
-    const bbcaRow = rows[1];
-    const buttons = bbcaRow.querySelectorAll("button");
-    // Second button in the action cell is the trash button
-    const trashButton = buttons[1];
-    await user.click(trashButton);
+    const removeButtons = screen.getAllByRole("button", {
+      name: /Remove BBCA/i,
+    });
+    await user.click(removeButtons[0]);
     expect(onRemove).toHaveBeenCalledWith("h1", "BBCA");
   });
 });

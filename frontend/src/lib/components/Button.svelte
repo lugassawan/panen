@@ -8,6 +8,7 @@ let {
   disabled = false,
   type = "button",
   loading = false,
+  "aria-label": ariaLabel,
   onclick,
   children,
 }: {
@@ -16,6 +17,7 @@ let {
   disabled?: boolean;
   type?: "button" | "submit" | "reset";
   loading?: boolean;
+  "aria-label"?: string;
   onclick?: (e: MouseEvent) => void;
   children: Snippet;
 } = $props();
@@ -38,6 +40,7 @@ const variantClasses: Record<string, string> = {
 <button
   {type}
   disabled={disabled || loading}
+  aria-label={ariaLabel}
   {onclick}
   class="inline-flex items-center justify-center gap-2 rounded-md font-medium focus-ring transition-fast disabled:opacity-50 disabled:pointer-events-none {sizeClasses[size]} {variantClasses[variant]}"
 >

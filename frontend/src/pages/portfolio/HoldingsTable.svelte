@@ -92,6 +92,7 @@ let { holdings, onChecklist, onRemove }: Props = $props();
                 <Button
                   variant="ghost"
                   size="sm"
+                  aria-label={t("common.removeItem", { name: holding.ticker })}
                   onclick={() => onRemove(holding.id, holding.ticker)}
                 >
                   <Trash2 size={14} strokeWidth={2} aria-hidden="true" />
