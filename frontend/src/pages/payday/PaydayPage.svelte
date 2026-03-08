@@ -10,6 +10,7 @@ import {
 import { t } from "../../i18n";
 import Badge from "../../lib/components/Badge.svelte";
 import Button from "../../lib/components/Button.svelte";
+import EmptyState from "../../lib/components/EmptyState.svelte";
 import LoadingState from "../../lib/components/LoadingState.svelte";
 import Tooltip from "../../lib/components/Tooltip.svelte";
 import { formatRupiah } from "../../lib/format";
@@ -210,9 +211,7 @@ $effect(() => {
       </div>
     </div>
   {:else if state === "dashboard"}
-    <div class="mt-6 text-center text-sm text-text-secondary">
-      {t("payday.noPortfolios")}
-    </div>
+    <EmptyState title={t("payday.noPortfolios")} />
   {/if}
 </div>
 

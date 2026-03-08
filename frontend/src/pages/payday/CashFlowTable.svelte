@@ -1,6 +1,7 @@
 <script lang="ts">
 import { GetCashFlowSummary } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
+import EmptyState from "../../lib/components/EmptyState.svelte";
 import { formatRupiah } from "../../lib/format";
 import type { CashFlowSummaryResponse } from "../../lib/types";
 
@@ -68,7 +69,7 @@ $effect(() => {
         </table>
       </div>
     {:else}
-      <p class="mt-3 text-center text-sm text-text-secondary">{t("cashFlow.noRecords")}</p>
+      <EmptyState compact title={t("cashFlow.noRecords")} />
     {/if}
   </div>
 {/if}
