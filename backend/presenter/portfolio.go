@@ -166,3 +166,32 @@ func (h *PortfolioHandler) DeletePortfolio(id string) error {
 	}
 	return nil
 }
+
+// RemoveHolding removes a single holding from a portfolio.
+// A pre-destructive backup is attempted before deletion (non-fatal on failure).
+func (h *PortfolioHandler) RemoveHolding(portfolioID, holdingID string) error {
+	if h.preDeleteBackup != nil {
+		if err := h.preDeleteBackup("remove-holding"); err != nil {
+			applog.Warn("pre-delete backup failed", err, applog.Fields{"holdingID": holdingID})
+		}
+	}
+	if err := h.portfolios.RemoveHolding(h.ctx, portfolioID, holdingID); err != nil {
+		return fmt.Errorf("remove holding: %w", err)
+	}
+	return nil
+}
+
+// ClearHoldings removes all holdings from a portfolio and returns the count deleted.
+// A pre-destructive backup is attempted before deletion (non-fatal on failure).
+func (h *PortfolioHandler) ClearHoldings(portfolioID string) (int, error) {
+	if h.preDeleteBackup != nil {
+		if err := h.preDeleteBackup("clear-holdings"); err != nil {
+			applog.Warn("pre-delete backup failed", err, applog.Fields{"portfolioID": portfolioID})
+		}
+	}
+	count, err := h.portfolios.ClearHoldings(h.ctx, portfolioID)
+	if err != nil {
+		return 0, fmt.Errorf("clear holdings: %w", err)
+	}
+	return count, nil
+}
