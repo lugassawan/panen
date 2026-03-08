@@ -65,28 +65,7 @@ func (r *PriceHistoryRepo) GetByTicker(
 	ctx context.Context,
 	ticker, source string,
 ) ([]stock.PricePoint, error) {
-	rows, err := r.db.QueryContext(ctx, priceHistoryGetByTicker, ticker, source)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var points []stock.PricePoint
-	for rows.Next() {
-		var pp stock.PricePoint
-		var dateStr string
-		if err := rows.Scan(
-			&pp.ID, &pp.Ticker, &dateStr,
-			&pp.Open, &pp.High, &pp.Low, &pp.Close, &pp.Volume, &pp.Source,
-		); err != nil {
-			return nil, err
-		}
-		if pp.Date, err = parseTime(dateStr); err != nil {
-			return nil, err
-		}
-		points = append(points, pp)
-	}
-	return points, rows.Err()
+	return QueryAll(ctx, r.db, priceHistoryGetByTicker, scanPricePoint, ticker, source)
 }
 
 func (r *PriceHistoryRepo) LatestDate(
@@ -107,4 +86,20 @@ func (r *PriceHistoryRepo) LatestDate(
 func (r *PriceHistoryRepo) DeleteByTicker(ctx context.Context, ticker string) error {
 	_, err := r.db.ExecContext(ctx, priceHistoryDeleteByTicker, ticker)
 	return err
+}
+
+func scanPricePoint(scan func(dest ...any) error) (stock.PricePoint, error) {
+	var pp stock.PricePoint
+	var dateStr string
+	if err := scan(
+		&pp.ID, &pp.Ticker, &dateStr,
+		&pp.Open, &pp.High, &pp.Low, &pp.Close, &pp.Volume, &pp.Source,
+	); err != nil {
+		return pp, err
+	}
+	var err error
+	if pp.Date, err = parseTime(dateStr); err != nil {
+		return pp, err
+	}
+	return pp, nil
 }

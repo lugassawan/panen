@@ -102,35 +102,7 @@ func NewTransactionHistoryRepo(db *sql.DB) *TransactionHistoryRepo {
 
 func (r *TransactionHistoryRepo) List(ctx context.Context, filter transaction.Filter) ([]transaction.Record, error) {
 	query, args := buildHistoryQuery(txHistoryBase, filter, true)
-
-	rows, err := r.db.QueryContext(ctx, query, args...)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var records []transaction.Record
-	for rows.Next() {
-		var rec transaction.Record
-		var txType, date, createdAt string
-		if err := rows.Scan(
-			&rec.ID, &txType, &date, &rec.Ticker,
-			&rec.PortfolioID, &rec.PortfolioName,
-			&rec.Lots, &rec.Price, &rec.Fee, &rec.Tax,
-			&rec.Total, &createdAt,
-		); err != nil {
-			return nil, err
-		}
-		rec.Type = transaction.Type(txType)
-		if rec.Date, err = parseTime(date); err != nil {
-			return nil, err
-		}
-		if rec.CreatedAt, err = parseTime(createdAt); err != nil {
-			return nil, err
-		}
-		records = append(records, rec)
-	}
-	return records, rows.Err()
+	return QueryAll(ctx, r.db, query, scanTransactionRecord, args...)
 }
 
 func (r *TransactionHistoryRepo) Summarize(
@@ -188,6 +160,28 @@ func buildHistoryQuery(base string, f transaction.Filter, withOrder bool) (strin
 	}
 
 	return b.String(), args
+}
+
+func scanTransactionRecord(scan func(dest ...any) error) (transaction.Record, error) {
+	var rec transaction.Record
+	var txType, date, createdAt string
+	if err := scan(
+		&rec.ID, &txType, &date, &rec.Ticker,
+		&rec.PortfolioID, &rec.PortfolioName,
+		&rec.Lots, &rec.Price, &rec.Fee, &rec.Tax,
+		&rec.Total, &createdAt,
+	); err != nil {
+		return rec, err
+	}
+	rec.Type = transaction.Type(txType)
+	var err error
+	if rec.Date, err = parseTime(date); err != nil {
+		return rec, err
+	}
+	if rec.CreatedAt, err = parseTime(createdAt); err != nil {
+		return rec, err
+	}
+	return rec, nil
 }
 
 func writeOrderBy(b *strings.Builder, f transaction.Filter) {
