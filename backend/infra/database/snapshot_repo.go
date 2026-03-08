@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 	"database/sql"
-	"errors"
 
 	"github.com/lugassawan/panen/backend/domain/shared"
 	"github.com/lugassawan/panen/backend/domain/stock"
@@ -43,25 +42,26 @@ func (r *SnapshotRepo) Insert(ctx context.Context, data *stock.Data) error {
 }
 
 func (r *SnapshotRepo) GetLatest(ctx context.Context, ticker, source string) (*stock.Data, error) {
-	var d stock.Data
-	var fetchedAt string
-	err := r.db.QueryRowContext(ctx, snapshotGetLatest, ticker, source).Scan(
-		&d.ID, &d.Ticker, &d.Price,
-		&d.EPS, &d.BVPS, &d.ROE, &d.DER, &d.PBV, &d.PER,
-		&d.DividendYield, &d.PayoutRatio, &d.Source, &fetchedAt)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, shared.ErrNotFound
-	}
-	if err != nil {
-		return nil, err
-	}
-	if d.FetchedAt, err = parseTime(fetchedAt); err != nil {
-		return nil, err
-	}
-	return &d, nil
+	return QueryRow(ctx, r.db, snapshotGetLatest, scanSnapshot, ticker, source)
 }
 
 func (r *SnapshotRepo) Cleanup(ctx context.Context, ticker string, keepN int) error {
 	_, err := r.db.ExecContext(ctx, snapshotCleanup, ticker, ticker, keepN)
 	return err
+}
+
+func scanSnapshot(scan func(dest ...any) error) (*stock.Data, error) {
+	var d stock.Data
+	var fetchedAt string
+	if err := scan(
+		&d.ID, &d.Ticker, &d.Price,
+		&d.EPS, &d.BVPS, &d.ROE, &d.DER, &d.PBV, &d.PER,
+		&d.DividendYield, &d.PayoutRatio, &d.Source, &fetchedAt); err != nil {
+		return nil, err
+	}
+	var err error
+	if d.FetchedAt, err = parseTime(fetchedAt); err != nil {
+		return nil, err
+	}
+	return &d, nil
 }
