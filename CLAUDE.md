@@ -95,6 +95,9 @@ make release-check     # Validate VERSION against wails.json productVersion
 - **Integration tests**: `*.integration.test.ts` — run with `make test-integration`
 - Uses `@testing-library/svelte` + `jsdom` environment
 - Separate Vitest configs: `vitest.config.ts` (unit) and `vitest-integration.config.ts` (integration)
+- **Pool**: `threads` (not `vmThreads` — vmThreads `vi.mock()` closures break on Linux due to VM context isolation, even with identical Node.js versions)
+- **CI sharding**: Tests are split across 3 parallel CI jobs via `vitest --shard` for faster feedback
+- **No hardcoded locale strings in tests**: `Intl.NumberFormat` output differs across platforms (e.g., `id-ID` currency: `"Rp 9.250"` on macOS vs `"IDR 9,250"` on Ubuntu). Use `Intl.NumberFormat` helpers to compute expected values.
 
 ### Frontend E2E (Playwright)
 
@@ -194,7 +197,8 @@ Reusable components in `frontend/src/lib/components/`: Alert, Badge, BrokerPicke
 
 - `.github/workflows/test.yml` — runs on push and PRs: lint (`make lint`), Go tests (`make test-go`), frontend unit + integration tests
 - `.github/workflows/release.yml` — triggered by `v*` tags: cross-platform build (macOS universal, Linux amd64, Windows amd64), creates GitHub Release with archives + checksums
-- Uses `jdx/mise-action@v3` for tool version management in CI
+- Uses `jdx/mise-action@v3` for tool version management in CI — pin tool versions to minor (e.g., `node = "25.6"` not `"25"`) so CI and local resolve the same version
+- Frontend tests are sharded across 3 parallel CI jobs for faster feedback
 - Pure-Go SQLite (`modernc.org/sqlite`) — no CGO dependency, `CGO_ENABLED=0` works
 - Release notes are auto-generated from conventional commits between tags — no manual CHANGELOG needed
 
