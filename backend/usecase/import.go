@@ -4,11 +4,11 @@ import (
 	"archive/zip"
 	"database/sql"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"os"
 
+	"github.com/lugassawan/panen/backend/infra/backup"
 	"github.com/lugassawan/panen/backend/infra/database"
 
 	_ "modernc.org/sqlite"
@@ -61,9 +61,9 @@ func (s *ImportService) Preview(archivePath string) (*ImportPreviewResult, error
 		return nil, err
 	}
 
-	dbFile := findZipEntry(zr, exportDBName)
+	dbFile := findZipEntry(zr, backup.DBFilename)
 	if dbFile == nil {
-		return nil, errors.New("archive missing panen.db")
+		return nil, fmt.Errorf("archive missing %s", backup.DBFilename)
 	}
 
 	return &ImportPreviewResult{
@@ -88,9 +88,9 @@ func (s *ImportService) Import(archivePath string) error {
 		return err
 	}
 
-	dbEntry := findZipEntry(zr, exportDBName)
+	dbEntry := findZipEntry(zr, backup.DBFilename)
 	if dbEntry == nil {
-		return errors.New("archive missing panen.db")
+		return fmt.Errorf("archive missing %s", backup.DBFilename)
 	}
 
 	// Extract to temp file first to verify checksum before replacing.
@@ -130,7 +130,7 @@ func (s *ImportService) Import(archivePath string) error {
 func readMeta(zr *zip.ReadCloser) (*ExportMeta, error) {
 	metaEntry := findZipEntry(zr, exportMetaName)
 	if metaEntry == nil {
-		return nil, errors.New("archive missing meta.json")
+		return nil, fmt.Errorf("archive missing %s", exportMetaName)
 	}
 
 	rc, err := metaEntry.Open()
@@ -167,7 +167,8 @@ func extractDBToTemp(entry *zip.File) (string, error) {
 		return "", fmt.Errorf("create temp file: %w", err)
 	}
 
-	written, err := io.Copy(tmp, io.LimitReader(rc, maxImportDBSize+1)) //nolint:gosec // size-limited extraction; zip bomb mitigated by LimitReader
+	limited := io.LimitReader(rc, maxImportDBSize+1)
+	written, err := io.Copy(tmp, limited) //nolint:gosec // zip bomb mitigated by LimitReader
 	if err != nil {
 		_ = tmp.Close()
 		_ = os.Remove(tmp.Name()) //nolint:gosec // temp file we just created

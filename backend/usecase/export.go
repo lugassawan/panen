@@ -9,12 +9,11 @@ import (
 	"io"
 	"os"
 	"time"
+
+	"github.com/lugassawan/panen/backend/infra/backup"
 )
 
-const (
-	exportDBName   = "panen.db"
-	exportMetaName = "meta.json"
-)
+const exportMetaName = "meta.json"
 
 // ExportMeta holds metadata written into the export archive.
 type ExportMeta struct {
@@ -96,7 +95,7 @@ func writeExportZip(dst, dbPath string, meta ExportMeta) error {
 	zw := zip.NewWriter(out)
 	defer zw.Close()
 
-	if err := addFileToZip(zw, exportDBName, dbPath); err != nil {
+	if err := addFileToZip(zw, backup.DBFilename, dbPath); err != nil {
 		return fmt.Errorf("add database to zip: %w", err)
 	}
 
