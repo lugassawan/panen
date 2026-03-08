@@ -27,4 +27,26 @@ describe("EmptyState", () => {
     });
     expect(screen.getByRole("button", { name: "Add item" })).toBeInTheDocument();
   });
+
+  it("applies compact styles when compact is true", () => {
+    const { container } = render(EmptyStateWrapper, {
+      props: { title: "No records", compact: true },
+    });
+    const wrapper = container.querySelector("div > div") as HTMLElement;
+    expect(wrapper.className).toContain("py-4");
+    expect(wrapper.className).not.toContain("py-12");
+    const heading = screen.getByText("No records");
+    expect(heading.className).toContain("text-sm");
+    expect(heading.className).not.toContain("text-lg");
+  });
+
+  it("applies default styles when compact is false", () => {
+    const { container } = render(EmptyStateWrapper, {
+      props: { title: "No items" },
+    });
+    const wrapper = container.querySelector("div > div") as HTMLElement;
+    expect(wrapper.className).toContain("py-12");
+    const heading = screen.getByText("No items");
+    expect(heading.className).toContain("text-lg");
+  });
 });
