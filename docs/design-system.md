@@ -564,7 +564,89 @@ The transition utilities set `transition-duration` and `transition-timing-functi
 
 ---
 
-## 10. Do / Don't
+## 10. Loading Patterns
+
+### Component Selection
+
+| Component | When to use | Key props |
+|---|---|---|
+| `LoadingState` | Generic spinner for pages with unpredictable layout, inline loading indicators | `message`, `size` (`"sm"` \| `"md"`) |
+| `SkeletonTable` | Pages with known table layout — preserves visual structure during load | `rows` (default 5), `columns` (default 4), `label` |
+| `SkeletonCard` | Pages with known card layout — mimics card content shape | `lines` (default 3), `label` |
+| `SkeletonLine` | Individual shimmer line — building block for custom skeleton layouts | `height`, `width` |
+
+### Page State Machine
+
+Pages follow a state machine pattern to manage loading, empty, and error states:
+
+```svelte
+<script lang="ts">
+  type State = "loading" | "ready" | "empty" | "error";
+  let state = $state<State>("loading");
+  let data = $state<Item[]>([]);
+  let error = $state<string | null>(null);
+
+  async function load() {
+    state = "loading";
+    try {
+      data = await FetchItems();
+      state = data.length > 0 ? "ready" : "empty";
+    } catch (e) {
+      error = String(e);
+      state = "error";
+    }
+  }
+</script>
+
+{#if state === "loading"}
+  <SkeletonTable rows={5} columns={3} />
+{:else if state === "empty"}
+  <EmptyState title="No items yet" description="Add your first item to get started." />
+{:else if state === "error"}
+  <Alert variant="negative">{error}</Alert>
+{:else}
+  <!-- render data -->
+{/if}
+```
+
+State names vary by page (e.g., `"list"`, `"setup"`, `"dashboard"` instead of `"ready"`), but the pattern is consistent: start at `"loading"`, transition based on data availability or errors.
+
+---
+
+## 11. Accessibility
+
+### Focus Management
+
+- Apply `focus-ring` class on all interactive elements (buttons, inputs, links, tabs)
+- Modal uses focus trapping — Tab/Shift+Tab cycle through focusable children
+- Modal auto-focuses its container on open
+
+### Keyboard Navigation
+
+- **Escape**: closes modals, dropdowns, and dialogs
+- **Tab**: moves focus forward through interactive elements
+- **Arrow keys**: navigate within listboxes (`SearchableSelect`), tab groups (`ModeTabs`)
+- **Enter**: activates buttons, selects dropdown options
+
+### ARIA Attributes
+
+- `aria-modal="true"` + `role="dialog"` on Modal overlay
+- `aria-labelledby` when Modal has a visible title; `aria-label` when it does not
+- `aria-label` on icon-only buttons (e.g., close buttons, theme toggle)
+- `role="status"` on `LoadingState`, `SkeletonTable`, `SkeletonCard` for live region announcements
+- `role="combobox"` + `aria-expanded` + `aria-haspopup="listbox"` on `SearchableSelect`
+- `role="tablist"` + `role="tab"` on `ModeTabs`
+
+### Screen Reader Support
+
+- Text alternatives for all visual indicators — never rely on color alone
+- Loading components include `aria-label` for screen reader context
+- Icon-only buttons always have an `aria-label` describing the action
+- Dismissible alerts use a close button with `aria-label`
+
+---
+
+## 12. Do / Don't
 
 ### Do
 
