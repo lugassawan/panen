@@ -59,12 +59,10 @@ function expectedDecimal(value: number, loc: "en-US" | "id-ID", digits = 2): str
 }
 
 function expectedPercent(value: number, loc: "en-US" | "id-ID"): string {
-  return (
-    new Intl.NumberFormat(loc, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(value) + "%"
-  );
+  return `${new Intl.NumberFormat(loc, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value)}%`;
 }
 
 describe("formatRupiah", () => {
