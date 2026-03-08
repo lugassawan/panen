@@ -7,9 +7,9 @@ import {
 } from "../../../wailsjs/go/backend/App";
 import { EventsOn } from "../../../wailsjs/runtime/runtime";
 import BrokerageAccountForm from "../../components/BrokerageAccountForm.svelte";
-import ConfirmDialog from "../../components/ConfirmDialog.svelte";
 import { t } from "../../i18n";
 import Button from "../../lib/components/Button.svelte";
+import ConfirmDialog from "../../lib/components/ConfirmDialog.svelte";
 import { EventBrokerFeesSynced } from "../../lib/events";
 import { formatPercent } from "../../lib/format";
 import { toastStore } from "../../lib/stores/toast.svelte";
