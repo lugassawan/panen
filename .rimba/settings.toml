@@ -1,0 +1,4 @@
+[deps]
+auto_detect = false
+
+post_create = ['make init']
