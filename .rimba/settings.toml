@@ -1,0 +1,5 @@
+[deps]
+# Disabled: make init already handles pnpm install; auto-detect would duplicate it.
+auto_detect = false
+
+post_create = ['make init']

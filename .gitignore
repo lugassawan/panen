@@ -44,3 +44,4 @@ profile.cov
 frontend/playwright-report/
 frontend/test-results/
 .playwright-mcp/
+.rimba/settings.local.toml

@@ -38,6 +38,7 @@ panen/
 ## Commands
 
 ```sh
+make init              # Lightweight setup for worktrees (skip wails CLI)
 make setup             # Full project setup (wails CLI + deps + hooks)
 make dev               # Start Wails dev server with HMR
 make build             # Production build → build/bin/
@@ -62,7 +63,7 @@ make release-check     # Validate VERSION against wails.json productVersion
 - **Go**: Standard library style, `gofmt` formatting, tab indentation
 - **Frontend**: 2-space indentation, double quotes, semicolons (Biome enforced)
 - **Branches**: `feat/`, `fix/`, `chore/` prefixes
-- **Worktrees**: Do NOT default to worktrees. Only use git worktrees when running parallel agents working on independent tasks simultaneously — a single agent on one task should use a regular branch, never a worktree. Never target main/master (pre-commit hook blocks direct commits). After work is done, clean up with `git worktree remove <path>` (use `--force` if it has uncommitted changes) and `git branch -D <branch>` to delete the worktree branch
+- **Worktrees**: Do NOT default to worktrees. Only use git worktrees when running parallel agents working on independent tasks simultaneously — a single agent on one task should use a regular branch, never a worktree. Never target main/master (pre-commit hook blocks direct commits). Use `rimba add <task>` to create worktrees — this runs `make init` automatically via `post_create` hook. Clean up with `rimba remove <task>`
 - **Lint warnings**: Always fix the root cause before considering suppression. Refactor code, extract helpers, or restructure queries to satisfy the linter. Only use `//nolint` or `// biome-ignore` as a last resort when a fix is genuinely impossible, and always include a justification comment explaining why.
 - **Code review**: Run code review before creating PRs (e.g., via available code-review skills or agents) unless one was already performed in the current session. Address reviewer feedback to maintain code quality.
 - **PRs**: Title uses `type: description` (same types as commits); body follows `.github/pull_request_template.md`
