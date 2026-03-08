@@ -182,7 +182,10 @@
     "dividendYield": "Dividend Yield",
     "payoutRatio": "Payout Ratio",
     "source": "Source:",
-    "fetched": "Fetched"
+    "fetched": "Fetched",
+    "grahamNumberTooltip": "Intrinsic value estimate using Benjamin Graham's formula: sqrt(22.5 * EPS * BVPS)",
+    "marginOfSafetyTooltip": "How much the current price is below the Graham Number. Higher = more undervalued.",
+    "pbvBandTooltip": "Price-to-Book Value historical range. Position shows where current PBV sits relative to its 5-year band."
   },
   "screener": {
     "title": "Stock Screener",

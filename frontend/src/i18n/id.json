@@ -182,7 +182,10 @@
     "dividendYield": "Dividend Yield",
     "payoutRatio": "Payout Ratio",
     "source": "Sumber:",
-    "fetched": "Diambil"
+    "fetched": "Diambil",
+    "grahamNumberTooltip": "Estimasi nilai intrinsik menggunakan rumus Benjamin Graham: sqrt(22.5 * EPS * BVPS)",
+    "marginOfSafetyTooltip": "Seberapa jauh harga saat ini di bawah Graham Number. Semakin tinggi = semakin undervalued.",
+    "pbvBandTooltip": "Rentang historis Price-to-Book Value. Posisi menunjukkan di mana PBV saat ini relatif terhadap band 5 tahunnya."
   },
   "screener": {
     "title": "Stock Screener",

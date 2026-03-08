@@ -144,13 +144,13 @@ function percentInRange(value: number, min: number, max: number): number {
       <h2 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">{t("lookup.grahamValuation")}</h2>
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <Tooltip text="Intrinsic value estimate using Benjamin Graham's formula: sqrt(22.5 * EPS * BVPS)">
+          <Tooltip text={t("lookup.grahamNumberTooltip")}>
             <div class="text-xs text-text-muted underline decoration-dotted cursor-help">{t("lookup.grahamNumber")}</div>
           </Tooltip>
           <div class="text-lg font-semibold font-mono" data-testid="graham-number">{formatRupiah(result.grahamNumber)}</div>
         </div>
         <div>
-          <Tooltip text="How much the current price is below the Graham Number. Higher = more undervalued.">
+          <Tooltip text={t("lookup.marginOfSafetyTooltip")}>
             <div class="text-xs text-text-muted underline decoration-dotted cursor-help">{t("lookup.marginOfSafety")}</div>
           </Tooltip>
           <div class="text-lg font-semibold font-mono">{formatPercent(result.marginOfSafety)}</div>
@@ -170,7 +170,7 @@ function percentInRange(value: number, min: number, max: number): number {
     {#if result.pbvBand}
       {@const pbvPct = percentInRange(result.pbv, result.pbvBand.min, result.pbvBand.max)}
       <div class="mb-4 rounded border border-border-default bg-bg-elevated p-4" data-testid="pbv-band">
-        <Tooltip text="Price-to-Book Value historical range. Position shows where current PBV sits relative to its 5-year band." position="right">
+        <Tooltip text={t("lookup.pbvBandTooltip")} position="right">
           <h2 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted underline decoration-dotted cursor-help">{t("lookup.pbvBand")}</h2>
         </Tooltip>
         <div class="mb-2 text-lg font-semibold font-mono">{t("lookup.currentPbv")} {formatDecimal(result.pbv)}</div>
