@@ -175,7 +175,7 @@ async function createBackup() {
 </script>
 
 <div class="mx-auto max-w-lg px-4 py-8">
-  <h2 class="mb-6 text-xl font-semibold text-text-primary">{t("settings.title")}</h2>
+  <h1 class="mb-6 text-2xl font-display font-bold text-text-primary">{t("settings.title")}</h1>
 
   {#if loadError}
     <Alert variant="negative" dismissible>{t("settings.loadError", { error: loadError })}</Alert>
@@ -363,7 +363,7 @@ async function createBackup() {
             <Alert variant="info">
               {t("settings.updateAvailable", { version: updateResult.latestVersion })}
               <button
-                class="ml-1 font-medium underline underline-offset-2 hover:opacity-80"
+                class="ml-1 rounded font-medium underline underline-offset-2 hover:opacity-80 focus-ring"
                 onclick={() => openRelease(updateResult!.releaseURL)}
               >
                 {t("settings.viewRelease")}

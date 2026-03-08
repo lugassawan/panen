@@ -2,6 +2,7 @@
 import { Plus } from "lucide-svelte";
 import { AddToWatchlist } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
+import Alert from "../../lib/components/Alert.svelte";
 import Button from "../../lib/components/Button.svelte";
 import Input from "../../lib/components/Input.svelte";
 import { toastStore } from "../../lib/stores/toast.svelte";
@@ -26,7 +27,7 @@ async function submit(e: Event) {
   error = null;
   try {
     await AddToWatchlist(watchlistId, trimmed);
-    toastStore.add(`${trimmed} added to watchlist`, "success");
+    toastStore.add(t("common.tickerAdded", { ticker: trimmed }), "success");
     ticker = "";
     onAdded();
   } catch (err: unknown) {
@@ -43,7 +44,7 @@ async function submit(e: Event) {
       <Input
         bind:value={ticker}
         placeholder={t("watchlist.addTickerPlaceholder")}
-        aria-label="Add ticker to watchlist"
+        aria-label={t("watchlist.addTickerPlaceholder")}
         class="py-1.5 uppercase placeholder:normal-case placeholder:text-text-muted transition-fast"
         disabled={loading}
       />
@@ -53,7 +54,7 @@ async function submit(e: Event) {
       {t("common.add")}
     </Button>
     {#if error}
-      <p class="text-sm text-negative">{error}</p>
+      <Alert variant="negative">{error}</Alert>
     {/if}
   </form>
 </div>

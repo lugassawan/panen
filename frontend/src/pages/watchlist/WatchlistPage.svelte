@@ -9,6 +9,7 @@ import {
   RemoveFromWatchlist,
 } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
+import Alert from "../../lib/components/Alert.svelte";
 import Badge from "../../lib/components/Badge.svelte";
 import EmptyState from "../../lib/components/EmptyState.svelte";
 import LoadingState from "../../lib/components/LoadingState.svelte";
@@ -117,7 +118,7 @@ function selectSector(sector: string) {
 
 function handleWatchlistCreated() {
   showCreateForm = false;
-  toastStore.add("Watchlist created", "success");
+  toastStore.add(t("common.watchlistCreated"), "success");
   load();
 }
 
@@ -129,7 +130,7 @@ function handleWatchlistDeleted() {
     itemsState = "idle";
   }
   deletingWatchlist = null;
-  toastStore.add("Watchlist deleted", "success");
+  toastStore.add(t("common.watchlistDeleted"), "success");
   load();
 }
 
@@ -139,7 +140,7 @@ async function removeTicker(ticker: string) {
   removeError = null;
   try {
     await RemoveFromWatchlist(activeWatchlist.id, ticker);
-    toastStore.add(`${ticker} removed`, "success");
+    toastStore.add(t("common.tickerRemoved", { ticker }), "success");
     await loadItems();
   } catch (e: unknown) {
     removeError = e instanceof Error ? e.message : String(e);
@@ -249,7 +250,7 @@ load();
                 type="button"
                 class="shrink-0 rounded p-0.5 text-text-muted opacity-0 transition-fast focus-ring group-hover:opacity-100 hover:bg-bg-tertiary hover:text-negative"
                 onclick={(e) => { e.stopPropagation(); deletingWatchlist = wl; }}
-                aria-label="Delete {wl.name}"
+                aria-label={t("common.deleteItem", { name: wl.name })}
               >
                 <Trash2 size={13} strokeWidth={2} />
               </button>
@@ -279,8 +280,8 @@ load();
       {#if itemsState === "loading"}
         <LoadingState message={t("watchlist.loadingItems")} class="flex-1 py-16" />
       {:else if itemsState === "error"}
-        <div class="mx-6 mt-4 rounded border border-negative/20 bg-negative-bg px-4 py-3 text-sm text-negative" role="alert">
-          {itemsError}
+        <div class="mx-6 mt-4">
+          <Alert variant="negative">{itemsError}</Alert>
         </div>
       {:else if itemsState === "loaded"}
         <!-- Sector Filter Chips -->
@@ -312,8 +313,8 @@ load();
         {/if}
 
         {#if removeError}
-          <div class="mx-6 mt-4 rounded border border-negative/20 bg-negative-bg px-4 py-3 text-sm text-negative" role="alert">
-            {t("watchlist.removeError", { error: removeError ?? "" })}
+          <div class="mx-6 mt-4">
+            <Alert variant="negative">{t("watchlist.removeError", { error: removeError ?? "" })}</Alert>
           </div>
         {/if}
         {#if filteredItems.length === 0}
@@ -325,7 +326,7 @@ load();
         {:else}
           <!-- Items Table -->
           <div class="overflow-x-auto">
-            <table class="w-full text-sm" aria-label="Watchlist items">
+            <table class="w-full text-sm" aria-label={t("watchlist.tableLabel")}>
               <thead class="border-b border-border-default bg-bg-secondary">
                 <tr>
                   <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-text-muted">{t("watchlist.ticker")}</th>
@@ -334,7 +335,7 @@ load();
                   <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-text-muted">ROE</th>
                   <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-text-muted">DER</th>
                   <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-text-muted">EPS</th>
-                  <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-text-muted">Div Yield</th>
+                  <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-text-muted">DY</th>
                   <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-text-muted">{t("watchlist.verdict")}</th>
                   {#if activeType === "watchlist"}
                     <th class="px-4 py-3"></th>
@@ -383,7 +384,7 @@ load();
                           class="rounded p-1 text-text-muted transition-fast focus-ring hover:bg-bg-tertiary hover:text-negative disabled:pointer-events-none disabled:opacity-50"
                           onclick={() => removeTicker(item.ticker)}
                           disabled={removingTicker === item.ticker}
-                          aria-label="Remove {item.ticker}"
+                          aria-label={t("common.removeItem", { name: item.ticker })}
                         >
                           {#if removingTicker === item.ticker}
                             <LoaderCircle size={14} strokeWidth={2} class="animate-spin" />

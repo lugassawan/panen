@@ -8,6 +8,7 @@ import {
   SkipPayday,
 } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
+import Alert from "../../lib/components/Alert.svelte";
 import Badge from "../../lib/components/Badge.svelte";
 import Button from "../../lib/components/Button.svelte";
 import EmptyState from "../../lib/components/EmptyState.svelte";
@@ -85,7 +86,7 @@ async function handleSaveDay(day: number) {
 async function handleConfirm(portfolioId: string, amount: number) {
   try {
     await ConfirmPayday(portfolioId, amount);
-    toastStore.add("Payday confirmed", "success");
+    toastStore.add(t("common.paydayConfirmed"), "success");
     confirmingPortfolio = null;
     await load();
   } catch (e) {
@@ -103,7 +104,7 @@ function openDeferDialog(portfolio: PortfolioPaydayItemResponse) {
 async function handleDefer(portfolioId: string) {
   try {
     await DeferPayday(portfolioId, deferDate);
-    toastStore.add("Payday deferred", "success");
+    toastStore.add(t("common.paydayDeferred"), "success");
     deferringPortfolio = null;
     await load();
   } catch (e) {
@@ -114,7 +115,7 @@ async function handleDefer(portfolioId: string) {
 async function handleSkip(portfolioId: string) {
   try {
     await SkipPayday(portfolioId);
-    toastStore.add("Payday skipped", "info");
+    toastStore.add(t("common.paydaySkipped"), "info");
     await load();
   } catch (e) {
     error = e instanceof Error ? e.message : String(e);
@@ -131,14 +132,14 @@ $effect(() => {
 </script>
 
 <div class="p-6">
-  <h1 class="text-2xl font-bold text-text-primary font-display">{t("payday.title")}</h1>
+  <h1 class="text-2xl font-display font-bold text-text-primary">{t("payday.title")}</h1>
   <p class="mt-1 text-sm text-text-secondary">{t("payday.subtitle")}</p>
 
   {#if state === "loading"}
     <LoadingState message={t("payday.loading")} class="py-16" />
   {:else if state === "error"}
-    <div class="mt-6 rounded-lg border border-negative bg-negative-bg p-4">
-      <p class="text-sm text-negative">{error}</p>
+    <div class="mt-6">
+      <Alert variant="negative">{error}</Alert>
       <div class="mt-3">
         <Button variant="secondary" size="sm" onclick={load}>{t("common.retry")}</Button>
       </div>
@@ -161,7 +162,7 @@ $effect(() => {
               <div class="flex items-center gap-3">
                 <h3 class="font-medium text-text-primary">{portfolio.portfolioName}</h3>
                 <Badge variant={portfolio.mode === "VALUE" ? "value" : "dividend"}>
-                  {portfolio.mode}
+                  {portfolio.mode === "VALUE" ? t("mode.value") : t("mode.dividend")}
                 </Badge>
                 <Badge variant={statusBadgeVariant(portfolio.status)}>
                   {portfolio.status}
@@ -237,10 +238,10 @@ $effect(() => {
     >
       <h3 id="defer-dialog-title" class="text-lg font-semibold text-text-primary font-display">{t("payday.defer")} {t("payday.title")}</h3>
       <p class="mt-1 text-sm text-text-secondary">
-        Choose a date to defer <span class="font-medium text-text-primary">{deferringPortfolio.portfolioName}</span>.
+        {t("common.chooseDeferDate", { name: deferringPortfolio.portfolioName })}
       </p>
       <label class="mt-4 block text-sm font-medium text-text-secondary">
-        {t("payday.defer")}
+        {t("common.deferDate")}
         <input
           type="date"
           class="mt-1 block w-full rounded-md border border-border-default bg-bg-primary px-3 py-2 text-sm text-text-primary focus-ring"

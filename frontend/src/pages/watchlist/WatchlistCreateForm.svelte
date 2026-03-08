@@ -1,6 +1,7 @@
 <script lang="ts">
 import { CreateWatchlist } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
+import Alert from "../../lib/components/Alert.svelte";
 import Input from "../../lib/components/Input.svelte";
 
 let {
@@ -40,12 +41,14 @@ async function submit(e: Event) {
   <Input
     bind:value={name}
     placeholder={t("watchlist.namePlaceholder")}
-    aria-label="New watchlist name"
+    aria-label={t("watchlist.namePlaceholder")}
     class="mb-1.5 bg-bg-primary px-2 py-1 text-xs placeholder:text-text-muted"
     disabled={loading}
   />
   {#if error}
-    <p class="mb-1.5 text-xs text-negative">{error}</p>
+    <div class="mb-1.5">
+      <Alert variant="negative">{error}</Alert>
+    </div>
   {/if}
   <div class="flex gap-1.5">
     <button

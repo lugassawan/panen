@@ -19,7 +19,7 @@ describe("WatchlistAddTicker", () => {
     render(WatchlistAddTicker, {
       props: { watchlistId: "w1", onAdded: vi.fn() },
     });
-    expect(screen.getByLabelText("Add ticker to watchlist")).toBeInTheDocument();
+    expect(screen.getByLabelText("Add ticker (e.g. BBCA)")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Add/i })).toBeInTheDocument();
   });
 
@@ -39,7 +39,7 @@ describe("WatchlistAddTicker", () => {
       props: { watchlistId: "w1", onAdded },
     });
 
-    await user.type(screen.getByLabelText("Add ticker to watchlist"), "bbca");
+    await user.type(screen.getByLabelText("Add ticker (e.g. BBCA)"), "bbca");
     await user.click(screen.getByRole("button", { name: /Add/i }));
 
     await waitFor(() => {
@@ -56,7 +56,7 @@ describe("WatchlistAddTicker", () => {
       props: { watchlistId: "w1", onAdded: vi.fn() },
     });
 
-    await user.type(screen.getByLabelText("Add ticker to watchlist"), "XXXX");
+    await user.type(screen.getByLabelText("Add ticker (e.g. BBCA)"), "XXXX");
     await user.click(screen.getByRole("button", { name: /Add/i }));
 
     await waitFor(() => {

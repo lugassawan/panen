@@ -5,6 +5,7 @@ import { untrack } from "svelte";
 import { GetDashboardOverview } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
 import { accentPalette, defaultChartOptions } from "../../lib/chartColors.svelte";
+import Alert from "../../lib/components/Alert.svelte";
 import EmptyState from "../../lib/components/EmptyState.svelte";
 import SkeletonCard from "../../lib/components/SkeletonCard.svelte";
 import { formatDate, formatPercent, formatRupiah } from "../../lib/format";
@@ -115,10 +116,23 @@ function txnTypeBadge(type: string): string {
       return "bg-bg-tertiary text-text-secondary";
   }
 }
+
+function txnTypeLabel(type: string): string {
+  switch (type) {
+    case "BUY":
+      return t("transactions.buy");
+    case "SELL":
+      return t("transactions.sell");
+    case "DIVIDEND":
+      return t("transactions.dividend");
+    default:
+      return type;
+  }
+}
 </script>
 
 <div class="mx-auto max-w-6xl space-y-6 p-6">
-  <h2 class="font-display text-2xl font-bold text-text-primary">{t("dashboard.title")}</h2>
+  <h1 class="text-2xl font-display font-bold text-text-primary">{t("dashboard.title")}</h1>
 
   {#if state === "loading"}
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -143,7 +157,7 @@ function txnTypeBadge(type: string): string {
       {/snippet}
     </EmptyState>
   {:else if state === "error"}
-    <p class="text-sm text-loss">{errorMsg}</p>
+    <Alert variant="negative">{errorMsg}</Alert>
   {:else if data}
     <!-- Summary Cards -->
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -266,7 +280,7 @@ function txnTypeBadge(type: string): string {
             {#each data.recentTransactions as txn}
               <tr class="border-b border-border-default last:border-0">
                 <td class="py-2">
-                  <span class="inline-block rounded px-2 py-0.5 text-xs font-medium {txnTypeBadge(txn.type)}">{txn.type}</span>
+                  <span class="inline-block rounded px-2 py-0.5 text-xs font-medium {txnTypeBadge(txn.type)}">{txnTypeLabel(txn.type)}</span>
                 </td>
                 <td class="py-2 font-mono font-medium text-text-primary">{txn.ticker}</td>
                 <td class="py-2 text-text-secondary">{txn.portfolioName}</td>

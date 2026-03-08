@@ -20,7 +20,28 @@
     "cannotUndo": "This action cannot be undone.",
     "noData": "No data",
     "pass": "Pass",
-    "fail": "Fail"
+    "fail": "Fail",
+    "dismiss": "Dismiss",
+    "remove": "Remove",
+    "settings": "Settings",
+    "runDiagnostic": "Run Diagnostic",
+    "deleteItem": "Delete {name}",
+    "removeItem": "Remove {name}",
+    "confirmDeleteMessage": "Are you sure you want to delete {name}?",
+    "deferDate": "Defer date",
+    "chooseDeferDate": "Choose a date to defer {name}.",
+    "watchlistCreated": "Watchlist created",
+    "watchlistDeleted": "Watchlist deleted",
+    "tickerAdded": "{ticker} added to watchlist",
+    "tickerRemoved": "{ticker} removed",
+    "portfolioDeleted": "Portfolio deleted",
+    "accountCreated": "Account created",
+    "accountUpdated": "Account updated",
+    "accountDeleted": "Account deleted",
+    "paydayConfirmed": "Payday confirmed",
+    "paydayDeferred": "Payday deferred",
+    "paydaySkipped": "Payday skipped",
+    "riskProfile": "risk profile"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -161,7 +182,10 @@
     "dividendYield": "Dividend Yield",
     "payoutRatio": "Payout Ratio",
     "source": "Source:",
-    "fetched": "Fetched"
+    "fetched": "Fetched",
+    "grahamNumberTooltip": "Intrinsic value estimate using Benjamin Graham's formula: sqrt(22.5 * EPS * BVPS)",
+    "marginOfSafetyTooltip": "How much the current price is below the Graham Number. Higher = more undervalued.",
+    "pbvBandTooltip": "Price-to-Book Value historical range. Position shows where current PBV sits relative to its 5-year band."
   },
   "screener": {
     "title": "Stock Screener",
@@ -194,7 +218,8 @@
     "conservativeThresholds": "ROE > 15%, DER < 0.8",
     "moderateThresholds": "ROE > 12%, DER < 1.0",
     "aggressiveThresholds": "ROE > 8%, DER < 1.5",
-    "runScreen": "Run Screen"
+    "runScreen": "Run Screen",
+    "verdict": "Verdict"
   },
   "portfolio": {
     "title": "Portfolios",
@@ -579,6 +604,7 @@
     "namePlaceholder": "Watchlist name",
     "adding": "Adding...",
     "deleteTitle": "Delete Watchlist",
-    "addTickerPlaceholder": "Add ticker (e.g. BBCA)"
+    "addTickerPlaceholder": "Add ticker (e.g. BBCA)",
+    "tableLabel": "Watchlist items"
   }
 }

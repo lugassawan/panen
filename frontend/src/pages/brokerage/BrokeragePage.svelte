@@ -8,6 +8,7 @@ import {
 import { EventsOn } from "../../../wailsjs/runtime/runtime";
 import BrokerageAccountForm from "../../components/BrokerageAccountForm.svelte";
 import { t } from "../../i18n";
+import Alert from "../../lib/components/Alert.svelte";
 import Button from "../../lib/components/Button.svelte";
 import ConfirmDialog from "../../lib/components/ConfirmDialog.svelte";
 import EmptyState from "../../lib/components/EmptyState.svelte";
@@ -53,7 +54,7 @@ function startEdit(acct: BrokerageAccountResponse) {
 }
 
 function onSaved() {
-  toastStore.add(editingAccount ? "Account updated" : "Account created", "success");
+  toastStore.add(t(editingAccount ? "common.accountUpdated" : "common.accountCreated"), "success");
   editingAccount = null;
   load();
 }
@@ -74,7 +75,7 @@ async function confirmDelete() {
   deleteError = null;
   try {
     await DeleteBrokerageAccount(deletingAccount.id);
-    toastStore.add("Account deleted", "success");
+    toastStore.add(t("common.accountDeleted"), "success");
     deletingAccount = null;
     load();
   } catch (e: unknown) {
@@ -102,7 +103,7 @@ $effect(() => {
 
 <div class="mx-auto max-w-4xl px-4 py-8">
   <div class="mb-6 flex items-center justify-between">
-    <h2 class="text-xl font-semibold text-text-primary">{t("brokerage.title")}</h2>
+    <h1 class="text-2xl font-display font-bold text-text-primary">{t("brokerage.title")}</h1>
     {#if state === "list" && accounts.length > 0}
       <Button onclick={startCreate}>
         <Plus size={16} strokeWidth={2} />
@@ -114,9 +115,7 @@ $effect(() => {
   {#if state === "loading"}
     <LoadingState message={t("brokerage.loading")} class="py-12" />
   {:else if state === "error"}
-    <div class="rounded border border-negative/20 bg-negative-bg px-4 py-3 text-sm text-negative" role="alert">
-      {error}
-    </div>
+    <Alert variant="negative">{error}</Alert>
   {:else if state === "create"}
     <div class="mx-auto max-w-lg">
       <h3 class="mb-4 text-lg font-semibold text-text-primary">{t("brokerage.newAccount")}</h3>
@@ -191,11 +190,11 @@ $effect(() => {
     onConfirm={confirmDelete}
     onCancel={cancelDelete}
   >
-    <p>Are you sure you want to delete <strong>{deletingAccount.brokerName}</strong>?</p>
+    <p>{t("common.confirmDeleteMessage", { name: deletingAccount.brokerName })}</p>
     <p class="mt-1">{t("common.cannotUndo")}</p>
     {#if deleteError}
-      <div class="mt-3 rounded border border-negative/20 bg-negative-bg px-3 py-2 text-sm text-negative" role="alert">
-        {deleteError}
+      <div class="mt-3">
+        <Alert variant="negative">{deleteError}</Alert>
       </div>
     {/if}
   </ConfirmDialog>

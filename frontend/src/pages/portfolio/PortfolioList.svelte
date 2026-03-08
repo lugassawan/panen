@@ -18,7 +18,7 @@ let { portfolios, onView, onEdit, onDelete, onCreate }: Props = $props();
 </script>
 
 <div class="mb-6 flex items-center justify-between">
-  <h2 class="text-xl font-semibold text-text-primary">{t("portfolio.title")}</h2>
+  <h1 class="text-2xl font-display font-bold text-text-primary">{t("portfolio.title")}</h1>
   {#if portfolios.length < 2}
     <Button onclick={onCreate}>
       <Plus size={16} strokeWidth={2} />
@@ -35,7 +35,7 @@ let { portfolios, onView, onEdit, onDelete, onCreate }: Props = $props();
     >
       <button
         type="button"
-        class="flex-1 text-left"
+        class="flex-1 rounded text-left focus-ring"
         onclick={() => onView(portfolio)}
       >
         <div class="flex items-center gap-2">

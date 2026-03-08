@@ -2,6 +2,7 @@
 import { ArrowLeftRight, LoaderCircle, Minus, Plus } from "lucide-svelte";
 import { GetWatchlistItems, ListWatchlists, LookupStock } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
+import Alert from "../../lib/components/Alert.svelte";
 import EmptyState from "../../lib/components/EmptyState.svelte";
 import Input from "../../lib/components/Input.svelte";
 import Select from "../../lib/components/Select.svelte";
@@ -97,7 +98,7 @@ let successCount = $derived(results.filter((r) => r !== null).length);
 </script>
 
 <div class="mx-auto max-w-5xl px-4 py-8">
-  <h1 class="text-2xl font-bold text-text-primary font-display">{t("comparison.title")}</h1>
+  <h1 class="text-2xl font-display font-bold text-text-primary">{t("comparison.title")}</h1>
   <p class="mt-1 mb-6 text-sm text-text-secondary">{t("comparison.subtitle")}</p>
 
   <!-- Ticker Inputs -->
@@ -170,9 +171,7 @@ let successCount = $derived(results.filter((r) => r !== null).length);
           {/if}
         </div>
         {#if slot.error}
-          <div class="ml-0 rounded border border-negative/20 bg-negative-bg px-3 py-2 text-xs text-negative" role="alert">
-            {slot.code.toUpperCase()}: {slot.error}
-          </div>
+          <Alert variant="negative">{slot.code.toUpperCase()}: {slot.error}</Alert>
         {/if}
       {/each}
     </div>

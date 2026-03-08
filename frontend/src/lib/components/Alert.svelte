@@ -1,6 +1,7 @@
 <script lang="ts">
 import { X } from "lucide-svelte";
 import type { Snippet } from "svelte";
+import { t } from "../../i18n";
 
 let {
   variant = "info",
@@ -33,8 +34,8 @@ const variantClasses: Record<string, string> = {
         <button
           type="button"
           onclick={() => (visible = false)}
-          class="shrink-0 opacity-70 hover:opacity-100 transition-fast"
-          aria-label="Dismiss"
+          class="shrink-0 rounded opacity-70 hover:opacity-100 transition-fast focus-ring"
+          aria-label={t("common.dismiss")}
         >
           <X size={16} strokeWidth={2} />
         </button>

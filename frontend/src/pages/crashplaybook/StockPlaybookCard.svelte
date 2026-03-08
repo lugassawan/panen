@@ -53,7 +53,7 @@ const hasActiveLevel = $derived(stock.activeLevel != null);
   {#if hasActiveLevel}
     <div class="mt-3">
       <Button variant="secondary" size="sm" onclick={() => onDiagnostic(stock.ticker)}>
-        Run Diagnostic
+        {t("common.runDiagnostic")}
       </Button>
     </div>
   {/if}
