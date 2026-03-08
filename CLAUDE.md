@@ -20,14 +20,17 @@ panen/
 │   ├── presenter/       # Per-domain handlers, DTOs, converters
 │   ├── domain/          # Entities, value objects, repository interfaces
 │   ├── usecase/         # Application services (orchestration + validation)
-│   └── infra/           # Database, scraper, platform, applog implementations
+│   └── infra/           # Database, scraper, provider, backup, platform, applog, etc.
 ├── frontend/src/        # Svelte 5 components and TypeScript
 │   └── i18n/            # Internationalization (en/id translations)
 ├── frontend/wailsjs/    # Auto-generated Wails bindings (gitignored)
 ├── tools/lint/          # Custom golangci-lint plugin (panenlint)
 ├── build/               # Build assets (app icon)
-├── docs/                # Documentation (design-system.md)
+├── configs/             # Embedded config files (brokers, indices, sectors)
+├── docs/                # Documentation (design system, user guides)
+├── .github/workflows/   # CI pipeline (test, release)
 ├── scripts/             # Release and install scripts
+├── CONTRIBUTING.md      # Contributor guide
 ├── main.go              # Wails entry point
 └── wails.json           # Wails project config
 ```
@@ -172,6 +175,28 @@ Reusable components in `frontend/src/lib/components/`: Alert, Badge, BrokerPicke
 - Frontend is a standard Vite project; Wails proxies it during dev
 - Database repos use generic scan helpers (`queryRow`, `queryAll`) in `backend/infra/database/scan.go` — each repo provides a `scanFn` that maps columns to a domain entity, keeping SQL and struct mapping co-located
 - Git hooks live in `.githooks/` — other tools can inject blocks using `# BEGIN/END` markers
+
+### Data Provider System
+
+- `backend/domain/stock/provider.go` defines `DataProvider` interface — `FetchPrice`, `FetchFinancials`, `FetchPriceHistory`, `FetchDividendHistory`, `HealthCheck`
+- `backend/domain/provider/status.go` defines `Registry` interface and health status types (`StatusHealthy`, `StatusDegraded`, `StatusDown`, `StatusUnknown`)
+- `backend/infra/provider/registry.go` implements `Registry` with priority-based fallback — tries providers in order, falls back on failure
+- Presenters depend on domain interfaces (`domainProvider.Registry`), not infra implementations
+- Providers: Yahoo Finance (primary), IDX (secondary). New providers implement `stock.DataProvider`
+
+### Backup and Export/Import
+
+- `backend/infra/backup/` — daily auto-backup, pre-destructive backup, manual backup, cleanup with retention
+- `backend/usecase/export.go` — creates zip archive (SQLite DB + `meta.json` with SHA-256 checksum)
+- `backend/usecase/import.go` — validates checksum, `PRAGMA quick_check`, atomic file replacement (temp file + `os.Rename`), zip bomb protection via `io.LimitReader`
+
+## CI Pipeline
+
+- `.github/workflows/test.yml` — runs on push and PRs: lint (`make lint`), Go tests (`make test-go`), frontend unit + integration tests
+- `.github/workflows/release.yml` — triggered by `v*` tags: cross-platform build (macOS universal, Linux amd64, Windows amd64), creates GitHub Release with archives + checksums
+- Uses `jdx/mise-action@v3` for tool version management in CI
+- Pure-Go SQLite (`modernc.org/sqlite`) — no CGO dependency, `CGO_ENABLED=0` works
+- Release notes are auto-generated from conventional commits between tags — no manual CHANGELOG needed
 
 ## Release
 
