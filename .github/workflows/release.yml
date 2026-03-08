@@ -46,14 +46,11 @@ jobs:
       - name: Install Wails CLI
         run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.11.0
 
-      - name: Install garble
-        run: go install mvdan.cc/garble@v0.15.0
-
       - name: Install Linux dependencies
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
 
       - name: Install frontend dependencies
         run: |
@@ -79,7 +76,7 @@ jobs:
         run: |
           TAG_VERSION="${REF_NAME#v}"
           LDFLAGS="-X github.com/lugassawan/panen/backend.version=${TAG_VERSION}"
-          wails build -clean -obfuscated -platform ${{ matrix.platform }} -ldflags "${LDFLAGS}"
+          wails build -clean -platform ${{ matrix.platform }} -ldflags "${LDFLAGS}"
 
       - name: Package (macOS)
         if: runner.os == 'macOS'

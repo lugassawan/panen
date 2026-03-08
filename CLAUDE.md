@@ -221,7 +221,7 @@ make release-check VERSION=0.2.0  # Local validation only (no tag/push)
 | Linux | `panen-linux-amd64.tar.gz` | Binary + `.desktop` + icon |
 | Windows | `panen-windows-amd64.zip` | `panen.exe` |
 
-Release builds use `garble` + Wails `-obfuscated` for Go binary obfuscation.
+Release builds use Wails production mode with `CGO_ENABLED=0` (pure-Go SQLite).
 
 ### Install Script
 
