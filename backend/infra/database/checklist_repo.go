@@ -4,10 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"errors"
 
 	"github.com/lugassawan/panen/backend/domain/checklist"
-	"github.com/lugassawan/panen/backend/domain/shared"
 )
 
 const (
@@ -48,32 +46,7 @@ func (r *ChecklistResultRepo) Upsert(ctx context.Context, cr *checklist.Checklis
 func (r *ChecklistResultRepo) Get(
 	ctx context.Context, portfolioID, ticker string, action checklist.ActionType,
 ) (*checklist.ChecklistResult, error) {
-	var cr checklist.ChecklistResult
-	var actionStr, manualChecks, createdAt, updatedAt string
-	err := r.db.QueryRowContext(ctx, checklistResultGet,
-		portfolioID, ticker, string(action)).Scan(
-		&cr.ID, &cr.PortfolioID, &cr.Ticker, &actionStr, &manualChecks,
-		&createdAt, &updatedAt)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, shared.ErrNotFound
-	}
-	if err != nil {
-		return nil, err
-	}
-	cr.Action = checklist.ActionType(actionStr)
-	if err := json.Unmarshal([]byte(manualChecks), &cr.ManualChecks); err != nil {
-		return nil, err
-	}
-	if cr.ManualChecks == nil {
-		cr.ManualChecks = map[string]bool{}
-	}
-	if cr.CreatedAt, err = parseTime(createdAt); err != nil {
-		return nil, err
-	}
-	if cr.UpdatedAt, err = parseTime(updatedAt); err != nil {
-		return nil, err
-	}
-	return &cr, nil
+	return QueryRow(ctx, r.db, checklistResultGet, scanChecklist, portfolioID, ticker, string(action))
 }
 
 func (r *ChecklistResultRepo) Delete(ctx context.Context, id string) error {
@@ -87,4 +60,29 @@ func (r *ChecklistResultRepo) Delete(ctx context.Context, id string) error {
 func (r *ChecklistResultRepo) DeleteByPortfolioID(ctx context.Context, portfolioID string) error {
 	_, err := r.db.ExecContext(ctx, checklistResultDeleteByPortfolioID, portfolioID)
 	return err
+}
+
+func scanChecklist(scan func(dest ...any) error) (*checklist.ChecklistResult, error) {
+	var cr checklist.ChecklistResult
+	var actionStr, manualChecks, createdAt, updatedAt string
+	if err := scan(
+		&cr.ID, &cr.PortfolioID, &cr.Ticker, &actionStr, &manualChecks,
+		&createdAt, &updatedAt); err != nil {
+		return nil, err
+	}
+	cr.Action = checklist.ActionType(actionStr)
+	if err := json.Unmarshal([]byte(manualChecks), &cr.ManualChecks); err != nil {
+		return nil, err
+	}
+	if cr.ManualChecks == nil {
+		cr.ManualChecks = map[string]bool{}
+	}
+	var err error
+	if cr.CreatedAt, err = parseTime(createdAt); err != nil {
+		return nil, err
+	}
+	if cr.UpdatedAt, err = parseTime(updatedAt); err != nil {
+		return nil, err
+	}
+	return &cr, nil
 }

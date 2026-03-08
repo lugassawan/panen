@@ -52,15 +52,15 @@ func (r *AlertRepo) Create(ctx context.Context, a *alert.FundamentalAlert) error
 }
 
 func (r *AlertRepo) GetByTicker(ctx context.Context, ticker string) ([]*alert.FundamentalAlert, error) {
-	return r.scanAlerts(r.db.QueryContext(ctx, alertGetByTicker, ticker))
+	return QueryAll(ctx, r.db, alertGetByTicker, scanAlert, ticker)
 }
 
 func (r *AlertRepo) GetActive(ctx context.Context) ([]*alert.FundamentalAlert, error) {
-	return r.scanAlerts(r.db.QueryContext(ctx, alertGetActive))
+	return QueryAll(ctx, r.db, alertGetActive, scanAlert)
 }
 
 func (r *AlertRepo) GetActiveByTicker(ctx context.Context, ticker string) ([]*alert.FundamentalAlert, error) {
-	return r.scanAlerts(r.db.QueryContext(ctx, alertGetActiveByTicker, ticker))
+	return QueryAll(ctx, r.db, alertGetActiveByTicker, scanAlert, ticker)
 }
 
 func (r *AlertRepo) Acknowledge(ctx context.Context, id string) error {
@@ -94,29 +94,12 @@ func (r *AlertRepo) DeleteOlderThan(ctx context.Context, before time.Time) (int6
 	return res.RowsAffected()
 }
 
-func (r *AlertRepo) scanAlerts(rows *sql.Rows, err error) ([]*alert.FundamentalAlert, error) {
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var alerts []*alert.FundamentalAlert
-	for rows.Next() {
-		a, scanErr := r.scanAlertRow(rows)
-		if scanErr != nil {
-			return nil, scanErr
-		}
-		alerts = append(alerts, a)
-	}
-	return alerts, rows.Err()
-}
-
-func (r *AlertRepo) scanAlertRow(rows *sql.Rows) (*alert.FundamentalAlert, error) {
+func scanAlert(scan func(dest ...any) error) (*alert.FundamentalAlert, error) {
 	var a alert.FundamentalAlert
 	var severity, status, detectedAt string
 	var resolvedAt sql.NullString
 
-	if err := rows.Scan(
+	if err := scan(
 		&a.ID, &a.Ticker, &a.Metric, &severity,
 		&a.OldValue, &a.NewValue, &a.ChangePct,
 		&status, &detectedAt, &resolvedAt,
