@@ -53,7 +53,7 @@ loadActions();
     {#each actions as action}
       <button
         type="button"
-        class="rounded-full px-3 py-1 text-sm font-medium transition-fast {selected === action
+        class="rounded-full px-3 py-1 text-sm font-medium transition-fast focus-ring {selected === action
           ? 'bg-green-700 text-white'
           : 'border border-border-default bg-bg-elevated text-text-secondary hover:bg-bg-tertiary'}"
         onclick={() => selectAction(action)}

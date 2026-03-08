@@ -363,7 +363,7 @@ async function createBackup() {
             <Alert variant="info">
               {t("settings.updateAvailable", { version: updateResult.latestVersion })}
               <button
-                class="ml-1 font-medium underline underline-offset-2 hover:opacity-80"
+                class="ml-1 rounded font-medium underline underline-offset-2 hover:opacity-80 focus-ring"
                 onclick={() => openRelease(updateResult!.releaseURL)}
               >
                 {t("settings.viewRelease")}

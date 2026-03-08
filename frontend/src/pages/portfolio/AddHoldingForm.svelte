@@ -1,6 +1,7 @@
 <script lang="ts">
 import { AddHolding } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
+import Alert from "../../lib/components/Alert.svelte";
 import Input from "../../lib/components/Input.svelte";
 
 let { portfolioId, onAdded }: { portfolioId: string; onAdded: () => void } = $props();
@@ -105,11 +106,6 @@ async function submit() {
 	</button>
 
 	{#if error}
-		<div
-			class="w-full rounded border border-negative/20 bg-negative-bg px-4 py-3 text-sm text-negative"
-			role="alert"
-		>
-			{error}
-		</div>
+		<Alert variant="negative">{error}</Alert>
 	{/if}
 </form>
