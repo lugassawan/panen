@@ -1,4 +1,16 @@
 {
+  "error": {
+    "ERR_HAS_HOLDINGS": "Portfolio has holdings. Remove all holdings before deleting.",
+    "ERR_HAS_DEPENDENTS": "This account has portfolios. Delete them first.",
+    "ERR_DUPLICATE_MODE": "A portfolio with this mode already exists for this brokerage account.",
+    "ERR_DUPLICATE_HOLDING": "This stock is already held in another portfolio under this account.",
+    "ERR_MODE_IMMUTABLE": "Portfolio mode cannot be changed after creation.",
+    "ERR_EMPTY_NAME": "Name is required.",
+    "ERR_EMPTY_TICKER": "Ticker is required.",
+    "ERR_INVALID_PRICE": "Price must be greater than zero.",
+    "ERR_INVALID_LOTS": "Lots must be greater than zero.",
+    "ERR_WATCHLIST_NAME_TAKEN": "A watchlist with this name already exists."
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",

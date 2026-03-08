@@ -13,6 +13,7 @@ import Button from "../../lib/components/Button.svelte";
 import ConfirmDialog from "../../lib/components/ConfirmDialog.svelte";
 import EmptyState from "../../lib/components/EmptyState.svelte";
 import LoadingState from "../../lib/components/LoadingState.svelte";
+import { formatError } from "../../lib/error";
 import { EventBrokerFeesSynced } from "../../lib/events";
 import { formatPercent } from "../../lib/format";
 import { toastStore } from "../../lib/stores/toast.svelte";
@@ -39,7 +40,7 @@ async function load() {
     brokerConfigs = configs ?? [];
     state = "list";
   } catch (e: unknown) {
-    error = e instanceof Error ? e.message : String(e);
+    error = formatError(e instanceof Error ? e.message : String(e));
     state = "error";
   }
 }
@@ -79,7 +80,7 @@ async function confirmDelete() {
     deletingAccount = null;
     load();
   } catch (e: unknown) {
-    deleteError = e instanceof Error ? e.message : String(e);
+    deleteError = formatError(e instanceof Error ? e.message : String(e));
   } finally {
     deleteLoading = false;
   }

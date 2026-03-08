@@ -1,4 +1,16 @@
 {
+  "error": {
+    "ERR_HAS_HOLDINGS": "Portofolio memiliki kepemilikan. Hapus semua kepemilikan sebelum menghapus.",
+    "ERR_HAS_DEPENDENTS": "Akun ini memiliki portofolio. Hapus portofolio terlebih dahulu.",
+    "ERR_DUPLICATE_MODE": "Portofolio dengan mode ini sudah ada untuk akun sekuritas ini.",
+    "ERR_DUPLICATE_HOLDING": "Saham ini sudah dimiliki di portofolio lain dalam akun ini.",
+    "ERR_MODE_IMMUTABLE": "Mode portofolio tidak dapat diubah setelah dibuat.",
+    "ERR_EMPTY_NAME": "Nama wajib diisi.",
+    "ERR_EMPTY_TICKER": "Ticker wajib diisi.",
+    "ERR_INVALID_PRICE": "Harga harus lebih dari nol.",
+    "ERR_INVALID_LOTS": "Lot harus lebih dari nol.",
+    "ERR_WATCHLIST_NAME_TAKEN": "Watchlist dengan nama ini sudah ada."
+  },
   "common": {
     "save": "Simpan",
     "cancel": "Batal",

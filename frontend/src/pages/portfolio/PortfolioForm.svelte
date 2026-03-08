@@ -4,6 +4,7 @@ import { CreatePortfolio, UpdatePortfolio } from "../../../wailsjs/go/backend/Ap
 import { t } from "../../i18n";
 import Button from "../../lib/components/Button.svelte";
 import Input from "../../lib/components/Input.svelte";
+import { formatError } from "../../lib/error";
 import type { Mode, PortfolioResponse, RiskProfile } from "../../lib/types";
 
 let {
@@ -113,7 +114,7 @@ async function submit() {
     }
     onSaved();
   } catch (e: unknown) {
-    error = e instanceof Error ? e.message : String(e);
+    error = formatError(e instanceof Error ? e.message : String(e));
   } finally {
     loading = false;
   }
