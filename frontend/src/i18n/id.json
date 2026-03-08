@@ -32,6 +32,7 @@
     "chooseDeferDate": "Pilih tanggal untuk menunda {name}.",
     "watchlistCreated": "Watchlist dibuat",
     "watchlistDeleted": "Watchlist dihapus",
+    "tickerAdded": "{ticker} ditambahkan ke watchlist",
     "tickerRemoved": "{ticker} dihapus",
     "portfolioDeleted": "Portofolio dihapus",
     "accountCreated": "Akun dibuat",
