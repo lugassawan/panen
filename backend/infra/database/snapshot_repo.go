@@ -42,7 +42,7 @@ func (r *SnapshotRepo) Insert(ctx context.Context, data *stock.Data) error {
 }
 
 func (r *SnapshotRepo) GetLatest(ctx context.Context, ticker, source string) (*stock.Data, error) {
-	return QueryRow(ctx, r.db, snapshotGetLatest, scanSnapshot, ticker, source)
+	return queryRow(ctx, r.db, snapshotGetLatest, scanSnapshot, ticker, source)
 }
 
 func (r *SnapshotRepo) Cleanup(ctx context.Context, ticker string, keepN int) error {

@@ -43,15 +43,15 @@ func (r *BrokerageRepo) Create(ctx context.Context, a *brokerage.Account) error 
 }
 
 func (r *BrokerageRepo) GetByID(ctx context.Context, id string) (*brokerage.Account, error) {
-	return QueryRow(ctx, r.db, brokerageGetByID, scanBrokerageAccount, id)
+	return queryRow(ctx, r.db, brokerageGetByID, scanBrokerageAccount, id)
 }
 
 func (r *BrokerageRepo) ListByProfileID(ctx context.Context, profileID string) ([]*brokerage.Account, error) {
-	return QueryAll(ctx, r.db, brokerageListByProfileID, scanBrokerageAccount, profileID)
+	return queryAll(ctx, r.db, brokerageListByProfileID, scanBrokerageAccount, profileID)
 }
 
 func (r *BrokerageRepo) ListNonManualByProfileID(ctx context.Context, profileID string) ([]*brokerage.Account, error) {
-	return QueryAll(ctx, r.db, brokerageListNonManual, scanBrokerageAccount, profileID)
+	return queryAll(ctx, r.db, brokerageListNonManual, scanBrokerageAccount, profileID)
 }
 
 func (r *BrokerageRepo) Update(ctx context.Context, a *brokerage.Account) error {

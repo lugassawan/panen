@@ -46,11 +46,11 @@ func (r *WatchlistRepo) Create(ctx context.Context, w *watchlist.Watchlist) erro
 }
 
 func (r *WatchlistRepo) GetByID(ctx context.Context, id string) (*watchlist.Watchlist, error) {
-	return QueryRow(ctx, r.db, watchlistGetByID, scanWatchlist, id)
+	return queryRow(ctx, r.db, watchlistGetByID, scanWatchlist, id)
 }
 
 func (r *WatchlistRepo) ListByProfileID(ctx context.Context, profileID string) ([]*watchlist.Watchlist, error) {
-	return QueryAll(ctx, r.db, watchlistListByProfileID, scanWatchlist, profileID)
+	return queryAll(ctx, r.db, watchlistListByProfileID, scanWatchlist, profileID)
 }
 
 func (r *WatchlistRepo) Update(ctx context.Context, w *watchlist.Watchlist) error {
@@ -95,7 +95,7 @@ func (r *WatchlistItemRepo) Remove(ctx context.Context, watchlistID, ticker stri
 }
 
 func (r *WatchlistItemRepo) ListByWatchlistID(ctx context.Context, watchlistID string) ([]*watchlist.Item, error) {
-	return QueryAll(ctx, r.db, watchlistItemListByWatchlistID, scanWatchlistItem, watchlistID)
+	return queryAll(ctx, r.db, watchlistItemListByWatchlistID, scanWatchlistItem, watchlistID)
 }
 
 func (r *WatchlistItemRepo) ExistsByWatchlistAndTicker(ctx context.Context, watchlistID, ticker string) (bool, error) {

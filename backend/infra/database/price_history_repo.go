@@ -65,7 +65,7 @@ func (r *PriceHistoryRepo) GetByTicker(
 	ctx context.Context,
 	ticker, source string,
 ) ([]stock.PricePoint, error) {
-	return QueryAll(ctx, r.db, priceHistoryGetByTicker, scanPricePoint, ticker, source)
+	return queryAll(ctx, r.db, priceHistoryGetByTicker, scanPricePoint, ticker, source)
 }
 
 func (r *PriceHistoryRepo) LatestDate(

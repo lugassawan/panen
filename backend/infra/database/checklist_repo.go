@@ -46,7 +46,7 @@ func (r *ChecklistResultRepo) Upsert(ctx context.Context, cr *checklist.Checklis
 func (r *ChecklistResultRepo) Get(
 	ctx context.Context, portfolioID, ticker string, action checklist.ActionType,
 ) (*checklist.ChecklistResult, error) {
-	return QueryRow(ctx, r.db, checklistResultGet, scanChecklist, portfolioID, ticker, string(action))
+	return queryRow(ctx, r.db, checklistResultGet, scanChecklist, portfolioID, ticker, string(action))
 }
 
 func (r *ChecklistResultRepo) Delete(ctx context.Context, id string) error {

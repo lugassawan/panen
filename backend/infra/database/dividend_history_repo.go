@@ -63,7 +63,7 @@ func (r *DividendHistoryRepo) GetByTicker(
 	ctx context.Context,
 	ticker, source string,
 ) ([]dividend.DividendEvent, error) {
-	return QueryAll(ctx, r.db, dividendHistoryGetByTicker, scanDividendEvent, ticker, source)
+	return queryAll(ctx, r.db, dividendHistoryGetByTicker, scanDividendEvent, ticker, source)
 }
 
 func scanDividendEvent(scan func(dest ...any) error) (dividend.DividendEvent, error) {

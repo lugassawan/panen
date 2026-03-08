@@ -32,11 +32,11 @@ func (r *UserRepo) Create(ctx context.Context, p *user.Profile) error {
 }
 
 func (r *UserRepo) GetByID(ctx context.Context, id string) (*user.Profile, error) {
-	return QueryRow(ctx, r.db, userGetByID, scanUser, id)
+	return queryRow(ctx, r.db, userGetByID, scanUser, id)
 }
 
 func (r *UserRepo) List(ctx context.Context) ([]*user.Profile, error) {
-	return QueryAll(ctx, r.db, userList, scanUser)
+	return queryAll(ctx, r.db, userList, scanUser)
 }
 
 func (r *UserRepo) Update(ctx context.Context, p *user.Profile) error {

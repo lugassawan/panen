@@ -40,18 +40,18 @@ func (r *HoldingRepo) Create(ctx context.Context, h *portfolio.Holding) error {
 }
 
 func (r *HoldingRepo) GetByID(ctx context.Context, id string) (*portfolio.Holding, error) {
-	return QueryRow(ctx, r.db, holdingGetByID, scanHolding, id)
+	return queryRow(ctx, r.db, holdingGetByID, scanHolding, id)
 }
 
 func (r *HoldingRepo) GetByPortfolioAndTicker(
 	ctx context.Context,
 	portfolioID, ticker string,
 ) (*portfolio.Holding, error) {
-	return QueryRow(ctx, r.db, holdingGetByPortfolioAndTicker, scanHolding, portfolioID, ticker)
+	return queryRow(ctx, r.db, holdingGetByPortfolioAndTicker, scanHolding, portfolioID, ticker)
 }
 
 func (r *HoldingRepo) ListByPortfolioID(ctx context.Context, portfolioID string) ([]*portfolio.Holding, error) {
-	return QueryAll(ctx, r.db, holdingListByPortfolioID, scanHolding, portfolioID)
+	return queryAll(ctx, r.db, holdingListByPortfolioID, scanHolding, portfolioID)
 }
 
 func (r *HoldingRepo) Update(ctx context.Context, h *portfolio.Holding) error {

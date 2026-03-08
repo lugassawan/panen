@@ -52,15 +52,15 @@ func (r *AlertRepo) Create(ctx context.Context, a *alert.FundamentalAlert) error
 }
 
 func (r *AlertRepo) GetByTicker(ctx context.Context, ticker string) ([]*alert.FundamentalAlert, error) {
-	return QueryAll(ctx, r.db, alertGetByTicker, scanAlert, ticker)
+	return queryAll(ctx, r.db, alertGetByTicker, scanAlert, ticker)
 }
 
 func (r *AlertRepo) GetActive(ctx context.Context) ([]*alert.FundamentalAlert, error) {
-	return QueryAll(ctx, r.db, alertGetActive, scanAlert)
+	return queryAll(ctx, r.db, alertGetActive, scanAlert)
 }
 
 func (r *AlertRepo) GetActiveByTicker(ctx context.Context, ticker string) ([]*alert.FundamentalAlert, error) {
-	return QueryAll(ctx, r.db, alertGetActiveByTicker, scanAlert, ticker)
+	return queryAll(ctx, r.db, alertGetActiveByTicker, scanAlert, ticker)
 }
 
 func (r *AlertRepo) Acknowledge(ctx context.Context, id string) error {

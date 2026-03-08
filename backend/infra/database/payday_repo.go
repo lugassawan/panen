@@ -48,15 +48,15 @@ func (r *PaydayRepo) Create(ctx context.Context, event *payday.PaydayEvent) erro
 func (r *PaydayRepo) GetByMonthAndPortfolio(
 	ctx context.Context, month, portfolioID string,
 ) (*payday.PaydayEvent, error) {
-	return QueryRow(ctx, r.db, paydayEventGetByMonthAndPortfolio, scanPaydayEvent, month, portfolioID)
+	return queryRow(ctx, r.db, paydayEventGetByMonthAndPortfolio, scanPaydayEvent, month, portfolioID)
 }
 
 func (r *PaydayRepo) ListByMonth(ctx context.Context, month string) ([]*payday.PaydayEvent, error) {
-	return QueryAll(ctx, r.db, paydayEventListByMonth, scanPaydayEvent, month)
+	return queryAll(ctx, r.db, paydayEventListByMonth, scanPaydayEvent, month)
 }
 
 func (r *PaydayRepo) ListByPortfolioID(ctx context.Context, portfolioID string) ([]*payday.PaydayEvent, error) {
-	return QueryAll(ctx, r.db, paydayEventListByPortfolioID, scanPaydayEvent, portfolioID)
+	return queryAll(ctx, r.db, paydayEventListByPortfolioID, scanPaydayEvent, portfolioID)
 }
 
 func (r *PaydayRepo) Update(ctx context.Context, event *payday.PaydayEvent) error {

@@ -34,7 +34,7 @@ func (r *CashFlowRepo) Create(ctx context.Context, cf *payday.CashFlow) error {
 }
 
 func (r *CashFlowRepo) ListByPortfolioID(ctx context.Context, portfolioID string) ([]*payday.CashFlow, error) {
-	return QueryAll(ctx, r.db, cashFlowListByPortfolioID, scanCashflow, portfolioID)
+	return queryAll(ctx, r.db, cashFlowListByPortfolioID, scanCashflow, portfolioID)
 }
 
 func (r *CashFlowRepo) Delete(ctx context.Context, id string) error {

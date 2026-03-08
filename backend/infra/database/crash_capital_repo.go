@@ -39,7 +39,7 @@ func (r *CrashCapitalRepo) GetByPortfolioID(
 	ctx context.Context,
 	portfolioID string,
 ) (*crashplaybook.CrashCapital, error) {
-	return QueryRow(ctx, r.db, crashCapitalGetByPortfolioID, scanCrashCapital, portfolioID)
+	return queryRow(ctx, r.db, crashCapitalGetByPortfolioID, scanCrashCapital, portfolioID)
 }
 
 func scanCrashCapital(scan func(dest ...any) error) (*crashplaybook.CrashCapital, error) {

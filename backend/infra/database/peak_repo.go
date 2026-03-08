@@ -37,7 +37,7 @@ func (r *PeakRepo) GetByHoldingID(
 	ctx context.Context,
 	holdingID string,
 ) (*trailingstop.HoldingPeak, error) {
-	return QueryRow(ctx, r.db, peakGetByHoldingID, scanPeak, holdingID)
+	return queryRow(ctx, r.db, peakGetByHoldingID, scanPeak, holdingID)
 }
 
 func (r *PeakRepo) ListByHoldingIDs(
@@ -58,7 +58,7 @@ func (r *PeakRepo) ListByHoldingIDs(
 		len(holdingIDs),
 	)
 
-	return QueryAll(ctx, r.db, query, scanPeak, args...)
+	return queryAll(ctx, r.db, query, scanPeak, args...)
 }
 
 func scanPeak(scan func(dest ...any) error) (*trailingstop.HoldingPeak, error) {

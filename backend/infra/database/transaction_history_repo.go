@@ -102,7 +102,7 @@ func NewTransactionHistoryRepo(db *sql.DB) *TransactionHistoryRepo {
 
 func (r *TransactionHistoryRepo) List(ctx context.Context, filter transaction.Filter) ([]transaction.Record, error) {
 	query, args := buildHistoryQuery(txHistoryBase, filter, true)
-	return QueryAll(ctx, r.db, query, scanTransactionRecord, args...)
+	return queryAll(ctx, r.db, query, scanTransactionRecord, args...)
 }
 
 func (r *TransactionHistoryRepo) Summarize(

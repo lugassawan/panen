@@ -49,11 +49,11 @@ func (r *StockDataRepo) Upsert(ctx context.Context, d *stock.Data) error {
 }
 
 func (r *StockDataRepo) GetByTicker(ctx context.Context, ticker string) (*stock.Data, error) {
-	return QueryRow(ctx, r.db, stockGetByTicker, scanStockData, ticker)
+	return queryRow(ctx, r.db, stockGetByTicker, scanStockData, ticker)
 }
 
 func (r *StockDataRepo) GetByTickerAndSource(ctx context.Context, ticker string, source string) (*stock.Data, error) {
-	return QueryRow(ctx, r.db, stockGetByTickerAndSource, scanStockData, ticker, source)
+	return queryRow(ctx, r.db, stockGetByTickerAndSource, scanStockData, ticker, source)
 }
 
 func (r *StockDataRepo) DeleteOlderThan(ctx context.Context, before time.Time) (int64, error) {

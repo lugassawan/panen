@@ -11,31 +11,15 @@ import (
 	"github.com/lugassawan/panen/backend/domain/user"
 )
 
-func scanUserProfile(scan func(dest ...any) error) (*user.Profile, error) {
-	var p user.Profile
-	var createdAt, updatedAt string
-	if err := scan(&p.ID, &p.Name, &createdAt, &updatedAt); err != nil {
-		return nil, err
-	}
-	var err error
-	if p.CreatedAt, err = parseTime(createdAt); err != nil {
-		return nil, err
-	}
-	if p.UpdatedAt, err = parseTime(updatedAt); err != nil {
-		return nil, err
-	}
-	return &p, nil
-}
-
 func TestQueryRowHappyPath(t *testing.T) {
 	db := newTestDB(t)
 	ctx := context.Background()
 	repo := NewUserRepo(db)
 	p := newUserTestProfile(t, repo, ctx)
 
-	got, err := QueryRow(ctx, db, userGetByID, scanUserProfile, p.ID)
+	got, err := queryRow(ctx, db, userGetByID, scanUser, p.ID)
 	if err != nil {
-		t.Fatalf("QueryRow() error = %v", err)
+		t.Fatalf("queryRow() error = %v", err)
 	}
 	if got.ID != p.ID {
 		t.Errorf("ID = %q, want %q", got.ID, p.ID)
@@ -52,9 +36,9 @@ func TestQueryRowNotFound(t *testing.T) {
 	db := newTestDB(t)
 	ctx := context.Background()
 
-	_, err := QueryRow(ctx, db, userGetByID, scanUserProfile, "nonexistent")
+	_, err := queryRow(ctx, db, userGetByID, scanUser, "nonexistent")
 	if !errors.Is(err, shared.ErrNotFound) {
-		t.Errorf("QueryRow() error = %v, want ErrNotFound", err)
+		t.Errorf("queryRow() error = %v, want ErrNotFound", err)
 	}
 }
 
@@ -71,9 +55,9 @@ func TestQueryRowScanError(t *testing.T) {
 		return s, err
 	}
 
-	_, err := QueryRow(ctx, db, userList, badScan)
+	_, err := queryRow(ctx, db, userList, badScan)
 	if err == nil {
-		t.Error("QueryRow() with bad scan expected error, got nil")
+		t.Error("queryRow() with bad scan expected error, got nil")
 	}
 }
 
@@ -81,9 +65,9 @@ func TestQueryRowQueryError(t *testing.T) {
 	db := newTestDB(t)
 	ctx := context.Background()
 
-	_, err := QueryRow(ctx, db, "SELECT * FROM nonexistent_table", scanUserProfile)
+	_, err := queryRow(ctx, db, "SELECT * FROM nonexistent_table", scanUser)
 	if err == nil {
-		t.Error("QueryRow() with bad query expected error, got nil")
+		t.Error("queryRow() with bad query expected error, got nil")
 	}
 }
 
@@ -103,12 +87,12 @@ func TestQueryAllHappyPath(t *testing.T) {
 		}
 	}
 
-	got, err := QueryAll(ctx, db, userList, scanUserProfile)
+	got, err := queryAll(ctx, db, userList, scanUser)
 	if err != nil {
-		t.Fatalf("QueryAll() error = %v", err)
+		t.Fatalf("queryAll() error = %v", err)
 	}
 	if len(got) != 3 {
-		t.Errorf("QueryAll() returned %d items, want 3", len(got))
+		t.Errorf("queryAll() returned %d items, want 3", len(got))
 	}
 }
 
@@ -116,12 +100,12 @@ func TestQueryAllEmptyResult(t *testing.T) {
 	db := newTestDB(t)
 	ctx := context.Background()
 
-	got, err := QueryAll(ctx, db, userList, scanUserProfile)
+	got, err := queryAll(ctx, db, userList, scanUser)
 	if err != nil {
-		t.Fatalf("QueryAll() error = %v", err)
+		t.Fatalf("queryAll() error = %v", err)
 	}
 	if got != nil {
-		t.Errorf("QueryAll() = %v, want nil", got)
+		t.Errorf("queryAll() = %v, want nil", got)
 	}
 }
 
@@ -129,9 +113,9 @@ func TestQueryAllQueryError(t *testing.T) {
 	db := newTestDB(t)
 	ctx := context.Background()
 
-	_, err := QueryAll(ctx, db, "SELECT * FROM nonexistent_table", scanUserProfile)
+	_, err := queryAll(ctx, db, "SELECT * FROM nonexistent_table", scanUser)
 	if err == nil {
-		t.Error("QueryAll() with bad query expected error, got nil")
+		t.Error("queryAll() with bad query expected error, got nil")
 	}
 }
 
@@ -147,8 +131,8 @@ func TestQueryAllScanError(t *testing.T) {
 		return s, err
 	}
 
-	_, err := QueryAll(ctx, db, userList, badScan)
+	_, err := queryAll(ctx, db, userList, badScan)
 	if err == nil {
-		t.Error("QueryAll() with bad scan expected error, got nil")
+		t.Error("queryAll() with bad scan expected error, got nil")
 	}
 }

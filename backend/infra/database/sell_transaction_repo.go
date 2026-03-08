@@ -34,13 +34,13 @@ func (r *SellTransactionRepo) Create(ctx context.Context, tx *portfolio.SellTran
 }
 
 func (r *SellTransactionRepo) GetByID(ctx context.Context, id string) (*portfolio.SellTransaction, error) {
-	return QueryRow(ctx, r.db, sellTxGetByID, scanSellTransaction, id)
+	return queryRow(ctx, r.db, sellTxGetByID, scanSellTransaction, id)
 }
 
 func (r *SellTransactionRepo) ListByHoldingID(
 	ctx context.Context, holdingID string,
 ) ([]*portfolio.SellTransaction, error) {
-	return QueryAll(ctx, r.db, sellTxListByHoldingID, scanSellTransaction, holdingID)
+	return queryAll(ctx, r.db, sellTxListByHoldingID, scanSellTransaction, holdingID)
 }
 
 func (r *SellTransactionRepo) Delete(ctx context.Context, id string) error {

@@ -50,17 +50,17 @@ func (r *PortfolioRepo) Create(ctx context.Context, p *portfolio.Portfolio) erro
 }
 
 func (r *PortfolioRepo) GetByID(ctx context.Context, id string) (*portfolio.Portfolio, error) {
-	return QueryRow(ctx, r.db, portfolioGetByID, scanPortfolio, id)
+	return queryRow(ctx, r.db, portfolioGetByID, scanPortfolio, id)
 }
 
 func (r *PortfolioRepo) ListAll(ctx context.Context) ([]*portfolio.Portfolio, error) {
-	return QueryAll(ctx, r.db, portfolioListAll, scanPortfolio)
+	return queryAll(ctx, r.db, portfolioListAll, scanPortfolio)
 }
 
 func (r *PortfolioRepo) ListByBrokerageAccountID(
 	ctx context.Context, brokerageAccountID string,
 ) ([]*portfolio.Portfolio, error) {
-	return QueryAll(ctx, r.db, portfolioListByBrokerageAccountID, scanPortfolio, brokerageAccountID)
+	return queryAll(ctx, r.db, portfolioListByBrokerageAccountID, scanPortfolio, brokerageAccountID)
 }
 
 func (r *PortfolioRepo) Update(ctx context.Context, p *portfolio.Portfolio) error {
