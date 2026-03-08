@@ -1,7 +1,8 @@
 <script lang="ts">
-import { TrendingUp } from "lucide-svelte";
+import { TrendingUp, Trophy } from "lucide-svelte";
 import { GetDividendRanking } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
+import EmptyState from "../../lib/components/EmptyState.svelte";
 import LoadingState from "../../lib/components/LoadingState.svelte";
 import { getDividendIndicatorDisplay } from "../../lib/dividend-indicator";
 import { formatDecimal, formatPercent } from "../../lib/format";
@@ -46,7 +47,7 @@ loadRanking();
       {error}
     </div>
   {:else if items.length === 0}
-    <p class="py-4 text-center text-sm text-text-muted">{t("dividendRanking.noStocks")}</p>
+    <EmptyState icon={Trophy} title={t("dividendRanking.noStocks")} />
   {:else}
     <div class="overflow-x-auto rounded border border-border-default">
       <table class="w-full text-sm" aria-label="Dividend Ranking">
