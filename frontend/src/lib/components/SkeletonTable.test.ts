@@ -34,4 +34,9 @@ describe("SkeletonTable", () => {
     // 3 header + (2 rows × 3 columns) = 9
     expect(skeletons).toHaveLength(9);
   });
+
+  it("accepts custom aria label", () => {
+    render(SkeletonTableWrapper, { props: { label: "Loading holdings" } });
+    expect(screen.getByRole("status", { name: "Loading holdings" })).toBeInTheDocument();
+  });
 });

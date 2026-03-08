@@ -191,10 +191,10 @@ const summary = $derived(data?.summary);
   {#if loading}
     <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
       {#each Array(3) as _}
-        <SkeletonCard lines={2} />
+        <SkeletonCard lines={2} label={t("transactions.loading")} />
       {/each}
     </div>
-    <SkeletonTable rows={5} columns={8} />
+    <SkeletonTable rows={5} columns={8} label={t("transactions.loading")} />
   {:else if items.length === 0}
     <EmptyState icon={Receipt} title={t("transactions.empty")} description={t("transactions.emptyDesc")} />
   {:else}

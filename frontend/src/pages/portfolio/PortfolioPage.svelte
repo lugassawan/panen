@@ -108,7 +108,7 @@ load();
 
 <div class="mx-auto max-w-4xl px-4 py-8">
   {#if state === "loading"}
-    <SkeletonTable rows={5} columns={7} />
+    <SkeletonTable rows={5} columns={7} label={t("portfolio.loading")} />
   {:else if state === "error"}
     <div class="rounded border border-negative/20 bg-negative-bg px-4 py-3 text-sm text-negative" role="alert">
       {error}

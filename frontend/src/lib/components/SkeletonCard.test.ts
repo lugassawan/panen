@@ -25,4 +25,9 @@ describe("SkeletonCard", () => {
     const skeletons = container.querySelectorAll(".skeleton");
     expect(skeletons).toHaveLength(7); // 1 title + 6 body
   });
+
+  it("accepts custom aria label", () => {
+    render(SkeletonCardWrapper, { props: { label: "Loading portfolio" } });
+    expect(screen.getByRole("status", { name: "Loading portfolio" })).toBeInTheDocument();
+  });
 });

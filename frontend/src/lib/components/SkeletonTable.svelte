@@ -4,15 +4,17 @@ import SkeletonLine from "./SkeletonLine.svelte";
 let {
   rows = 5,
   columns = 4,
+  label = "Loading",
 }: {
   rows?: number;
   columns?: number;
+  label?: string;
 } = $props();
 
 const widthPattern = ["30%", "80%", "70%", "50%"];
 </script>
 
-<div role="status" aria-label="Loading">
+<div role="status" aria-label={label}>
   <div class="overflow-x-auto rounded border border-border-default">
     <table class="w-full">
       <thead class="border-b border-border-default bg-bg-secondary">
