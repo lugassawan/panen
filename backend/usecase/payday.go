@@ -320,7 +320,7 @@ func (s *PaydayService) GetCashFlowSummary(ctx context.Context, portfolioID stri
 		totalInflow += cf.Amount
 	}
 
-	totalDeployed := 0.0 // TODO: calculate from buy transactions when portfolio deployment tracking is added
+	totalDeployed := 0.0 // TODO(#115): calculate from buy transactions when portfolio deployment tracking is added
 	return &CashFlowSummary{
 		Items:         items,
 		TotalInflow:   totalInflow,
