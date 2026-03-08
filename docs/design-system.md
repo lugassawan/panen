@@ -391,6 +391,77 @@ The `metrics` array renders in a 3-column grid. Set `positive: true` for green t
 
 Price and change use `price.toLocaleString("id-ID")` and `changePercent.toFixed(2)` for Indonesian number formatting.
 
+### Modal
+
+```svelte
+<script lang="ts">
+  import Modal from "../components/Modal.svelte";
+
+  let showModal = $state(false);
+</script>
+
+<Modal open={showModal} title="Edit Holding" onClose={() => (showModal = false)}>
+  <p>Modal body content here.</p>
+  {#snippet footer()}
+    <div class="flex justify-end gap-3">
+      <Button variant="secondary" onclick={() => (showModal = false)}>Cancel</Button>
+      <Button variant="primary" onclick={save}>Save</Button>
+    </div>
+  {/snippet}
+</Modal>
+```
+
+Props:
+- `open`: `boolean` — controls visibility; callers always drive this prop explicitly (default: `true`)
+- `title`: `string` (optional) — rendered as `<h3>` with `aria-labelledby`
+- `aria-label`: `string` (optional) — use when no visible title; mutually exclusive with `title`
+- `size`: `"sm"` | `"md"` | `"lg"` — maps to `max-w-sm` / `max-w-md` / `max-w-lg` (default: `"md"`)
+- `onClose`: `() => void` (required) — called on Escape key or backdrop click
+- `children`: Snippet (required) — modal body
+- `footer`: Snippet (optional) — rendered below body with `mt-6` spacing
+
+Behavior:
+- **Backdrop click** closes the modal (calls `onClose`)
+- **Escape key** closes the modal
+- **Focus trapping**: Tab cycles through focusable elements inside the modal; Shift+Tab wraps backward
+- **Auto-focus**: Modal container receives focus when opened
+- Renders with `aria-modal="true"`, `role="dialog"`, and `z-50` stacking
+
+### ConfirmDialog
+
+Wraps `Modal` with confirm/cancel buttons — use for destructive or irreversible actions.
+
+```svelte
+<script lang="ts">
+  import ConfirmDialog from "../components/ConfirmDialog.svelte";
+</script>
+
+{#if showConfirm}
+  <ConfirmDialog
+    title="Delete Holding"
+    confirmVariant="danger"
+    onConfirm={handleDelete}
+    onCancel={() => (showConfirm = false)}
+  >
+    Are you sure you want to delete this holding?
+  </ConfirmDialog>
+{/if}
+```
+
+Props:
+- `title`: `string` (required)
+- `confirmLabel`: `string` (default: localized "Confirm")
+- `confirmVariant`: `"primary"` | `"danger"` (default: `"danger"`)
+- `loading`: `boolean` — disables buttons during async action (default: `false`)
+- `onConfirm`: `() => void` (required)
+- `onCancel`: `() => void` (required) — also used as Modal's `onClose`
+- `children`: Snippet (required) — description text
+
+**When to use which:**
+- `Modal` — custom layouts (forms, detail views, multi-step flows)
+- `ConfirmDialog` — simple yes/no decisions, especially destructive actions
+- Inline content — lightweight toggles that don't need overlay isolation
+
 ---
 
 ## 7. Layout Structure
@@ -495,7 +566,89 @@ The transition utilities set `transition-duration` and `transition-timing-functi
 
 ---
 
-## 10. Do / Don't
+## 10. Loading Patterns
+
+### Component Selection
+
+| Component | When to use | Key props |
+|---|---|---|
+| `LoadingState` | Generic spinner for pages with unpredictable layout, inline loading indicators | `message`, `size` (`"sm"` \| `"md"`), `class` |
+| `SkeletonTable` | Pages with known table layout — preserves visual structure during load | `rows` (default 5), `columns` (default 4), `label` |
+| `SkeletonCard` | Pages with known card layout — mimics card content shape | `lines` (default 3), `label` |
+| `SkeletonLine` | Individual shimmer line — building block for custom skeleton layouts | `height`, `width` |
+
+### Page State Machine
+
+Pages follow a state machine pattern to manage loading, empty, and error states:
+
+```svelte
+<script lang="ts">
+  type State = "loading" | "ready" | "empty" | "error";
+  let state = $state<State>("loading");
+  let data = $state<Item[]>([]);
+  let error = $state<string | null>(null);
+
+  async function load() {
+    state = "loading";
+    try {
+      data = await FetchItems();
+      state = data.length > 0 ? "ready" : "empty";
+    } catch (e) {
+      error = String(e);
+      state = "error";
+    }
+  }
+</script>
+
+{#if state === "loading"}
+  <SkeletonTable rows={5} columns={3} />
+{:else if state === "empty"}
+  <EmptyState title="No items yet" description="Add your first item to get started." />
+{:else if state === "error"}
+  <Alert variant="negative">{error}</Alert>
+{:else}
+  <!-- render data -->
+{/if}
+```
+
+State names vary by page (e.g., `"list"`, `"setup"`, `"dashboard"` instead of `"ready"`), but the pattern is consistent: start at `"loading"`, transition based on data availability or errors.
+
+---
+
+## 11. Accessibility
+
+### Focus Management
+
+- Apply `focus-ring` class on all interactive elements (buttons, inputs, links, tabs)
+- Modal uses focus trapping — Tab/Shift+Tab cycle through focusable children
+- Modal auto-focuses its container on open
+
+### Keyboard Navigation
+
+- **Escape**: closes modals, dropdowns, and dialogs
+- **Tab**: moves focus forward through interactive elements
+- **Arrow keys**: navigate within listboxes (`SearchableSelect`), tab groups (`ModeTabs`)
+- **Enter**: activates buttons, selects dropdown options
+
+### ARIA Attributes
+
+- `aria-modal="true"` + `role="dialog"` on Modal overlay
+- `aria-labelledby` when Modal has a visible title; `aria-label` when it does not
+- `aria-label` on icon-only buttons (e.g., close buttons, theme toggle)
+- `role="status"` on `LoadingState`, `SkeletonTable`, `SkeletonCard` for live region announcements
+- `role="combobox"` + `aria-expanded` + `aria-haspopup="listbox"` on `SearchableSelect`
+- `role="tablist"` + `role="tab"` on `ModeTabs`
+
+### Screen Reader Support
+
+- Text alternatives for all visual indicators — never rely on color alone
+- Loading components include `aria-label` for screen reader context
+- Icon-only buttons always have an `aria-label` describing the action
+- Dismissible alerts use a close button with `aria-label`
+
+---
+
+## 12. Do / Don't
 
 ### Do
 
