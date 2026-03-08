@@ -219,7 +219,7 @@ Defined in `frontend/src/app.css` via `@utility`:
 | `text-profit` | `color: var(--fin-profit)` — adapts to theme |
 | `text-loss` | `color: var(--fin-loss)` — adapts to theme |
 | `focus-ring` | Adds `box-shadow: var(--shadow-focus)` on `:focus-visible`, clears outline |
-| `skeleton` | Animated shimmer loading placeholder (1.5s infinite) |
+| `skeleton` | Animated shimmer loading placeholder (1.5s infinite) — use via `SkeletonLine`, `SkeletonCard`, `SkeletonTable` components |
 | `transition-fast` | 120ms `cubic-bezier(0.4, 0, 0.2, 1)` transition |
 | `transition-normal` | 200ms `cubic-bezier(0.4, 0, 0.2, 1)` transition |
 | `transition-slow` | 320ms `cubic-bezier(0.4, 0, 0.2, 1)` transition |

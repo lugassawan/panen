@@ -144,7 +144,7 @@ Full reference: `docs/design-system.md`
 
 ### Components
 
-Reusable components in `frontend/src/lib/components/`: Alert, Badge, Button, CommandPalette, DataTimestamp, EmptyState, Input, ModeTabs, Select, SortableHeader, StockCard, SyncIndicator, ThemeToggle, Toast, ToastContainer, Tooltip
+Reusable components in `frontend/src/lib/components/`: Alert, Badge, Button, CommandPalette, DataTimestamp, EmptyState, Input, LoadingState, ModeTabs, Select, SkeletonCard, SkeletonLine, SkeletonTable, SortableHeader, StockCard, SyncIndicator, ThemeToggle, Toast, ToastContainer, Tooltip
 
 ### Key Rules
 
