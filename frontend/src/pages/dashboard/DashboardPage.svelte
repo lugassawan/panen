@@ -31,7 +31,7 @@ async function load() {
   try {
     const result = await GetDashboardOverview();
     data = result;
-    state = result.portfolios.length === 0 ? "empty" : "ready";
+    state = !result.portfolios?.length ? "empty" : "ready";
   } catch (e) {
     errorMsg = String(e);
     state = "error";

@@ -1,7 +1,7 @@
 <script lang="ts">
 import { DeleteWatchlist } from "../../../wailsjs/go/backend/App";
-import ConfirmDialog from "../../components/ConfirmDialog.svelte";
 import { t } from "../../i18n";
+import ConfirmDialog from "../../lib/components/ConfirmDialog.svelte";
 import type { WatchlistResponse } from "../../lib/types";
 
 let {

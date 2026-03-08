@@ -21,7 +21,7 @@ func (h *DashboardHandler) Bind(ctx context.Context, dashboard *usecase.Dashboar
 // GetDashboardOverview returns aggregated performance data across all portfolios.
 func (h *DashboardHandler) GetDashboardOverview() (*DashboardOverviewResponse, error) {
 	if h.dashboard == nil {
-		return &DashboardOverviewResponse{}, nil
+		return emptyDashboardOverview(), nil
 	}
 
 	overview, err := h.dashboard.GetOverview(h.ctx)

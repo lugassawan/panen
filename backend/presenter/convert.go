@@ -381,6 +381,17 @@ func newTransactionSummaryResponse(s *transaction.Summary) TransactionSummaryRes
 	}
 }
 
+func emptyDashboardOverview() *DashboardOverviewResponse {
+	return &DashboardOverviewResponse{
+		Portfolios:          []PortfolioSummaryResponse{},
+		TopGainers:          []HoldingPLResponse{},
+		TopLosers:           []HoldingPLResponse{},
+		PortfolioAllocation: []AllocationItemResponse{},
+		SectorAllocation:    []AllocationItemResponse{},
+		RecentTransactions:  []TransactionRecordResponse{},
+	}
+}
+
 func newDashboardOverviewResponse(o *dashboard.Overview) *DashboardOverviewResponse {
 	portfolios := make([]PortfolioSummaryResponse, len(o.Portfolios))
 	for i, ps := range o.Portfolios {

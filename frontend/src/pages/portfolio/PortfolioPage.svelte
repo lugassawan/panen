@@ -7,8 +7,8 @@ import {
   ListBrokerConfigs,
   ListPortfolios,
 } from "../../../wailsjs/go/backend/App";
-import ConfirmDialog from "../../components/ConfirmDialog.svelte";
 import { t } from "../../i18n";
+import ConfirmDialog from "../../lib/components/ConfirmDialog.svelte";
 import { toastStore } from "../../lib/stores/toast.svelte";
 import type {
   ActionType,

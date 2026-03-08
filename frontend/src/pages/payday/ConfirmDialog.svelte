@@ -3,6 +3,7 @@ import { untrack } from "svelte";
 import { t } from "../../i18n";
 import Button from "../../lib/components/Button.svelte";
 import Input from "../../lib/components/Input.svelte";
+import Modal from "../../lib/components/Modal.svelte";
 
 let {
   expected,
@@ -17,56 +18,35 @@ let {
 } = $props();
 
 let amount = $state<number>(untrack(() => expected));
-let dialogEl = $state<HTMLDivElement | null>(null);
-
-$effect(() => {
-  dialogEl?.focus();
-});
 
 function handleConfirm() {
   onConfirm(amount);
 }
-
-function handleKeydown(e: KeyboardEvent) {
-  if (e.key === "Escape") {
-    onCancel();
-  }
-}
 </script>
 
-<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-  <div class="fixed inset-0" role="presentation" onclick={onCancel}></div>
-  <div
-    bind:this={dialogEl}
-    class="relative z-10 w-full max-w-sm rounded-lg border border-border-default bg-bg-elevated p-6 shadow-lg"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="payday-confirm-title"
-    tabindex="-1"
-    onkeydown={handleKeydown}
-  >
-    <h3 id="payday-confirm-title" class="text-lg font-semibold text-text-primary font-display">{t("payday.confirmTitle")}</h3>
-    <p class="mt-2 text-sm text-text-secondary">
-      {t("payday.confirmMessage", { portfolioName })}
-    </p>
+<Modal title={t("payday.confirmTitle")} onClose={onCancel} size="sm">
+  <p class="mt-2 text-sm text-text-secondary">
+    {t("payday.confirmMessage", { portfolioName })}
+  </p>
 
-    <div class="mt-4">
-      <label for="confirm-amount" class="mb-1.5 block text-sm font-medium text-text-secondary">
-        {t("payday.amountLabel")}
-      </label>
-      <Input
-        id="confirm-amount"
-        type="number"
-        bind:value={amount}
-        min={0}
-        aria-label="Payday amount"
-        class="font-mono"
-      />
-    </div>
+  <div class="mt-4">
+    <label for="confirm-amount" class="mb-1.5 block text-sm font-medium text-text-secondary">
+      {t("payday.amountLabel")}
+    </label>
+    <Input
+      id="confirm-amount"
+      type="number"
+      bind:value={amount}
+      min={0}
+      aria-label="Payday amount"
+      class="font-mono"
+    />
+  </div>
 
-    <div class="mt-6 flex items-center justify-end gap-3">
+  {#snippet footer()}
+    <div class="flex items-center justify-end gap-3">
       <Button variant="secondary" onclick={onCancel}>{t("common.cancel")}</Button>
       <Button variant="primary" onclick={handleConfirm}>{t("common.confirm")}</Button>
     </div>
-  </div>
-</div>
+  {/snippet}
+</Modal>
