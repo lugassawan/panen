@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/lugassawan/panen/backend/domain/brokerage"
 	"github.com/lugassawan/panen/backend/usecase"
@@ -33,7 +34,7 @@ func (h *BrokerageHandler) Bind(ctx context.Context, profileID string, brokerage
 func (h *BrokerageHandler) ListBrokerageAccounts() ([]*BrokerageAccountResponse, error) {
 	accounts, err := h.brokerages.ListByProfileID(h.ctx, h.profileID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("list brokerage accounts: %w", err)
 	}
 	result := make([]*BrokerageAccountResponse, len(accounts))
 	for i, a := range accounts {
@@ -49,7 +50,7 @@ func (h *BrokerageHandler) CreateBrokerageAccount(
 	acct := brokerage.NewAccount(h.profileID, name, brokerCode, buyFee, sellFee, sellTax)
 	acct.IsManualFee = isManualFee
 	if err := h.brokerages.Create(h.ctx, acct); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("create brokerage account: %w", err)
 	}
 	return newBrokerageAccountResponse(acct), nil
 }
@@ -58,7 +59,7 @@ func (h *BrokerageHandler) CreateBrokerageAccount(
 func (h *BrokerageHandler) GetBrokerageAccount(id string) (*BrokerageAccountResponse, error) {
 	acct, err := h.brokerages.GetByID(h.ctx, id)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get brokerage account: %w", err)
 	}
 	return newBrokerageAccountResponse(acct), nil
 }
@@ -69,7 +70,7 @@ func (h *BrokerageHandler) UpdateBrokerageAccount(
 ) (*BrokerageAccountResponse, error) {
 	acct, err := h.brokerages.GetByID(h.ctx, id)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("update brokerage account: %w", err)
 	}
 	acct.BrokerName = name
 	acct.BrokerCode = brokerCode
@@ -78,12 +79,15 @@ func (h *BrokerageHandler) UpdateBrokerageAccount(
 	acct.SellTaxPct = sellTax
 	acct.IsManualFee = isManualFee
 	if err := h.brokerages.Update(h.ctx, acct); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("update brokerage account: %w", err)
 	}
 	return newBrokerageAccountResponse(acct), nil
 }
 
 // DeleteBrokerageAccount removes a brokerage account by ID.
 func (h *BrokerageHandler) DeleteBrokerageAccount(id string) error {
-	return h.brokerages.Delete(h.ctx, id)
+	if err := h.brokerages.Delete(h.ctx, id); err != nil {
+		return fmt.Errorf("delete brokerage account: %w", err)
+	}
+	return nil
 }

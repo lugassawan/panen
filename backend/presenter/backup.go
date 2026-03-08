@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"time"
 
@@ -26,14 +27,17 @@ func (h *BackupHandler) Bind(ctx context.Context, backupSvc *backup.BackupServic
 
 // CreateManualBackup creates a user-triggered backup.
 func (h *BackupHandler) CreateManualBackup() error {
-	return h.backup.CreateManualBackup(h.dbPath, h.backupDir)
+	if err := h.backup.CreateManualBackup(h.dbPath, h.backupDir); err != nil {
+		return fmt.Errorf("create manual backup: %w", err)
+	}
+	return nil
 }
 
 // ListBackups returns all backups as DTOs.
 func (h *BackupHandler) ListBackups() ([]BackupInfoResponse, error) {
 	backups, err := h.backup.ListBackups(h.backupDir)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("list backups: %w", err)
 	}
 	result := make([]BackupInfoResponse, len(backups))
 	for i, b := range backups {
@@ -50,7 +54,7 @@ func (h *BackupHandler) ListBackups() ([]BackupInfoResponse, error) {
 func (h *BackupHandler) GetBackupStatus() (*BackupStatusResponse, error) {
 	backups, err := h.backup.ListBackups(h.backupDir)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get backup status: %w", err)
 	}
 
 	resp := &BackupStatusResponse{

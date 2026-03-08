@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/lugassawan/panen/backend/usecase"
 )
@@ -28,7 +29,7 @@ func (h *PriceHistoryHandler) Bind(ctx context.Context, priceHistory *usecase.Pr
 func (h *PriceHistoryHandler) GetPriceHistory(ticker string) ([]PricePointResponse, error) {
 	points, err := h.priceHistory.GetHistory(h.ctx, ticker)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get price history: %w", err)
 	}
 	result := make([]PricePointResponse, len(points))
 	for i, p := range points {

@@ -40,7 +40,7 @@ func (h *UpdateHandler) Bind(
 func (h *UpdateHandler) CheckForUpdate() (*UpdateCheckResponse, error) {
 	result, err := h.update.Check(h.ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("check for update: %w", err)
 	}
 	return &UpdateCheckResponse{
 		Available:      result.Available,

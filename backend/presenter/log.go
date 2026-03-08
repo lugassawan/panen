@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	"github.com/lugassawan/panen/backend/domain/settings"
@@ -27,7 +28,7 @@ func (h *LogHandler) Bind(ctx context.Context, s settings.Repository, logDir str
 func (h *LogHandler) IsDebugMode() (bool, error) {
 	val, err := h.settings.GetSetting(h.ctx, applog.DebugLoggingKey)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("is debug mode: %w", err)
 	}
 	return val == "1", nil
 }
@@ -41,7 +42,10 @@ func (h *LogHandler) SetDebugMode(enabled bool) error {
 	} else {
 		applog.SetLevel(slog.LevelInfo)
 	}
-	return h.settings.SetSetting(h.ctx, applog.DebugLoggingKey, val)
+	if err := h.settings.SetSetting(h.ctx, applog.DebugLoggingKey, val); err != nil {
+		return fmt.Errorf("set debug mode: %w", err)
+	}
+	return nil
 }
 
 // ExportLogs prompts the user to choose a save path, then creates a zip of recent logs.
@@ -54,13 +58,13 @@ func (h *LogHandler) ExportLogs() (string, error) {
 		},
 	})
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("export logs: %w", err)
 	}
 	if path == "" {
 		return "", nil
 	}
 	if err := applog.ExportLogs(h.logDir, path, applog.LogRetentionDays); err != nil {
-		return "", err
+		return "", fmt.Errorf("export logs: %w", err)
 	}
 	return path, nil
 }
@@ -69,7 +73,7 @@ func (h *LogHandler) ExportLogs() (string, error) {
 func (h *LogHandler) GetLogStats() (*LogStatsResponse, error) {
 	stats, err := applog.GetLogStats(h.logDir)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get log stats: %w", err)
 	}
 	return &LogStatsResponse{
 		FileCount:  stats.FileCount,

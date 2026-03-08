@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/lugassawan/panen/backend/domain/crashplaybook"
 	"github.com/lugassawan/panen/backend/domain/portfolio"
@@ -40,7 +41,7 @@ func (h *CrashPlaybookHandler) Bind(
 func (h *CrashPlaybookHandler) ListAllPortfolios() ([]*PortfolioResponse, error) {
 	all, err := h.portfolios.ListAll(h.ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("list all portfolios: %w", err)
 	}
 	result := make([]*PortfolioResponse, len(all))
 	for i, p := range all {
@@ -53,7 +54,7 @@ func (h *CrashPlaybookHandler) ListAllPortfolios() ([]*PortfolioResponse, error)
 func (h *CrashPlaybookHandler) GetMarketStatus() (*MarketStatusResponse, error) {
 	status, err := h.service.GetMarketStatus(h.ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get market status: %w", err)
 	}
 	return newMarketStatusResponse(status), nil
 }
@@ -62,7 +63,7 @@ func (h *CrashPlaybookHandler) GetMarketStatus() (*MarketStatusResponse, error) 
 func (h *CrashPlaybookHandler) GetPortfolioPlaybook(portfolioID string) (*PortfolioPlaybookResponse, error) {
 	pb, err := h.service.GetPortfolioPlaybook(h.ctx, portfolioID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get portfolio playbook: %w", err)
 	}
 	return newPortfolioPlaybookResponse(pb), nil
 }
@@ -74,7 +75,7 @@ func (h *CrashPlaybookHandler) GetDiagnostic(
 ) (*DiagnosticResponse, error) {
 	diag, err := h.service.GetDiagnostic(h.ctx, ticker, portfolioID, companyBadNews, fundamentalsOK)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get diagnostic: %w", err)
 	}
 	return newDiagnosticResponse(diag), nil
 }
@@ -83,7 +84,7 @@ func (h *CrashPlaybookHandler) GetDiagnostic(
 func (h *CrashPlaybookHandler) GetCrashCapital(portfolioID string) (*CrashCapitalResponse, error) {
 	cc, err := h.service.GetCrashCapital(h.ctx, portfolioID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get crash capital: %w", err)
 	}
 	return &CrashCapitalResponse{
 		PortfolioID: cc.PortfolioID,
@@ -94,14 +95,17 @@ func (h *CrashPlaybookHandler) GetCrashCapital(portfolioID string) (*CrashCapita
 
 // SaveCrashCapital persists the crash capital amount for a portfolio.
 func (h *CrashPlaybookHandler) SaveCrashCapital(portfolioID string, amount float64) error {
-	return h.service.SaveCrashCapital(h.ctx, portfolioID, amount)
+	if err := h.service.SaveCrashCapital(h.ctx, portfolioID, amount); err != nil {
+		return fmt.Errorf("save crash capital: %w", err)
+	}
+	return nil
 }
 
 // GetDeploymentPlan returns the capital allocation breakdown per crash level.
 func (h *CrashPlaybookHandler) GetDeploymentPlan(portfolioID string) (*DeploymentPlanResponse, error) {
 	plan, err := h.service.GetDeploymentPlan(h.ctx, portfolioID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get deployment plan: %w", err)
 	}
 	return newDeploymentPlanResponse(plan), nil
 }
@@ -110,7 +114,7 @@ func (h *CrashPlaybookHandler) GetDeploymentPlan(portfolioID string) (*Deploymen
 func (h *CrashPlaybookHandler) GetDeploymentSettings() (*DeploymentSettingsResponse, error) {
 	normal, crash, extreme, err := h.service.GetDeploymentSettings(h.ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get deployment settings: %w", err)
 	}
 	return &DeploymentSettingsResponse{
 		Normal:  normal,
@@ -121,7 +125,10 @@ func (h *CrashPlaybookHandler) GetDeploymentSettings() (*DeploymentSettingsRespo
 
 // SaveDeploymentSettings persists deployment percentage settings.
 func (h *CrashPlaybookHandler) SaveDeploymentSettings(normal, crash, extreme float64) error {
-	return h.service.SaveDeploymentSettings(h.ctx, normal, crash, extreme)
+	if err := h.service.SaveDeploymentSettings(h.ctx, normal, crash, extreme); err != nil {
+		return fmt.Errorf("save deployment settings: %w", err)
+	}
+	return nil
 }
 
 func newMarketStatusResponse(s *crashplaybook.MarketStatus) *MarketStatusResponse {

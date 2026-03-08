@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/lugassawan/panen/backend/domain/transaction"
@@ -45,7 +46,7 @@ func (h *TransactionHandler) ListTransactions(
 	if dateFrom != "" {
 		t, err := time.Parse(dateLayout, dateFrom)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("list transactions: %w", err)
 		}
 		filter.DateFrom = &t
 	}
@@ -53,14 +54,14 @@ func (h *TransactionHandler) ListTransactions(
 	if dateTo != "" {
 		t, err := time.Parse(dateLayout, dateTo)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("list transactions: %w", err)
 		}
 		filter.DateTo = &t
 	}
 
 	records, summary, err := h.txns.ListTransactions(h.ctx, filter)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("list transactions: %w", err)
 	}
 
 	items := make([]TransactionRecordResponse, len(records))
