@@ -11,6 +11,7 @@ import (
 	"github.com/lugassawan/panen/backend/domain/portfolio"
 	"github.com/lugassawan/panen/backend/domain/settings"
 	"github.com/lugassawan/panen/backend/domain/shared"
+	"github.com/lugassawan/panen/backend/domain/transaction"
 )
 
 const (
@@ -65,10 +66,11 @@ type CashFlowItem struct {
 
 // PaydayService handles payday scheduling, confirmation, and cash flow tracking.
 type PaydayService struct {
-	events     payday.Repository
-	cashFlows  payday.CashFlowRepository
-	portfolios portfolio.Repository
-	settings   settings.Repository
+	events       payday.Repository
+	cashFlows    payday.CashFlowRepository
+	portfolios   portfolio.Repository
+	settings     settings.Repository
+	transactions transaction.Repository
 }
 
 // NewPaydayService creates a new PaydayService.
@@ -77,12 +79,14 @@ func NewPaydayService(
 	cashFlows payday.CashFlowRepository,
 	portfolios portfolio.Repository,
 	settings settings.Repository,
+	transactions transaction.Repository,
 ) *PaydayService {
 	return &PaydayService{
-		events:     events,
-		cashFlows:  cashFlows,
-		portfolios: portfolios,
-		settings:   settings,
+		events:       events,
+		cashFlows:    cashFlows,
+		portfolios:   portfolios,
+		settings:     settings,
+		transactions: transactions,
 	}
 }
 
@@ -320,7 +324,12 @@ func (s *PaydayService) GetCashFlowSummary(ctx context.Context, portfolioID stri
 		totalInflow += cf.Amount
 	}
 
-	totalDeployed := 0.0 // TODO(#115): calculate from buy transactions when portfolio deployment tracking is added
+	summary, err := s.transactions.Summarize(ctx, transaction.Filter{PortfolioID: portfolioID})
+	if err != nil {
+		return nil, err
+	}
+	totalDeployed := summary.TotalBuyAmount
+
 	return &CashFlowSummary{
 		Items:         items,
 		TotalInflow:   totalInflow,

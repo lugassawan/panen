@@ -9,6 +9,7 @@ import (
 	"github.com/lugassawan/panen/backend/domain/payday"
 	"github.com/lugassawan/panen/backend/domain/portfolio"
 	"github.com/lugassawan/panen/backend/domain/shared"
+	"github.com/lugassawan/panen/backend/domain/transaction"
 )
 
 const testExpectedAmount = 5000000
@@ -19,6 +20,7 @@ type paydayTestFixture struct {
 	cashFlowRepo  *mockCashFlowRepo
 	portfolioRepo *mockPortfolioRepo
 	settingsRepo  *mockSettingsRepo
+	txnRepo       *mockTransactionHistoryRepo
 	ctx           context.Context
 }
 
@@ -29,8 +31,9 @@ func setupPaydayTest(t *testing.T) paydayTestFixture {
 	cashFlowRepo := newMockCashFlowRepo()
 	portfolioRepo := newMockPortfolioRepo()
 	settingsRepo := newMockSettingsRepo()
+	txnRepo := newMockTransactionHistoryRepo()
 
-	svc := NewPaydayService(paydayRepo, cashFlowRepo, portfolioRepo, settingsRepo)
+	svc := NewPaydayService(paydayRepo, cashFlowRepo, portfolioRepo, settingsRepo, txnRepo)
 
 	return paydayTestFixture{
 		svc:           svc,
@@ -38,6 +41,7 @@ func setupPaydayTest(t *testing.T) paydayTestFixture {
 		cashFlowRepo:  cashFlowRepo,
 		portfolioRepo: portfolioRepo,
 		settingsRepo:  settingsRepo,
+		txnRepo:       txnRepo,
 		ctx:           context.Background(),
 	}
 }
@@ -652,6 +656,93 @@ func TestGetCashFlowSummaryItemFields(t *testing.T) {
 	}
 	if item.Note != "Test note" {
 		t.Errorf("Note = %s, want %s", item.Note, "Test note")
+	}
+}
+
+func TestGetCashFlowSummaryTotalDeployed(t *testing.T) {
+	tests := []struct {
+		name              string
+		cashFlows         []*payday.CashFlow
+		txnRecords        []transaction.Record
+		wantTotalInflow   float64
+		wantTotalDeployed float64
+		wantBalance       float64
+	}{
+		{
+			name:              "no transactions yields zero totalDeployed",
+			wantTotalInflow:   0,
+			wantTotalDeployed: 0,
+			wantBalance:       0,
+		},
+		{
+			name: "totalDeployed equals TotalBuyAmount from transactions",
+			cashFlows: []*payday.CashFlow{
+				payday.NewCashFlow("p1", payday.FlowTypeMonthly, 10000000, time.Now().UTC(), "Monthly"),
+			},
+			txnRecords: []transaction.Record{
+				{PortfolioID: "p1", Type: transaction.TypeBuy, Total: 3000000, Fee: 15000},
+				{PortfolioID: "p1", Type: transaction.TypeBuy, Total: 2000000, Fee: 10000},
+			},
+			wantTotalInflow:   10000000,
+			wantTotalDeployed: 5000000,
+			wantBalance:       5000000,
+		},
+		{
+			name: "sell transactions do not affect totalDeployed",
+			cashFlows: []*payday.CashFlow{
+				payday.NewCashFlow("p1", payday.FlowTypeMonthly, 10000000, time.Now().UTC(), "Monthly"),
+			},
+			txnRecords: []transaction.Record{
+				{PortfolioID: "p1", Type: transaction.TypeBuy, Total: 4000000, Fee: 20000},
+				{PortfolioID: "p1", Type: transaction.TypeSell, Total: 1000000, Fee: 5000},
+			},
+			wantTotalInflow:   10000000,
+			wantTotalDeployed: 4000000,
+			wantBalance:       6000000,
+		},
+		{
+			name: "filters transactions by portfolio ID",
+			cashFlows: []*payday.CashFlow{
+				payday.NewCashFlow("p1", payday.FlowTypeMonthly, 10000000, time.Now().UTC(), "Monthly"),
+			},
+			txnRecords: []transaction.Record{
+				{PortfolioID: "p1", Type: transaction.TypeBuy, Total: 3000000, Fee: 15000},
+				{PortfolioID: "other", Type: transaction.TypeBuy, Total: 7000000, Fee: 35000},
+			},
+			wantTotalInflow:   10000000,
+			wantTotalDeployed: 3000000,
+			wantBalance:       7000000,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := setupPaydayTest(t)
+
+			portfolioID := "p1"
+			for _, cf := range tt.cashFlows {
+				if err := f.cashFlowRepo.Create(f.ctx, cf); err != nil {
+					t.Fatalf("create cash flow: %v", err)
+				}
+			}
+			f.txnRepo.mu.Lock()
+			f.txnRepo.records = tt.txnRecords
+			f.txnRepo.mu.Unlock()
+
+			summary, err := f.svc.GetCashFlowSummary(f.ctx, portfolioID)
+			if err != nil {
+				t.Fatalf("GetCashFlowSummary() error = %v", err)
+			}
+			if summary.TotalInflow != tt.wantTotalInflow {
+				t.Errorf("TotalInflow = %f, want %f", summary.TotalInflow, tt.wantTotalInflow)
+			}
+			if summary.TotalDeployed != tt.wantTotalDeployed {
+				t.Errorf("TotalDeployed = %f, want %f", summary.TotalDeployed, tt.wantTotalDeployed)
+			}
+			if summary.Balance != tt.wantBalance {
+				t.Errorf("Balance = %f, want %f", summary.Balance, tt.wantBalance)
+			}
+		})
 	}
 }
 

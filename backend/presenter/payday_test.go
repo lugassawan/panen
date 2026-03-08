@@ -8,6 +8,7 @@ import (
 	"github.com/lugassawan/panen/backend/domain/payday"
 	"github.com/lugassawan/panen/backend/domain/portfolio"
 	"github.com/lugassawan/panen/backend/domain/shared"
+	"github.com/lugassawan/panen/backend/domain/transaction"
 	"github.com/lugassawan/panen/backend/usecase"
 )
 
@@ -118,8 +119,21 @@ func newTestPaydayHandler(day int) *PaydayHandler {
 	}
 	_ = portfolioRepo.Create(ctx, p)
 
-	svc := usecase.NewPaydayService(paydayRepo, cashFlowRepo, portfolioRepo, settingsRepo)
+	txnRepo := &mockTxnRepo{}
+
+	svc := usecase.NewPaydayService(paydayRepo, cashFlowRepo, portfolioRepo, settingsRepo, txnRepo)
 	return NewPaydayHandler(ctx, svc)
+}
+
+// mockTxnRepo is a minimal transaction.Repository for presenter tests.
+type mockTxnRepo struct{}
+
+func (m *mockTxnRepo) List(_ context.Context, _ transaction.Filter) ([]transaction.Record, error) {
+	return nil, nil
+}
+
+func (m *mockTxnRepo) Summarize(_ context.Context, _ transaction.Filter) (*transaction.Summary, error) {
+	return &transaction.Summary{}, nil
 }
 
 func TestPaydayHandlerGetPaydayDayDefault(t *testing.T) {

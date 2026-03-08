@@ -321,7 +321,7 @@ func (a *App) initServices(
 	checklists := usecase.NewChecklistService(
 		r.checklistResult, r.portfolio, r.holding, r.brokerage, r.stock, alertSvc,
 	)
-	paydaySvc := usecase.NewPaydayService(r.payday, r.cashFlow, r.portfolio, r.settings)
+	paydaySvc := usecase.NewPaydayService(r.payday, r.cashFlow, r.portfolio, r.settings, r.txnHistory)
 	transactions := usecase.NewTransactionService(r.txnHistory)
 	dashboard := usecase.NewDashboardService(
 		r.portfolio, r.holding, r.stock, r.payday, r.txnHistory, sectorRegistry,
