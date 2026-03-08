@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/lugassawan/panen/backend/usecase"
 )
@@ -32,7 +33,7 @@ func (h *WatchlistHandler) Bind(ctx context.Context, profileID string, watchlist
 func (h *WatchlistHandler) ListWatchlists() ([]*WatchlistResponse, error) {
 	wls, err := h.watchlists.ListWatchlists(h.ctx, h.profileID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("list watchlists: %w", err)
 	}
 	result := make([]*WatchlistResponse, len(wls))
 	for i, w := range wls {
@@ -45,29 +46,41 @@ func (h *WatchlistHandler) ListWatchlists() ([]*WatchlistResponse, error) {
 func (h *WatchlistHandler) CreateWatchlist(name string) (*WatchlistResponse, error) {
 	w, err := h.watchlists.CreateWatchlist(h.ctx, h.profileID, name)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("create watchlist: %w", err)
 	}
 	return newWatchlistResponse(w), nil
 }
 
 // RenameWatchlist updates the name of the given watchlist.
 func (h *WatchlistHandler) RenameWatchlist(id, name string) error {
-	return h.watchlists.RenameWatchlist(h.ctx, id, name)
+	if err := h.watchlists.RenameWatchlist(h.ctx, id, name); err != nil {
+		return fmt.Errorf("rename watchlist: %w", err)
+	}
+	return nil
 }
 
 // DeleteWatchlist removes the watchlist with the given ID.
 func (h *WatchlistHandler) DeleteWatchlist(id string) error {
-	return h.watchlists.DeleteWatchlist(h.ctx, id)
+	if err := h.watchlists.DeleteWatchlist(h.ctx, id); err != nil {
+		return fmt.Errorf("delete watchlist: %w", err)
+	}
+	return nil
 }
 
 // AddToWatchlist adds a ticker to the given watchlist.
 func (h *WatchlistHandler) AddToWatchlist(watchlistID, ticker string) error {
-	return h.watchlists.AddTicker(h.ctx, watchlistID, ticker)
+	if err := h.watchlists.AddTicker(h.ctx, watchlistID, ticker); err != nil {
+		return fmt.Errorf("add to watchlist: %w", err)
+	}
+	return nil
 }
 
 // RemoveFromWatchlist removes a ticker from the given watchlist.
 func (h *WatchlistHandler) RemoveFromWatchlist(watchlistID, ticker string) error {
-	return h.watchlists.RemoveTicker(h.ctx, watchlistID, ticker)
+	if err := h.watchlists.RemoveTicker(h.ctx, watchlistID, ticker); err != nil {
+		return fmt.Errorf("remove from watchlist: %w", err)
+	}
+	return nil
 }
 
 // GetWatchlistItems returns all items in the watchlist, enriched with stock data and valuation.
@@ -75,7 +88,7 @@ func (h *WatchlistHandler) RemoveFromWatchlist(watchlistID, ticker string) error
 func (h *WatchlistHandler) GetWatchlistItems(watchlistID, sectorFilter string) ([]*WatchlistItemResponse, error) {
 	items, err := h.watchlists.ListItems(h.ctx, watchlistID, sectorFilter)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get watchlist items: %w", err)
 	}
 	result := make([]*WatchlistItemResponse, len(items))
 	for i, item := range items {
@@ -88,7 +101,7 @@ func (h *WatchlistHandler) GetWatchlistItems(watchlistID, sectorFilter string) (
 func (h *WatchlistHandler) GetPresetItems(indexName, sectorFilter string) ([]*WatchlistItemResponse, error) {
 	items, err := h.watchlists.ListPresetItems(h.ctx, indexName, sectorFilter)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get preset items: %w", err)
 	}
 	result := make([]*WatchlistItemResponse, len(items))
 	for i, item := range items {

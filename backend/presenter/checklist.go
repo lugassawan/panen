@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/lugassawan/panen/backend/domain/checklist"
 	"github.com/lugassawan/panen/backend/usecase"
@@ -29,11 +30,11 @@ func (h *ChecklistHandler) Bind(ctx context.Context, checklists *usecase.Checkli
 func (h *ChecklistHandler) EvaluateChecklist(portfolioID, ticker, action string) (*ChecklistEvaluationResponse, error) {
 	actionType, err := checklist.ParseActionType(action)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("evaluate checklist: %w", err)
 	}
 	eval, err := h.checklists.Evaluate(h.ctx, portfolioID, ticker, actionType)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("evaluate checklist: %w", err)
 	}
 	return newChecklistEvaluationResponse(eval), nil
 }
@@ -42,25 +43,31 @@ func (h *ChecklistHandler) EvaluateChecklist(portfolioID, ticker, action string)
 func (h *ChecklistHandler) ToggleManualCheck(portfolioID, ticker, action, checkKey string, completed bool) error {
 	actionType, err := checklist.ParseActionType(action)
 	if err != nil {
-		return err
+		return fmt.Errorf("toggle manual check: %w", err)
 	}
-	return h.checklists.ToggleManualCheck(h.ctx, portfolioID, ticker, actionType, checkKey, completed)
+	if err := h.checklists.ToggleManualCheck(h.ctx, portfolioID, ticker, actionType, checkKey, completed); err != nil {
+		return fmt.Errorf("toggle manual check: %w", err)
+	}
+	return nil
 }
 
 // ResetChecklist resets a checklist's manual checks.
 func (h *ChecklistHandler) ResetChecklist(portfolioID, ticker, action string) error {
 	actionType, err := checklist.ParseActionType(action)
 	if err != nil {
-		return err
+		return fmt.Errorf("reset checklist: %w", err)
 	}
-	return h.checklists.ResetChecklist(h.ctx, portfolioID, ticker, actionType)
+	if err := h.checklists.ResetChecklist(h.ctx, portfolioID, ticker, actionType); err != nil {
+		return fmt.Errorf("reset checklist: %w", err)
+	}
+	return nil
 }
 
 // AvailableActions returns available action types for a holding.
 func (h *ChecklistHandler) AvailableActions(portfolioID, ticker string) ([]string, error) {
 	actions, err := h.checklists.AvailableActions(h.ctx, portfolioID, ticker)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("available actions: %w", err)
 	}
 	result := make([]string, len(actions))
 	for i, a := range actions {

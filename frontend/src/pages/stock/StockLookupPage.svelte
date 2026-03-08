@@ -2,6 +2,7 @@
 import { LookupStock } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
 import AlertComponent from "../../lib/components/Alert.svelte";
+import Button from "../../lib/components/Button.svelte";
 import DataTimestamp from "../../lib/components/DataTimestamp.svelte";
 import Input from "../../lib/components/Input.svelte";
 import LoadingState from "../../lib/components/LoadingState.svelte";
@@ -71,13 +72,9 @@ function percentInRange(value: number, min: number, max: number): number {
       <option value="MODERATE">{t("screener.moderate")}</option>
       <option value="AGGRESSIVE">{t("screener.aggressive")}</option>
     </Select>
-    <button
-      type="submit"
-      disabled={loading}
-      class="rounded bg-green-700 px-5 py-2 text-sm font-medium text-text-inverse hover:bg-green-800 disabled:opacity-50 focus-ring transition-fast"
-    >
+    <Button type="submit" disabled={loading}>
       {loading ? t("lookup.lookingUp") : t("lookup.lookup")}
-    </button>
+    </Button>
   </form>
 
   <!-- Loading -->

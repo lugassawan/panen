@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/lugassawan/panen/backend/usecase"
 )
@@ -26,7 +27,7 @@ func (h *DashboardHandler) GetDashboardOverview() (*DashboardOverviewResponse, e
 
 	overview, err := h.dashboard.GetOverview(h.ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get dashboard overview: %w", err)
 	}
 
 	return newDashboardOverviewResponse(overview), nil

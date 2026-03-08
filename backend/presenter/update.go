@@ -23,18 +23,6 @@ type UpdateHandler struct {
 	settings   settings.Repository
 }
 
-// NewUpdateHandler creates a new UpdateHandler.
-func NewUpdateHandler(
-	ctx context.Context,
-	update *usecase.UpdateService,
-	selfUpdate *usecase.SelfUpdateService,
-	settings settings.Repository,
-) *UpdateHandler {
-	h := &UpdateHandler{}
-	h.Bind(ctx, update, selfUpdate, settings)
-	return h
-}
-
 // Bind wires the handler to its dependencies.
 func (h *UpdateHandler) Bind(
 	ctx context.Context,
@@ -52,7 +40,7 @@ func (h *UpdateHandler) Bind(
 func (h *UpdateHandler) CheckForUpdate() (*UpdateCheckResponse, error) {
 	result, err := h.update.Check(h.ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("check for update: %w", err)
 	}
 	return &UpdateCheckResponse{
 		Available:      result.Available,

@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/lugassawan/panen/backend/domain/valuation"
 	"github.com/lugassawan/panen/backend/usecase"
@@ -29,11 +30,11 @@ func (h *StockHandler) Bind(ctx context.Context, stocks *usecase.StockService) {
 func (h *StockHandler) LookupStock(ticker, riskProfile string) (*StockValuationResponse, error) {
 	rp, err := valuation.ParseRiskProfile(riskProfile)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("lookup stock: %w", err)
 	}
 	data, result, err := h.stocks.Lookup(h.ctx, ticker, rp)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("lookup stock: %w", err)
 	}
 	return newStockValuationResponse(data, result, riskProfile), nil
 }
@@ -42,11 +43,11 @@ func (h *StockHandler) LookupStock(ticker, riskProfile string) (*StockValuationR
 func (h *StockHandler) GetStockValuation(ticker, riskProfile string) (*StockValuationResponse, error) {
 	rp, err := valuation.ParseRiskProfile(riskProfile)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get stock valuation: %w", err)
 	}
 	data, result, err := h.stocks.GetCached(h.ctx, ticker, rp)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get stock valuation: %w", err)
 	}
 	return newStockValuationResponse(data, result, riskProfile), nil
 }

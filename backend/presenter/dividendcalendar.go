@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/lugassawan/panen/backend/usecase"
 )
@@ -31,7 +32,7 @@ func (h *DividendCalendarHandler) Bind(ctx context.Context, divHist *usecase.Div
 func (h *DividendCalendarHandler) GetDividendHistory(ticker string) ([]DividendHistoryItemResponse, error) {
 	events, err := h.divHist.GetDividendHistory(h.ctx, ticker)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get dividend history: %w", err)
 	}
 	result := make([]DividendHistoryItemResponse, len(events))
 	for i, e := range events {
@@ -47,7 +48,7 @@ func (h *DividendCalendarHandler) GetDividendHistory(ticker string) ([]DividendH
 func (h *DividendCalendarHandler) GetDividendIncomeSummary(portfolioID string) (*DividendIncomeSummaryResponse, error) {
 	summary, err := h.divHist.GetDividendIncomeSummary(h.ctx, portfolioID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get dividend income summary: %w", err)
 	}
 
 	perStock := make([]StockIncomeItemResponse, len(summary.PerStock))
@@ -79,7 +80,7 @@ func (h *DividendCalendarHandler) GetDividendIncomeSummary(portfolioID string) (
 func (h *DividendCalendarHandler) GetDGR(ticker string) ([]DGRItemResponse, error) {
 	results, err := h.divHist.GetDGR(h.ctx, ticker)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get dividend growth rate: %w", err)
 	}
 	resp := make([]DGRItemResponse, len(results))
 	for i, r := range results {
@@ -96,7 +97,7 @@ func (h *DividendCalendarHandler) GetDGR(ticker string) ([]DGRItemResponse, erro
 func (h *DividendCalendarHandler) GetYoCProgression(portfolioID, ticker string) ([]YoCPointResponse, error) {
 	points, err := h.divHist.GetYoCProgression(h.ctx, portfolioID, ticker)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get yield on cost progression: %w", err)
 	}
 	resp := make([]YoCPointResponse, len(points))
 	for i, p := range points {
@@ -112,7 +113,7 @@ func (h *DividendCalendarHandler) GetYoCProgression(portfolioID, ticker string) 
 func (h *DividendCalendarHandler) GetDividendCalendar(portfolioID string) ([]DividendCalendarEntryResponse, error) {
 	projections, err := h.divHist.GetDividendCalendar(h.ctx, portfolioID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get dividend calendar: %w", err)
 	}
 	resp := make([]DividendCalendarEntryResponse, len(projections))
 	for i, p := range projections {

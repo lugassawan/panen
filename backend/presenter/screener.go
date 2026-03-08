@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/lugassawan/panen/backend/usecase"
 )
@@ -40,7 +41,7 @@ func (h *ScreenerHandler) RunScreen(
 		SortAsc:       sortAsc,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("run screen: %w", err)
 	}
 
 	items := make([]*ScreenerItemResponse, len(results))

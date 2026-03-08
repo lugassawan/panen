@@ -2,22 +2,20 @@ package presenter
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/lugassawan/panen/backend/domain/portfolio"
 	"github.com/lugassawan/panen/backend/infra/applog"
-	"github.com/lugassawan/panen/backend/infra/backup"
 	"github.com/lugassawan/panen/backend/usecase"
 )
 
 // PortfolioHandler handles portfolio management requests.
 type PortfolioHandler struct {
-	ctx        context.Context
-	portfolios *usecase.PortfolioService
-	sectors    usecase.SectorRegistry
-	backupSvc  *backup.BackupService
-	dbPath     string
-	backupDir  string
+	ctx             context.Context
+	portfolios      *usecase.PortfolioService
+	sectors         usecase.SectorRegistry
+	preDeleteBackup func(label string) error
 }
 
 // NewPortfolioHandler creates a new PortfolioHandler.
@@ -41,11 +39,9 @@ func (h *PortfolioHandler) Bind(
 	h.sectors = sectors
 }
 
-// BindBackup injects backup dependencies for pre-destructive backup support.
-func (h *PortfolioHandler) BindBackup(backupSvc *backup.BackupService, dbPath, backupDir string) {
-	h.backupSvc = backupSvc
-	h.dbPath = dbPath
-	h.backupDir = backupDir
+// BindBackup injects the pre-destructive backup callback.
+func (h *PortfolioHandler) BindBackup(fn func(label string) error) {
+	h.preDeleteBackup = fn
 }
 
 // GetHoldingSectors returns the sector for each ticker.
@@ -61,7 +57,7 @@ func (h *PortfolioHandler) GetHoldingSectors(tickers []string) map[string]string
 func (h *PortfolioHandler) ListPortfolios(brokerageAcctID string) ([]*PortfolioResponse, error) {
 	portfolios, err := h.portfolios.ListByBrokerageAccountID(h.ctx, brokerageAcctID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("list portfolios: %w", err)
 	}
 	result := make([]*PortfolioResponse, len(portfolios))
 	for i, p := range portfolios {
@@ -78,16 +74,16 @@ func (h *PortfolioHandler) CreatePortfolio(
 ) (*PortfolioResponse, error) {
 	m, err := portfolio.ParseMode(mode)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("create portfolio: %w", err)
 	}
 	rp, err := portfolio.ParseRiskProfile(riskProfile)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("create portfolio: %w", err)
 	}
 
 	p := portfolio.NewPortfolio(brokerageAcctID, name, m, rp, capital, monthlyAddition, maxStocks)
 	if err := h.portfolios.Create(h.ctx, p); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("create portfolio: %w", err)
 	}
 	return newPortfolioResponse(p), nil
 }
@@ -101,12 +97,12 @@ func (h *PortfolioHandler) AddHolding(
 ) (*HoldingDetailResponse, error) {
 	date, err := time.Parse(dateLayout, dateStr)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("add holding: %w", err)
 	}
 
 	holding, err := h.portfolios.AddHolding(h.ctx, portfolioID, ticker, price, lots, date)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("add holding: %w", err)
 	}
 
 	resp := HoldingDetailResponse{
@@ -123,11 +119,11 @@ func (h *PortfolioHandler) AddHolding(
 // followed by GetDetail to read the portfolio (query).
 func (h *PortfolioHandler) GetPortfolio(id string) (*PortfolioDetailResponse, error) {
 	if err := h.portfolios.SyncPeaks(h.ctx, id); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get portfolio: %w", err)
 	}
 	p, holdings, err := h.portfolios.GetDetail(h.ctx, id)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get portfolio: %w", err)
 	}
 	return newPortfolioDetailResponse(p, holdings), nil
 }
@@ -140,11 +136,11 @@ func (h *PortfolioHandler) UpdatePortfolio(
 ) (*PortfolioResponse, error) {
 	rp, err := portfolio.ParseRiskProfile(riskProfile)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("update portfolio: %w", err)
 	}
 	p, err := h.portfolios.GetByID(h.ctx, id)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("update portfolio: %w", err)
 	}
 	p.Name = name
 	p.RiskProfile = rp
@@ -152,7 +148,7 @@ func (h *PortfolioHandler) UpdatePortfolio(
 	p.MonthlyAddition = monthlyAddition
 	p.MaxStocks = maxStocks
 	if err := h.portfolios.Update(h.ctx, p); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("update portfolio: %w", err)
 	}
 	return newPortfolioResponse(p), nil
 }
@@ -160,10 +156,13 @@ func (h *PortfolioHandler) UpdatePortfolio(
 // DeletePortfolio removes a portfolio by ID.
 // A pre-destructive backup is attempted before deletion (non-fatal on failure).
 func (h *PortfolioHandler) DeletePortfolio(id string) error {
-	if h.backupSvc != nil {
-		if err := h.backupSvc.CreateBeforeDestructive(h.dbPath, h.backupDir, "delete"); err != nil {
+	if h.preDeleteBackup != nil {
+		if err := h.preDeleteBackup("delete"); err != nil {
 			applog.Warn("pre-delete backup failed", err, applog.Fields{"portfolioID": id})
 		}
 	}
-	return h.portfolios.Delete(h.ctx, id)
+	if err := h.portfolios.Delete(h.ctx, id); err != nil {
+		return fmt.Errorf("delete portfolio: %w", err)
+	}
+	return nil
 }

@@ -3,6 +3,7 @@ package presenter
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/lugassawan/panen/backend/domain/settings"
 	"github.com/lugassawan/panen/backend/usecase"
@@ -52,7 +53,10 @@ func (h *RefreshHandler) Bind(ctx context.Context, refresh *usecase.RefreshServi
 
 // TriggerRefresh triggers an immediate refresh of all tracked stock data.
 func (h *RefreshHandler) TriggerRefresh() error {
-	return h.refresh.RunNow(h.ctx)
+	if err := h.refresh.RunNow(h.ctx); err != nil {
+		return fmt.Errorf("trigger refresh: %w", err)
+	}
+	return nil
 }
 
 // GetRefreshStatus returns the current refresh status.
@@ -69,7 +73,7 @@ func (h *RefreshHandler) GetRefreshStatus() *RefreshStatusResponse {
 func (h *RefreshHandler) GetRefreshSettings() (*RefreshSettingsResponse, error) {
 	cfg, err := h.settings.GetRefreshSettings(h.ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get refresh settings: %w", err)
 	}
 	return &RefreshSettingsResponse{
 		AutoRefreshEnabled: cfg.AutoRefreshEnabled,
@@ -85,9 +89,12 @@ func (h *RefreshHandler) UpdateRefreshSettings(enabled bool, intervalMinutes int
 	}
 	cfg, err := h.settings.GetRefreshSettings(h.ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("update refresh settings: %w", err)
 	}
 	cfg.AutoRefreshEnabled = enabled
 	cfg.IntervalMinutes = intervalMinutes
-	return h.settings.SaveRefreshSettings(h.ctx, cfg)
+	if err := h.settings.SaveRefreshSettings(h.ctx, cfg); err != nil {
+		return fmt.Errorf("update refresh settings: %w", err)
+	}
+	return nil
 }

@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/lugassawan/panen/backend/usecase"
 )
@@ -28,7 +29,7 @@ func (h *DividendHandler) Bind(ctx context.Context, dividends *usecase.DividendS
 func (h *DividendHandler) GetDividendRanking(portfolioID string) ([]DividendRankItemResponse, error) {
 	items, err := h.dividends.GetDividendRanking(h.ctx, portfolioID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get dividend ranking: %w", err)
 	}
 	result := make([]DividendRankItemResponse, len(items))
 	for i, item := range items {
