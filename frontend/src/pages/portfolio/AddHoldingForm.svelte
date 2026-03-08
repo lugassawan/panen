@@ -2,6 +2,7 @@
 import { AddHolding } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
 import Alert from "../../lib/components/Alert.svelte";
+import { formatError } from "../../lib/error";
 import Button from "../../lib/components/Button.svelte";
 import Input from "../../lib/components/Input.svelte";
 
@@ -34,7 +35,7 @@ async function submit() {
     lots = 1;
     onAdded();
   } catch (e: unknown) {
-    error = e instanceof Error ? e.message : String(e);
+    error = formatError(e instanceof Error ? e.message : String(e));
   } finally {
     loading = false;
   }

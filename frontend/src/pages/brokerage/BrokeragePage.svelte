@@ -9,6 +9,7 @@ import { EventsOn } from "../../../wailsjs/runtime/runtime";
 import BrokerageAccountForm from "../../components/BrokerageAccountForm.svelte";
 import { t } from "../../i18n";
 import Alert from "../../lib/components/Alert.svelte";
+import { formatError } from "../../lib/error";
 import Button from "../../lib/components/Button.svelte";
 import ConfirmDialog from "../../lib/components/ConfirmDialog.svelte";
 import EmptyState from "../../lib/components/EmptyState.svelte";
@@ -39,7 +40,7 @@ async function load() {
     brokerConfigs = configs ?? [];
     state = "list";
   } catch (e: unknown) {
-    error = e instanceof Error ? e.message : String(e);
+    error = formatError(e instanceof Error ? e.message : String(e));
     state = "error";
   }
 }
@@ -79,7 +80,7 @@ async function confirmDelete() {
     deletingAccount = null;
     load();
   } catch (e: unknown) {
-    deleteError = e instanceof Error ? e.message : String(e);
+    deleteError = formatError(e instanceof Error ? e.message : String(e));
   } finally {
     deleteLoading = false;
   }

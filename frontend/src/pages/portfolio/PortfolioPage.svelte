@@ -9,6 +9,7 @@ import {
 } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
 import Alert from "../../lib/components/Alert.svelte";
+import { formatError } from "../../lib/error";
 import ConfirmDialog from "../../lib/components/ConfirmDialog.svelte";
 import SkeletonTable from "../../lib/components/SkeletonTable.svelte";
 import { toastStore } from "../../lib/stores/toast.svelte";
@@ -72,7 +73,7 @@ async function load() {
 
     state = "list";
   } catch (e: unknown) {
-    error = e instanceof Error ? e.message : String(e);
+    error = formatError(e instanceof Error ? e.message : String(e));
     state = "error";
   }
 }
@@ -83,7 +84,7 @@ async function viewPortfolio(portfolio: PortfolioResponse) {
     detail = await GetPortfolio(portfolio.id);
     state = "view";
   } catch (e: unknown) {
-    error = e instanceof Error ? e.message : String(e);
+    error = formatError(e instanceof Error ? e.message : String(e));
     state = "error";
   }
 }
@@ -98,7 +99,7 @@ async function confirmDelete() {
     deletingPortfolio = null;
     await load();
   } catch (e: unknown) {
-    deleteError = e instanceof Error ? e.message : String(e);
+    deleteError = formatError(e instanceof Error ? e.message : String(e));
   } finally {
     deleteLoading = false;
   }
