@@ -5,6 +5,8 @@ import { t } from "../../i18n";
 import EmptyState from "../../lib/components/EmptyState.svelte";
 import Input from "../../lib/components/Input.svelte";
 import Select from "../../lib/components/Select.svelte";
+import SkeletonCard from "../../lib/components/SkeletonCard.svelte";
+import SkeletonTable from "../../lib/components/SkeletonTable.svelte";
 import SortableHeader from "../../lib/components/SortableHeader.svelte";
 import { formatDate, formatRupiah } from "../../lib/format";
 import { mode } from "../../lib/stores/mode.svelte";
@@ -187,7 +189,12 @@ const summary = $derived(data?.summary);
   </div>
 
   {#if loading}
-    <p class="text-sm text-text-secondary">{t("transactions.loading")}</p>
+    <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      {#each Array(3) as _}
+        <SkeletonCard lines={2} />
+      {/each}
+    </div>
+    <SkeletonTable rows={5} columns={8} />
   {:else if items.length === 0}
     <EmptyState icon={Receipt} title={t("transactions.empty")} description={t("transactions.emptyDesc")} />
   {:else}
