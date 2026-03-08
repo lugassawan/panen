@@ -2,14 +2,22 @@ package usecase
 
 import (
 	"archive/zip"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/lugassawan/panen/backend/infra/database"
+
+	_ "modernc.org/sqlite"
 )
 
-const importBackupReason = "import"
+const (
+	importBackupReason = "import"
+	maxImportDBSize    = 1 << 30 // 1 GB
+)
 
 // ImportPreviewResult holds metadata previewed from an import archive.
 type ImportPreviewResult struct {
@@ -102,6 +110,10 @@ func (s *ImportService) Import(archivePath string) error {
 		}
 	}
 
+	if err := quickCheckDB(tmpPath); err != nil {
+		return fmt.Errorf("imported database validation: %w", err)
+	}
+
 	// Safety backup before replacing.
 	if err := s.backupFn(s.dbPath, s.backupDir, importBackupReason); err != nil {
 		return fmt.Errorf("pre-import backup: %w", err)
@@ -155,10 +167,16 @@ func extractDBToTemp(entry *zip.File) (string, error) {
 		return "", fmt.Errorf("create temp file: %w", err)
 	}
 
-	if _, err := io.Copy(tmp, rc); err != nil { //nolint:gosec // trusted archive from user
+	written, err := io.Copy(tmp, io.LimitReader(rc, maxImportDBSize+1)) //nolint:gosec // size-limited extraction; zip bomb mitigated by LimitReader
+	if err != nil {
 		_ = tmp.Close()
 		_ = os.Remove(tmp.Name()) //nolint:gosec // temp file we just created
 		return "", fmt.Errorf("extract db: %w", err)
+	}
+	if written > maxImportDBSize {
+		_ = tmp.Close()
+		_ = os.Remove(tmp.Name()) //nolint:gosec // temp file we just created
+		return "", fmt.Errorf("database exceeds maximum size (%d bytes)", maxImportDBSize)
 	}
 
 	if err := tmp.Sync(); err != nil {
@@ -176,24 +194,55 @@ func extractDBToTemp(entry *zip.File) (string, error) {
 }
 
 func replaceFile(src, dst string) error {
+	// Copy to a temp file next to dst first, then rename for atomic replacement.
+	tmpDst := dst + ".importing"
 	in, err := os.Open(src)
 	if err != nil {
 		return err
 	}
 	defer in.Close()
 
-	out, err := os.Create(dst)
+	out, err := os.Create(tmpDst)
 	if err != nil {
 		return err
 	}
 
 	if _, err := io.Copy(out, in); err != nil {
 		_ = out.Close()
+		_ = os.Remove(tmpDst)
 		return err
 	}
 	if err := out.Sync(); err != nil {
 		_ = out.Close()
+		_ = os.Remove(tmpDst)
 		return err
 	}
-	return out.Close()
+	if err := out.Close(); err != nil {
+		_ = os.Remove(tmpDst)
+		return err
+	}
+
+	// Remove stale WAL/SHM files that could conflict with the imported database.
+	_ = os.Remove(dst + "-wal")
+	_ = os.Remove(dst + "-shm")
+
+	return os.Rename(tmpDst, dst)
+}
+
+// quickCheckDB opens a temporary connection and runs PRAGMA quick_check.
+func quickCheckDB(dbPath string) error {
+	conn, err := sql.Open(database.SQLiteDriver, dbPath+"?_pragma=busy_timeout%3d5000")
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	var result string
+	if err := conn.QueryRow("PRAGMA quick_check").Scan(&result); err != nil {
+		return err
+	}
+	if result != "ok" {
+		return fmt.Errorf("quick_check: %s", result)
+	}
+	return nil
 }
