@@ -1,5 +1,5 @@
 <script lang="ts">
-import { LoaderCircle, Plus, Trash2, X } from "lucide-svelte";
+import { List, LoaderCircle, PackageOpen, Plus, Trash2, X } from "lucide-svelte";
 import {
   GetPresetItems,
   GetWatchlistItems,
@@ -10,6 +10,7 @@ import {
 } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
 import Badge from "../../lib/components/Badge.svelte";
+import EmptyState from "../../lib/components/EmptyState.svelte";
 import LoadingState from "../../lib/components/LoadingState.svelte";
 import Tooltip from "../../lib/components/Tooltip.svelte";
 import { formatPercent, formatRupiah } from "../../lib/format";
@@ -262,15 +263,7 @@ load();
   <!-- Right Panel -->
   <div class="flex flex-1 flex-col overflow-y-auto bg-bg-primary">
     {#if activeType === null}
-      <!-- Empty state: nothing selected -->
-      <div class="flex flex-1 items-center justify-center py-24 text-center">
-        <div>
-          <p class="mb-1 font-medium text-text-primary">{t("watchlist.selectWatchlist")}</p>
-          <p class="text-sm text-text-secondary">
-            {t("watchlist.selectWatchlistDesc")}
-          </p>
-        </div>
-      </div>
+      <EmptyState icon={List} title={t("watchlist.selectWatchlist")} description={t("watchlist.selectWatchlistDesc")} />
     {:else}
       <!-- Header -->
       <div class="border-b border-border-default px-6 py-4">
@@ -324,18 +317,11 @@ load();
           </div>
         {/if}
         {#if filteredItems.length === 0}
-          <div class="flex flex-1 items-center justify-center py-16 text-center">
-            <div>
-              <p class="mb-1 font-medium text-text-primary">{t("watchlist.noItems")}</p>
-              <p class="text-sm text-text-secondary">
-                {#if activeType === "watchlist"}
-                  {t("watchlist.addTickerHint")}
-                {:else}
-                  {t("watchlist.indexEmptyHint")}
-                {/if}
-              </p>
-            </div>
-          </div>
+          <EmptyState
+            icon={PackageOpen}
+            title={t("watchlist.noItems")}
+            description={activeType === "watchlist" ? t("watchlist.addTickerHint") : t("watchlist.indexEmptyHint")}
+          />
         {:else}
           <!-- Items Table -->
           <div class="overflow-x-auto">

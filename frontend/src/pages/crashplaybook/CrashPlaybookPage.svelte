@@ -1,4 +1,5 @@
 <script lang="ts">
+import { PackageOpen, ShieldAlert } from "lucide-svelte";
 import {
   GetCrashCapital,
   GetDeploymentPlan,
@@ -11,6 +12,7 @@ import {
 } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
 import Button from "../../lib/components/Button.svelte";
+import EmptyState from "../../lib/components/EmptyState.svelte";
 import LoadingState from "../../lib/components/LoadingState.svelte";
 import Select from "../../lib/components/Select.svelte";
 import Tooltip from "../../lib/components/Tooltip.svelte";
@@ -161,9 +163,7 @@ $effect(() => {
       </div>
     </div>
   {:else if state === "empty"}
-    <div class="mt-6 text-center text-sm text-text-secondary">
-      {t("crashPlaybook.noPortfolios")}
-    </div>
+    <EmptyState icon={ShieldAlert} title={t("crashPlaybook.noPortfolios")} />
   {:else if state === "ready" && playbook}
     <div class="mt-4">
       <Select value={selectedPortfolioId} onchange={handlePortfolioChange} aria-label="Select portfolio">
@@ -190,9 +190,7 @@ $effect(() => {
         {/each}
       </div>
     {:else}
-      <div class="mt-6 text-center text-sm text-text-secondary">
-        {t("crashPlaybook.noHoldings")}
-      </div>
+      <EmptyState icon={PackageOpen} title={t("crashPlaybook.noHoldings")} />
     {/if}
 
     {#if capital}

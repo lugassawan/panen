@@ -1,5 +1,5 @@
 <script lang="ts">
-import { CheckCircle2, XCircle } from "lucide-svelte";
+import { CheckCircle2, SearchX, SlidersHorizontal, XCircle } from "lucide-svelte";
 import {
   ListScreenerIndices,
   ListScreenerSectors,
@@ -7,6 +7,7 @@ import {
 } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
 import Badge from "../../lib/components/Badge.svelte";
+import EmptyState from "../../lib/components/EmptyState.svelte";
 import LoadingState from "../../lib/components/LoadingState.svelte";
 import SortableHeader from "../../lib/components/SortableHeader.svelte";
 import Tooltip from "../../lib/components/Tooltip.svelte";
@@ -151,14 +152,7 @@ loadReferenceData();
 
   <!-- Content -->
   {#if state === "initial"}
-    <div class="flex flex-1 items-center justify-center py-24 text-center">
-      <div>
-        <p class="mb-1 font-medium text-text-primary">{t("screener.configurePrompt")}</p>
-        <p class="text-sm text-text-secondary">
-          {t("screener.configureDescription")}
-        </p>
-      </div>
-    </div>
+    <EmptyState icon={SlidersHorizontal} title={t("screener.configurePrompt")} description={t("screener.configureDescription")} />
   {:else if state === "loading"}
     <LoadingState message={t("screener.screening")} class="flex-1 py-16" />
   {:else if state === "error"}
@@ -187,12 +181,7 @@ loadReferenceData();
     </div>
 
     {#if results.length === 0}
-      <div class="flex flex-1 items-center justify-center py-16 text-center">
-        <div>
-          <p class="mb-1 font-medium text-text-primary">{t("screener.noResults")}</p>
-          <p class="text-sm text-text-secondary">{t("screener.noResultsHint")}</p>
-        </div>
-      </div>
+      <EmptyState icon={SearchX} title={t("screener.noResults")} description={t("screener.noResultsHint")} />
     {:else}
       <!-- Results Table -->
       <div class="flex-1 overflow-x-auto">

@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Pencil, Plus, Trash2 } from "lucide-svelte";
+import { Landmark, Pencil, Plus, Trash2 } from "lucide-svelte";
 import {
   DeleteBrokerageAccount,
   ListBrokerageAccounts,
@@ -10,6 +10,7 @@ import BrokerageAccountForm from "../../components/BrokerageAccountForm.svelte";
 import { t } from "../../i18n";
 import Button from "../../lib/components/Button.svelte";
 import ConfirmDialog from "../../lib/components/ConfirmDialog.svelte";
+import EmptyState from "../../lib/components/EmptyState.svelte";
 import LoadingState from "../../lib/components/LoadingState.svelte";
 import { EventBrokerFeesSynced } from "../../lib/events";
 import { formatPercent } from "../../lib/format";
@@ -137,16 +138,14 @@ $effect(() => {
     </div>
   {:else if state === "list"}
     {#if accounts.length === 0}
-      <div class="rounded border border-border-default bg-bg-elevated px-6 py-12 text-center">
-        <p class="mb-2 text-text-primary font-medium">{t("brokerage.noAccounts")}</p>
-        <p class="mb-6 text-sm text-text-secondary">
-          {t("brokerage.noAccountsDesc")}
-        </p>
-        <Button onclick={startCreate}>
-          <Plus size={16} strokeWidth={2} />
-          {t("brokerage.addAccount")}
-        </Button>
-      </div>
+      <EmptyState icon={Landmark} title={t("brokerage.noAccounts")} description={t("brokerage.noAccountsDesc")}>
+        {#snippet action()}
+          <Button onclick={startCreate}>
+            <Plus size={16} strokeWidth={2} />
+            {t("brokerage.addAccount")}
+          </Button>
+        {/snippet}
+      </EmptyState>
     {:else}
       <div class="grid gap-4">
         {#each accounts as acct}
