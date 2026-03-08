@@ -46,7 +46,7 @@ func (h *WatchlistHandler) ListWatchlists() ([]*WatchlistResponse, error) {
 func (h *WatchlistHandler) CreateWatchlist(name string) (*WatchlistResponse, error) {
 	w, err := h.watchlists.CreateWatchlist(h.ctx, h.profileID, name)
 	if err != nil {
-		return nil, fmt.Errorf("create watchlist: %w", err)
+		return nil, toAppError(fmt.Errorf("create watchlist: %w", err))
 	}
 	return newWatchlistResponse(w), nil
 }

@@ -83,7 +83,7 @@ func (h *PortfolioHandler) CreatePortfolio(
 
 	p := portfolio.NewPortfolio(brokerageAcctID, name, m, rp, capital, monthlyAddition, maxStocks)
 	if err := h.portfolios.Create(h.ctx, p); err != nil {
-		return nil, fmt.Errorf("create portfolio: %w", err)
+		return nil, toAppError(fmt.Errorf("create portfolio: %w", err))
 	}
 	return newPortfolioResponse(p), nil
 }
@@ -102,7 +102,7 @@ func (h *PortfolioHandler) AddHolding(
 
 	holding, err := h.portfolios.AddHolding(h.ctx, portfolioID, ticker, price, lots, date)
 	if err != nil {
-		return nil, fmt.Errorf("add holding: %w", err)
+		return nil, toAppError(fmt.Errorf("add holding: %w", err))
 	}
 
 	resp := HoldingDetailResponse{
@@ -148,7 +148,7 @@ func (h *PortfolioHandler) UpdatePortfolio(
 	p.MonthlyAddition = monthlyAddition
 	p.MaxStocks = maxStocks
 	if err := h.portfolios.Update(h.ctx, p); err != nil {
-		return nil, fmt.Errorf("update portfolio: %w", err)
+		return nil, toAppError(fmt.Errorf("update portfolio: %w", err))
 	}
 	return newPortfolioResponse(p), nil
 }
@@ -162,7 +162,7 @@ func (h *PortfolioHandler) DeletePortfolio(id string) error {
 		}
 	}
 	if err := h.portfolios.Delete(h.ctx, id); err != nil {
-		return fmt.Errorf("delete portfolio: %w", err)
+		return toAppError(fmt.Errorf("delete portfolio: %w", err))
 	}
 	return nil
 }

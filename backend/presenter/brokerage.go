@@ -87,7 +87,7 @@ func (h *BrokerageHandler) UpdateBrokerageAccount(
 // DeleteBrokerageAccount removes a brokerage account by ID.
 func (h *BrokerageHandler) DeleteBrokerageAccount(id string) error {
 	if err := h.brokerages.Delete(h.ctx, id); err != nil {
-		return fmt.Errorf("delete brokerage account: %w", err)
+		return toAppError(fmt.Errorf("delete brokerage account: %w", err))
 	}
 	return nil
 }
