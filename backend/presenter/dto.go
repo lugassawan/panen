@@ -461,3 +461,13 @@ type TransactionListResponse struct {
 	Items   []TransactionRecordResponse `json:"items"`
 	Summary TransactionSummaryResponse  `json:"summary"`
 }
+
+// ProviderStatusResponse is the frontend-facing response for a data provider's status.
+type ProviderStatusResponse struct {
+	Name      string `json:"name"`
+	Priority  int    `json:"priority"`
+	Status    string `json:"status"`
+	LastCheck string `json:"lastCheck"`
+	LastError string `json:"lastError,omitempty"`
+	Enabled   bool   `json:"enabled"`
+}
