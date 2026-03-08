@@ -175,7 +175,7 @@ async function createBackup() {
 </script>
 
 <div class="mx-auto max-w-lg px-4 py-8">
-  <h2 class="mb-6 text-xl font-semibold text-text-primary">{t("settings.title")}</h2>
+  <h1 class="mb-6 text-2xl font-display font-bold text-text-primary">{t("settings.title")}</h1>
 
   {#if loadError}
     <Alert variant="negative" dismissible>{t("settings.loadError", { error: loadError })}</Alert>

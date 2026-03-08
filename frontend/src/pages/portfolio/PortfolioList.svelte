@@ -18,7 +18,7 @@ let { portfolios, onView, onEdit, onDelete, onCreate }: Props = $props();
 </script>
 
 <div class="mb-6 flex items-center justify-between">
-  <h2 class="text-xl font-semibold text-text-primary">{t("portfolio.title")}</h2>
+  <h1 class="text-2xl font-display font-bold text-text-primary">{t("portfolio.title")}</h1>
   {#if portfolios.length < 2}
     <Button onclick={onCreate}>
       <Plus size={16} strokeWidth={2} />

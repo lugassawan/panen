@@ -50,7 +50,7 @@ function percentInRange(value: number, min: number, max: number): number {
 </script>
 
 <div class="mx-auto max-w-2xl px-4 py-8">
-  <h1 class="mb-6 text-2xl font-bold text-text-primary font-display">{t("lookup.title")}</h1>
+  <h1 class="mb-6 text-2xl font-display font-bold text-text-primary">{t("lookup.title")}</h1>
   <!-- Search Form -->
   <form
     onsubmit={(e) => { e.preventDefault(); lookup(); }}

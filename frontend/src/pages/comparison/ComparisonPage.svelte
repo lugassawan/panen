@@ -98,7 +98,7 @@ let successCount = $derived(results.filter((r) => r !== null).length);
 </script>
 
 <div class="mx-auto max-w-5xl px-4 py-8">
-  <h1 class="text-2xl font-bold text-text-primary font-display">{t("comparison.title")}</h1>
+  <h1 class="text-2xl font-display font-bold text-text-primary">{t("comparison.title")}</h1>
   <p class="mt-1 mb-6 text-sm text-text-secondary">{t("comparison.subtitle")}</p>
 
   <!-- Ticker Inputs -->

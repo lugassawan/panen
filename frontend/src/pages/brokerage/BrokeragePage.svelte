@@ -103,7 +103,7 @@ $effect(() => {
 
 <div class="mx-auto max-w-4xl px-4 py-8">
   <div class="mb-6 flex items-center justify-between">
-    <h2 class="text-xl font-semibold text-text-primary">{t("brokerage.title")}</h2>
+    <h1 class="text-2xl font-display font-bold text-text-primary">{t("brokerage.title")}</h1>
     {#if state === "list" && accounts.length > 0}
       <Button onclick={startCreate}>
         <Plus size={16} strokeWidth={2} />

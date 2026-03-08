@@ -132,7 +132,7 @@ $effect(() => {
 </script>
 
 <div class="p-6">
-  <h1 class="text-2xl font-bold text-text-primary font-display">{t("payday.title")}</h1>
+  <h1 class="text-2xl font-display font-bold text-text-primary">{t("payday.title")}</h1>
   <p class="mt-1 text-sm text-text-secondary">{t("payday.subtitle")}</p>
 
   {#if state === "loading"}
