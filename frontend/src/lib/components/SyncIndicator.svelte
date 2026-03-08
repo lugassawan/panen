@@ -17,7 +17,7 @@ async function retry() {
 }
 </script>
 
-<div class="px-4 py-2">
+<div class="px-4 py-2" role="status">
   {#if sync.isSyncing}
     <div class="flex items-center gap-2">
       <LoaderCircle size={14} class="animate-spin text-green-700 shrink-0" />
