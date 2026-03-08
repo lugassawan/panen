@@ -119,7 +119,21 @@
     "exportingLogs": "Mengekspor...",
     "logsExported": "Log berhasil diekspor",
     "logsExportError": "Ekspor gagal: {error}",
-    "noLogs": "Belum ada log"
+    "noLogs": "Belum ada log",
+    "dataProviders": "Penyedia Data",
+    "dataProvidersTooltip": "Sumber data saham untuk mengambil harga, keuangan, dan dividen. Penyedia dengan prioritas lebih tinggi dicoba terlebih dahulu.",
+    "providerName": "Penyedia",
+    "providerStatus": "Status",
+    "providerPriority": "Prioritas",
+    "providerEnabled": "Aktif",
+    "providerLastCheck": "Terakhir Diperiksa",
+    "providerHealthy": "Sehat",
+    "providerDegraded": "Terdegradasi",
+    "providerDown": "Mati",
+    "providerUnknown": "Tidak Diketahui",
+    "providerCheckHealth": "Periksa Kesehatan",
+    "providerCheckingHealth": "Memeriksa...",
+    "providerCannotDisableLast": "Tidak dapat menonaktifkan penyedia terakhir"
   },
   "format": {
     "justNow": "baru saja",

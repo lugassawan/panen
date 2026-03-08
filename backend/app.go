@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	domainProvider "github.com/lugassawan/panen/backend/domain/provider"
 	"github.com/lugassawan/panen/backend/domain/user"
 	"github.com/lugassawan/panen/backend/infra/applog"
 	"github.com/lugassawan/panen/backend/infra/backup"
@@ -15,6 +16,7 @@ import (
 	"github.com/lugassawan/panen/backend/infra/github"
 	"github.com/lugassawan/panen/backend/infra/liveconfig"
 	"github.com/lugassawan/panen/backend/infra/platform"
+	infraProvider "github.com/lugassawan/panen/backend/infra/provider"
 	"github.com/lugassawan/panen/backend/infra/scraper"
 	"github.com/lugassawan/panen/backend/infra/updater"
 	"github.com/lugassawan/panen/backend/infra/watchlistconfig"
@@ -46,6 +48,7 @@ type App struct {
 	*presenter.LiveConfigHandler
 	*presenter.TransactionHandler
 	*presenter.DashboardHandler
+	*presenter.ProviderHandler
 	db        *database.DB
 	backup    *backup.BackupService
 	dbPath    string
@@ -123,6 +126,7 @@ func NewApp() *App {
 		LiveConfigHandler:       &presenter.LiveConfigHandler{},
 		TransactionHandler:      &presenter.TransactionHandler{},
 		DashboardHandler:        &presenter.DashboardHandler{},
+		ProviderHandler:         &presenter.ProviderHandler{},
 		backup:                  backup.NewBackupService(),
 	}
 }
@@ -160,7 +164,11 @@ func (a *App) Startup(ctx context.Context) {
 	a.initDebugLogging(ctx, r.settings)
 
 	wailsEmitter := presenter.NewWailsEmitter(ctx)
-	yahoo := scraper.NewYahoo()
+
+	registry := infraProvider.NewRegistry()
+	registry.Register(scraper.NewYahoo(), 1)
+	registry.Register(infraProvider.NewIDXProvider(), 2)
+
 	sectorRegistry := watchlistconfig.NewSectorRegistry()
 	liveDeps := liveconfig.Deps{
 		Settings: r.settings,
@@ -174,9 +182,9 @@ func (a *App) Startup(ctx context.Context) {
 	indexResult := indexLoader.Load(ctx)
 	swappableIndexReg := watchlistconfig.NewSwappableIndexRegistry(indexResult.Data)
 
-	svc := a.initServices(r, yahoo, wailsEmitter, sectorRegistry, swappableIndexReg)
+	svc := a.initServices(r, registry, wailsEmitter, sectorRegistry, swappableIndexReg)
 
-	a.bindHandlers(ctx, svc, r, profileID, sectorRegistry)
+	a.bindHandlers(ctx, svc, r, profileID, sectorRegistry, registry)
 
 	a.Init(ctx)
 	a.RegisterLoader("brokers", brokerLoader, func(_ context.Context) {
@@ -293,12 +301,12 @@ func (a *App) initDebugLogging(ctx context.Context, settingsRepo *database.Setti
 // initServices constructs all application services from repositories and infrastructure.
 func (a *App) initServices(
 	r repos,
-	yahoo *scraper.Yahoo,
+	registry *infraProvider.Registry,
 	emitter *presenter.WailsEmitter,
 	sectorRegistry *watchlistconfig.SectorRegistry,
 	indexReg *watchlistconfig.SwappableIndexRegistry,
 ) services {
-	stocks := usecase.NewStockService(r.stock, yahoo)
+	stocks := usecase.NewStockService(r.stock, registry)
 	portfolios := usecase.NewPortfolioService(
 		r.portfolio, r.holding, r.buyTxn, r.brokerage, r.stock, r.peak,
 	)
@@ -307,12 +315,12 @@ func (a *App) initServices(
 		r.watchlist, r.watchlistItem, r.stock, indexReg, sectorRegistry,
 	)
 	screener := usecase.NewScreenerService(r.stock, indexReg, sectorRegistry)
-	priceHistory := usecase.NewPriceHistoryService(r.priceHistory, yahoo)
+	priceHistory := usecase.NewPriceHistoryService(r.priceHistory, registry)
 	divHistory := usecase.NewDividendHistoryService(
-		r.divHistory, yahoo, r.holding, r.portfolio, r.stock,
+		r.divHistory, registry, r.holding, r.portfolio, r.stock,
 	)
 	refreshSvc := usecase.NewRefreshService(
-		r.stock, yahoo, r.settings, r.tickerCollector, emitter, r.snapshot, r.alert,
+		r.stock, registry, r.settings, r.tickerCollector, emitter, r.snapshot, r.alert,
 	)
 	a.refresh = refreshSvc
 
@@ -327,7 +335,7 @@ func (a *App) initServices(
 		r.portfolio, r.holding, r.stock, r.payday, r.txnHistory, sectorRegistry,
 	)
 	crashPlaybook := usecase.NewCrashPlaybookService(
-		r.stock, yahoo, r.portfolio, r.holding, r.crashCapital, r.settings, refreshSvc,
+		r.stock, registry, r.portfolio, r.holding, r.crashCapital, r.settings, refreshSvc,
 	)
 
 	ghClient := github.NewClient()
@@ -371,6 +379,7 @@ func (a *App) bindHandlers(
 	r repos,
 	profileID string,
 	sectorRegistry *watchlistconfig.SectorRegistry,
+	registry domainProvider.Registry,
 ) {
 	a.StockHandler.Bind(ctx, svc.stocks)
 	a.PortfolioHandler.Bind(ctx, svc.portfolios, sectorRegistry)
@@ -389,6 +398,7 @@ func (a *App) bindHandlers(
 	a.CrashPlaybookHandler.Bind(ctx, svc.crashPlaybook, r.portfolio)
 	a.UpdateHandler.Bind(ctx, svc.update, svc.selfUpdate, r.settings)
 	a.LogHandler.Bind(ctx, r.settings, a.logDir)
+	a.ProviderHandler.Bind(ctx, registry)
 }
 
 // releaseCheckerAdapter bridges github.Client to usecase.ReleaseChecker.

@@ -119,7 +119,21 @@
     "exportingLogs": "Exporting...",
     "logsExported": "Logs exported successfully",
     "logsExportError": "Export failed: {error}",
-    "noLogs": "No logs yet"
+    "noLogs": "No logs yet",
+    "dataProviders": "Data Providers",
+    "dataProvidersTooltip": "Stock data sources used for fetching prices, financials, and dividends. Higher priority providers are tried first.",
+    "providerName": "Provider",
+    "providerStatus": "Status",
+    "providerPriority": "Priority",
+    "providerEnabled": "Enabled",
+    "providerLastCheck": "Last Check",
+    "providerHealthy": "Healthy",
+    "providerDegraded": "Degraded",
+    "providerDown": "Down",
+    "providerUnknown": "Unknown",
+    "providerCheckHealth": "Check Health",
+    "providerCheckingHealth": "Checking...",
+    "providerCannotDisableLast": "Cannot disable the last provider"
   },
   "format": {
     "justNow": "just now",
