@@ -87,6 +87,7 @@ setup:
 	go install github.com/wailsapp/wails/v2/cmd/wails@latest
 	cd frontend && pnpm install
 	git config core.hooksPath .githooks
+	rimba hook install
 
 release-check:
 	@TAG_VERSION="$(VERSION)"; \
