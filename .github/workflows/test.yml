@@ -1,0 +1,75 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: Lint
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: jdx/mise-action@v3
+
+      - name: Install frontend dependencies
+        run: cd frontend && pnpm install
+
+      - name: Create frontend dist placeholder
+        run: mkdir -p frontend/dist && echo '<html></html>' > frontend/dist/index.html
+
+      - name: Lint
+        run: make lint
+
+  test-go:
+    runs-on: ubuntu-latest
+    name: Go Tests
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: jdx/mise-action@v3
+
+      - name: Create frontend dist placeholder
+        run: mkdir -p frontend/dist && echo '<html></html>' > frontend/dist/index.html
+
+      - name: Run Go tests
+        env:
+          CGO_ENABLED: "0"
+        run: make test-go
+
+  test-frontend:
+    runs-on: ubuntu-latest
+    name: Frontend Tests
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: jdx/mise-action@v3
+
+      - name: Install Wails CLI
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.11.0
+
+      - name: Install frontend dependencies
+        run: cd frontend && pnpm install
+
+      - name: Create frontend dist placeholder
+        run: mkdir -p frontend/dist && echo '<html></html>' > frontend/dist/index.html
+
+      - name: Generate Wails bindings
+        run: wails generate module
+
+      - name: Run unit tests
+        run: make test-frontend
+
+      - name: Run integration tests
+        run: make test-integration
