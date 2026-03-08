@@ -25,7 +25,7 @@ const holdings: HoldingDetailResponse[] = [
 describe("HoldingsTable", () => {
   it("renders all holdings", () => {
     render(HoldingsTable, {
-      props: { holdings, onChecklist: vi.fn() },
+      props: { holdings, onChecklist: vi.fn(), onRemove: vi.fn() },
     });
     expect(screen.getByText("BBCA")).toBeInTheDocument();
     expect(screen.getByText("BBRI")).toBeInTheDocument();
@@ -33,7 +33,7 @@ describe("HoldingsTable", () => {
 
   it("shows positive P/L with profit styling", () => {
     render(HoldingsTable, {
-      props: { holdings, onChecklist: vi.fn() },
+      props: { holdings, onChecklist: vi.fn(), onRemove: vi.fn() },
     });
     const plCell = screen.getByTestId("pl-BBCA");
     expect(plCell.textContent).toContain("+");
@@ -42,7 +42,7 @@ describe("HoldingsTable", () => {
 
   it("shows negative P/L with loss styling", () => {
     render(HoldingsTable, {
-      props: { holdings, onChecklist: vi.fn() },
+      props: { holdings, onChecklist: vi.fn(), onRemove: vi.fn() },
     });
     const plCell = screen.getByTestId("pl-BBRI");
     expect(plCell.className).toContain("text-loss");
@@ -50,7 +50,7 @@ describe("HoldingsTable", () => {
 
   it("renders verdict badge for holdings with verdict", () => {
     render(HoldingsTable, {
-      props: { holdings, onChecklist: vi.fn() },
+      props: { holdings, onChecklist: vi.fn(), onRemove: vi.fn() },
     });
     expect(screen.getByText("Undervalued")).toBeInTheDocument();
   });
@@ -59,7 +59,7 @@ describe("HoldingsTable", () => {
     const user = userEvent.setup();
     const onChecklist = vi.fn();
     render(HoldingsTable, {
-      props: { holdings, onChecklist },
+      props: { holdings, onChecklist, onRemove: vi.fn() },
     });
 
     const buttons = screen.getAllByRole("button", { name: /Checklist/i });
@@ -69,8 +69,26 @@ describe("HoldingsTable", () => {
 
   it("renders table with aria-label", () => {
     render(HoldingsTable, {
-      props: { holdings, onChecklist: vi.fn() },
+      props: { holdings, onChecklist: vi.fn(), onRemove: vi.fn() },
     });
     expect(screen.getByRole("table", { name: "Holdings" })).toBeInTheDocument();
+  });
+
+  it("calls onRemove when trash button clicked", async () => {
+    const user = userEvent.setup();
+    const onRemove = vi.fn();
+    render(HoldingsTable, {
+      props: { holdings, onChecklist: vi.fn(), onRemove },
+    });
+
+    // Trash buttons are the ones containing SVG icons (non-text buttons)
+    const rows = screen.getAllByRole("row");
+    // rows[0] is header, rows[1] is BBCA, rows[2] is BBRI
+    const bbcaRow = rows[1];
+    const buttons = bbcaRow.querySelectorAll("button");
+    // Second button in the action cell is the trash button
+    const trashButton = buttons[1];
+    await user.click(trashButton);
+    expect(onRemove).toHaveBeenCalledWith("h1", "BBCA");
   });
 });

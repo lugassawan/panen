@@ -1,11 +1,13 @@
 <script lang="ts">
 import { ArrowLeft } from "lucide-svelte";
 import {
+  ClearHoldings,
   DeletePortfolio,
   GetPortfolio,
   ListBrokerageAccounts,
   ListBrokerConfigs,
   ListPortfolios,
+  RemoveHolding,
 } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
 import Alert from "../../lib/components/Alert.svelte";
@@ -47,6 +49,10 @@ let editingPortfolio = $state<PortfolioResponse | null>(null);
 let deletingPortfolio = $state<PortfolioResponse | null>(null);
 let deleteLoading = $state(false);
 let deleteError = $state<string | null>(null);
+let removingHolding = $state<{ id: string; ticker: string } | null>(null);
+let removeLoading = $state(false);
+let confirmingClearAll = $state(false);
+let clearAllLoading = $state(false);
 let checklistTicker = $state<string | null>(null);
 let checklistAction = $state<ActionType | null>(null);
 
@@ -102,6 +108,38 @@ async function confirmDelete() {
     deleteError = formatError(e instanceof Error ? e.message : String(e));
   } finally {
     deleteLoading = false;
+  }
+}
+
+async function confirmRemoveHolding() {
+  if (!removingHolding || !detail) return;
+  removeLoading = true;
+  try {
+    await RemoveHolding(detail.portfolio.id, removingHolding.id);
+    toastStore.add(t("holding.holdingRemoved", { ticker: removingHolding.ticker }), "success");
+    removingHolding = null;
+    await viewPortfolio(detail.portfolio);
+  } catch (e: unknown) {
+    toastStore.add(e instanceof Error ? e.message : String(e), "error");
+    removingHolding = null;
+  } finally {
+    removeLoading = false;
+  }
+}
+
+async function confirmClearAll() {
+  if (!detail) return;
+  clearAllLoading = true;
+  try {
+    await ClearHoldings(detail.portfolio.id);
+    toastStore.add(t("holding.holdingsCleared"), "success");
+    confirmingClearAll = false;
+    await viewPortfolio(detail.portfolio);
+  } catch (e: unknown) {
+    toastStore.add(e instanceof Error ? e.message : String(e), "error");
+    confirmingClearAll = false;
+  } finally {
+    clearAllLoading = false;
   }
 }
 
@@ -175,6 +213,12 @@ load();
         state = "checklist";
       }}
       onHoldingAdded={() => viewPortfolio(detail!.portfolio)}
+      onRemove={(holdingId, ticker) => {
+        removingHolding = { id: holdingId, ticker };
+      }}
+      onClearAll={() => {
+        confirmingClearAll = true;
+      }}
     />
   {:else if state === "checklist" && detail && checklistTicker}
     <div class="mb-6 flex items-center gap-3">
@@ -212,6 +256,34 @@ load();
     </div>
   {/if}
 </div>
+
+{#if removingHolding}
+  <ConfirmDialog
+    title={t("holding.removeHolding")}
+    confirmLabel={t("common.remove")}
+    confirmVariant="danger"
+    loading={removeLoading}
+    onConfirm={confirmRemoveHolding}
+    onCancel={() => { removingHolding = null; }}
+  >
+    <p>{t("holding.confirmRemoveMessage", { ticker: removingHolding.ticker })}</p>
+    <p class="mt-1">{t("common.cannotUndo")}</p>
+  </ConfirmDialog>
+{/if}
+
+{#if confirmingClearAll}
+  <ConfirmDialog
+    title={t("holding.clearAllHoldings")}
+    confirmLabel={t("common.delete")}
+    confirmVariant="danger"
+    loading={clearAllLoading}
+    onConfirm={confirmClearAll}
+    onCancel={() => { confirmingClearAll = false; }}
+  >
+    <p>{t("holding.confirmClearMessage")}</p>
+    <p class="mt-1">{t("common.cannotUndo")}</p>
+  </ConfirmDialog>
+{/if}
 
 {#if deletingPortfolio}
   <ConfirmDialog

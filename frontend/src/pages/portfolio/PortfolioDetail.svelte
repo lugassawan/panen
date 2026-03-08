@@ -1,5 +1,5 @@
 <script lang="ts">
-import { ArrowLeft } from "lucide-svelte";
+import { ArrowLeft, Trash2 } from "lucide-svelte";
 import { t } from "../../i18n";
 import Button from "../../lib/components/Button.svelte";
 import Tooltip from "../../lib/components/Tooltip.svelte";
@@ -24,9 +24,11 @@ interface Props {
   onBack: () => void;
   onChecklist: (ticker: string) => void;
   onHoldingAdded: () => void;
+  onRemove: (holdingId: string, ticker: string) => void;
+  onClearAll: () => void;
 }
 
-let { detail, onBack, onChecklist, onHoldingAdded }: Props = $props();
+let { detail, onBack, onChecklist, onHoldingAdded, onRemove, onClearAll }: Props = $props();
 
 type TabId = "holdings" | "charts" | "dividends";
 let activeTab = $state<TabId>("holdings");
@@ -135,8 +137,17 @@ let overallPL = $derived(calcOverallPL(detail.holdings));
 
     <!-- Holdings Table -->
     <div class="mb-6">
-      <HoldingsTable holdings={detail.holdings} {onChecklist} />
+      <HoldingsTable holdings={detail.holdings} {onChecklist} {onRemove} />
     </div>
+
+    {#if detail.holdings.length > 0}
+      <div class="mb-6 flex justify-end">
+        <Button variant="ghost" size="sm" onclick={onClearAll}>
+          <Trash2 size={14} strokeWidth={2} aria-hidden="true" />
+          {t("holding.clearAllHoldings")}
+        </Button>
+      </div>
+    {/if}
 
     <!-- Trailing Stops (VALUE mode only) -->
     {#if detail.portfolio.mode === "VALUE" && detail.holdings.some((h) => h.trailingStop)}

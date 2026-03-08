@@ -330,7 +330,13 @@
     "addHolding": "Tambah Kepemilikan",
     "tickerRequired": "Ticker wajib diisi",
     "buyPriceError": "Harga beli harus lebih dari 0",
-    "loadingActions": "Memuat aksi..."
+    "loadingActions": "Memuat aksi...",
+    "removeHolding": "Hapus Kepemilikan",
+    "confirmRemoveMessage": "Apakah Anda yakin ingin menghapus {ticker} dari portofolio ini?",
+    "holdingRemoved": "{ticker} dihapus dari portofolio",
+    "clearAllHoldings": "Hapus Semua Kepemilikan",
+    "confirmClearMessage": "Apakah Anda yakin ingin menghapus semua kepemilikan dari portofolio ini?",
+    "holdingsCleared": "Semua kepemilikan dihapus"
   },
   "checklist": {
     "evaluating": "Mengevaluasi checklist...",
