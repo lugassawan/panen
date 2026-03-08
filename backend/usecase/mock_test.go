@@ -680,10 +680,26 @@ func (r *mockTransactionHistoryRepo) List(_ context.Context, f transaction.Filte
 	return result, nil
 }
 
-func (r *mockTransactionHistoryRepo) Summarize(_ context.Context, _ transaction.Filter) (*transaction.Summary, error) {
+func (r *mockTransactionHistoryRepo) Summarize(_ context.Context, f transaction.Filter) (*transaction.Summary, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	return &transaction.Summary{TransactionCount: len(r.records)}, nil
+	s := &transaction.Summary{}
+	for _, rec := range r.records {
+		if f.PortfolioID != "" && rec.PortfolioID != f.PortfolioID {
+			continue
+		}
+		s.TransactionCount++
+		switch rec.Type {
+		case transaction.TypeBuy:
+			s.TotalBuyAmount += rec.Total
+		case transaction.TypeSell:
+			s.TotalSellAmount += rec.Total
+		case transaction.TypeDividend:
+			s.TotalDividendAmount += rec.Total
+		}
+		s.TotalFees += rec.Fee
+	}
+	return s, nil
 }
 
 // mockPeakRepo is an in-memory trailingstop.PeakRepository for testing.
