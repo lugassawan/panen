@@ -116,6 +116,19 @@ function txnTypeBadge(type: string): string {
       return "bg-bg-tertiary text-text-secondary";
   }
 }
+
+function txnTypeLabel(type: string): string {
+  switch (type) {
+    case "BUY":
+      return t("transactions.buy");
+    case "SELL":
+      return t("transactions.sell");
+    case "DIVIDEND":
+      return t("transactions.dividend");
+    default:
+      return type;
+  }
+}
 </script>
 
 <div class="mx-auto max-w-6xl space-y-6 p-6">
@@ -267,7 +280,7 @@ function txnTypeBadge(type: string): string {
             {#each data.recentTransactions as txn}
               <tr class="border-b border-border-default last:border-0">
                 <td class="py-2">
-                  <span class="inline-block rounded px-2 py-0.5 text-xs font-medium {txnTypeBadge(txn.type)}">{txn.type}</span>
+                  <span class="inline-block rounded px-2 py-0.5 text-xs font-medium {txnTypeBadge(txn.type)}">{txnTypeLabel(txn.type)}</span>
                 </td>
                 <td class="py-2 font-mono font-medium text-text-primary">{txn.ticker}</td>
                 <td class="py-2 text-text-secondary">{txn.portfolioName}</td>

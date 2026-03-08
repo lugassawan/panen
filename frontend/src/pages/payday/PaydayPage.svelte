@@ -162,7 +162,7 @@ $effect(() => {
               <div class="flex items-center gap-3">
                 <h3 class="font-medium text-text-primary">{portfolio.portfolioName}</h3>
                 <Badge variant={portfolio.mode === "VALUE" ? "value" : "dividend"}>
-                  {portfolio.mode}
+                  {portfolio.mode === "VALUE" ? t("mode.value") : t("mode.dividend")}
                 </Badge>
                 <Badge variant={statusBadgeVariant(portfolio.status)}>
                   {portfolio.status}
