@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Check, LoaderCircle, X } from "lucide-svelte";
+import { Check, X } from "lucide-svelte";
 import {
   EvaluateChecklist,
   ResetChecklist,
@@ -7,6 +7,7 @@ import {
 } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
 import Button from "../../lib/components/Button.svelte";
+import LoadingState from "../../lib/components/LoadingState.svelte";
 import { toastStore } from "../../lib/stores/toast.svelte";
 import type { ActionType, ChecklistEvaluationResponse, CheckResultResponse } from "../../lib/types";
 import SuggestionCard from "./SuggestionCard.svelte";
@@ -68,13 +69,7 @@ $effect(() => {
 
 <div class="space-y-4">
   {#if loading}
-    <div
-      class="flex items-center justify-center gap-2 py-8 text-text-secondary"
-      role="status"
-    >
-      <LoaderCircle size={20} strokeWidth={2} class="animate-spin" />
-      <span>{t("checklist.evaluating")}</span>
-    </div>
+    <LoadingState message={t("checklist.evaluating")} class="py-8" />
   {:else if error}
     <div
       class="rounded border border-negative/20 bg-negative-bg px-4 py-3 text-sm text-negative"

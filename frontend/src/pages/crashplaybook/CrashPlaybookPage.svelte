@@ -1,5 +1,4 @@
 <script lang="ts">
-import { LoaderCircle } from "lucide-svelte";
 import {
   GetCrashCapital,
   GetDeploymentPlan,
@@ -12,6 +11,7 @@ import {
 } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
 import Button from "../../lib/components/Button.svelte";
+import LoadingState from "../../lib/components/LoadingState.svelte";
 import Select from "../../lib/components/Select.svelte";
 import Tooltip from "../../lib/components/Tooltip.svelte";
 import type {
@@ -152,10 +152,7 @@ $effect(() => {
   <p class="mt-1 text-sm text-text-secondary">{t("crashPlaybook.subtitle")}</p>
 
   {#if state === "loading"}
-    <div class="flex items-center justify-center gap-2 py-16 text-text-secondary" role="status">
-      <LoaderCircle size={20} strokeWidth={2} class="animate-spin" />
-      <span class="text-sm">{t("crashPlaybook.loading")}</span>
-    </div>
+    <LoadingState message={t("crashPlaybook.loading")} class="py-16" />
   {:else if state === "error"}
     <div class="mt-6 rounded-lg border border-negative bg-negative-bg p-4">
       <p class="text-sm text-negative">{error}</p>

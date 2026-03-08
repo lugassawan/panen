@@ -1,10 +1,10 @@
 <script lang="ts">
-import { LoaderCircle } from "lucide-svelte";
 import { LookupStock } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
 import AlertComponent from "../../lib/components/Alert.svelte";
 import DataTimestamp from "../../lib/components/DataTimestamp.svelte";
 import Input from "../../lib/components/Input.svelte";
+import LoadingState from "../../lib/components/LoadingState.svelte";
 import Select from "../../lib/components/Select.svelte";
 import Tooltip from "../../lib/components/Tooltip.svelte";
 import { formatDecimal, formatPercent, formatRupiah } from "../../lib/format";
@@ -82,10 +82,7 @@ function percentInRange(value: number, min: number, max: number): number {
 
   <!-- Loading -->
   {#if loading}
-    <div class="flex items-center justify-center gap-2 py-12 text-text-secondary" role="status">
-      <LoaderCircle size={20} strokeWidth={2} class="animate-spin" />
-      <span>{t("lookup.fetchingValuation")}</span>
-    </div>
+    <LoadingState message={t("lookup.fetchingValuation")} class="py-12" />
   {/if}
 
   <!-- Error -->
