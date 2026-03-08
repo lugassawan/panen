@@ -13,7 +13,10 @@ import (
 	"github.com/lugassawan/panen/backend/domain/transaction"
 )
 
-const topMoversLimit = 5
+const (
+	topMoversLimit     = 5
+	sectorFallbackName = "Other"
+)
 
 // DashboardService aggregates data across all portfolios for the dashboard overview.
 type DashboardService struct {
@@ -167,7 +170,7 @@ func (s *DashboardService) aggregateHoldings(
 
 		sector := s.sectorReg.SectorOf(h.Ticker)
 		if sector == "" {
-			sector = "Other"
+			sector = sectorFallbackName
 		}
 		agg.sectorValues[sector] += mv
 	}

@@ -26,6 +26,7 @@ const (
 		"AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 	headerUserAgent = "User-Agent"
 	maxResponseSize = 5 << 20 // 5 MB
+	sourceYahoo     = "yahoo"
 )
 
 // Yahoo fetches stock data from Yahoo Finance JSON APIs.
@@ -76,7 +77,7 @@ func NewYahoo(opts ...Option) *Yahoo {
 }
 
 // Source returns the provider identifier.
-func (y *Yahoo) Source() string { return "yahoo" }
+func (y *Yahoo) Source() string { return sourceYahoo }
 
 // FetchPrice returns the current price and 52-week range for a ticker.
 func (y *Yahoo) FetchPrice(ctx context.Context, ticker string) (*stock.PriceResult, error) {

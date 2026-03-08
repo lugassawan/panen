@@ -8,6 +8,9 @@ import (
 	_ "modernc.org/sqlite"
 )
 
+// SQLiteDriver is the database/sql driver name for pure-Go SQLite (modernc.org/sqlite).
+const SQLiteDriver = "sqlite"
+
 // DB wraps a sql.DB connection to a SQLite database.
 type DB struct {
 	conn *sql.DB
@@ -15,7 +18,7 @@ type DB struct {
 
 // Open creates a new database connection and applies required pragmas.
 func Open(dsn string) (*DB, error) {
-	conn, err := sql.Open("sqlite", dsn)
+	conn, err := sql.Open(SQLiteDriver, dsn)
 	if err != nil {
 		return nil, fmt.Errorf("open database: %w", err)
 	}
