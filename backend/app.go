@@ -2,6 +2,7 @@ package backend
 
 import (
 	"context"
+	"database/sql"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -53,6 +54,51 @@ type App struct {
 	refresh   *usecase.RefreshService
 }
 
+// repos groups all database repository instances.
+type repos struct {
+	user            user.Repository
+	brokerage       *database.BrokerageRepo
+	portfolio       *database.PortfolioRepo
+	holding         *database.HoldingRepo
+	buyTxn          *database.BuyTransactionRepo
+	stock           *database.StockDataRepo
+	watchlist       *database.WatchlistRepo
+	watchlistItem   *database.WatchlistItemRepo
+	peak            *database.PeakRepo
+	settings        *database.SettingsRepo
+	tickerCollector *database.TickerCollector
+	priceHistory    *database.PriceHistoryRepo
+	divHistory      *database.DividendHistoryRepo
+	snapshot        *database.SnapshotRepo
+	alert           *database.AlertRepo
+	checklistResult *database.ChecklistResultRepo
+	payday          *database.PaydayRepo
+	cashFlow        *database.CashFlowRepo
+	txnHistory      *database.TransactionHistoryRepo
+	crashCapital    *database.CrashCapitalRepo
+}
+
+// services groups all application service instances.
+type services struct {
+	stocks         *usecase.StockService
+	portfolios     *usecase.PortfolioService
+	brokerages     *usecase.BrokerageService
+	watchlists     *usecase.WatchlistService
+	screener       *usecase.ScreenerService
+	priceHistory   *usecase.PriceHistoryService
+	divHistory     *usecase.DividendHistoryService
+	refresh        *usecase.RefreshService
+	dividends      *usecase.DividendService
+	alerts         *usecase.AlertService
+	checklists     *usecase.ChecklistService
+	payday         *usecase.PaydayService
+	transactions   *usecase.TransactionService
+	dashboard      *usecase.DashboardService
+	crashPlaybook  *usecase.CrashPlaybookService
+	update         *usecase.UpdateService
+	selfUpdate     *usecase.SelfUpdateService
+}
+
 // NewApp creates all handlers upfront so embedded pointers are never nil.
 // Dependencies are wired later in Startup via Bind calls.
 func NewApp() *App {
@@ -85,26 +131,7 @@ func NewApp() *App {
 func (a *App) Startup(ctx context.Context) {
 	a.initLogging(ctx)
 
-	dataDir, err := platform.DataDir()
-	if err != nil {
-		wailsRuntime.LogFatalf(ctx, "resolve data dir: %v", err)
-	}
-	if err := os.MkdirAll(dataDir, 0o750); err != nil {
-		wailsRuntime.LogFatalf(ctx, "create data dir: %v", err)
-	}
-
-	backupDir, err := platform.BackupDir()
-	if err != nil {
-		wailsRuntime.LogFatalf(ctx, "resolve backup dir: %v", err)
-	}
-	a.backupDir = backupDir
-	a.dbPath = filepath.Join(dataDir, "panen.db")
-
-	if restored, err := backup.TryRecover(dataDir, backupDir); err != nil {
-		wailsRuntime.LogWarningf(ctx, "recovery check: %v", err)
-	} else if restored != "" {
-		wailsRuntime.LogInfof(ctx, "database restored from backup: %s", restored)
-	}
+	dataDir := a.initDataDir(ctx)
 
 	db, err := database.Open(a.dbPath)
 	if err != nil {
@@ -116,57 +143,27 @@ func (a *App) Startup(ctx context.Context) {
 		wailsRuntime.LogFatalf(ctx, "migrate database: %v", err)
 	}
 
-	if err := a.backup.RunDaily(a.dbPath, backupDir); err != nil {
+	if err := a.backup.RunDaily(a.dbPath, a.backupDir); err != nil {
 		wailsRuntime.LogWarningf(ctx, "daily backup: %v", err)
 	}
-	if err := a.backup.Cleanup(backupDir, 7); err != nil {
+	if err := a.backup.Cleanup(a.backupDir, 7); err != nil {
 		wailsRuntime.LogWarningf(ctx, "backup cleanup: %v", err)
 	}
 
-	conn := db.Conn()
-	userRepo := database.NewUserRepo(conn)
-	brokerageRepo := database.NewBrokerageRepo(conn)
-	portfolioRepo := database.NewPortfolioRepo(conn)
-	holdingRepo := database.NewHoldingRepo(conn)
-	buyTxnRepo := database.NewBuyTransactionRepo(conn)
-	stockRepo := database.NewStockDataRepo(conn)
-	watchlistRepo := database.NewWatchlistRepo(conn)
-	watchlistItemRepo := database.NewWatchlistItemRepo(conn)
-	yahoo := scraper.NewYahoo()
+	r := a.initRepos(db.Conn())
 
-	wailsEmitter := presenter.NewWailsEmitter(ctx)
-
-	stocks := usecase.NewStockService(stockRepo, yahoo)
-	peakRepo := database.NewPeakRepo(conn)
-	portfolios := usecase.NewPortfolioService(
-		portfolioRepo,
-		holdingRepo,
-		buyTxnRepo,
-		brokerageRepo,
-		stockRepo,
-		peakRepo,
-	)
-	brokerages := usecase.NewBrokerageService(brokerageRepo, portfolioRepo, wailsEmitter)
-
-	profileID, err := ensureDefaultUser(ctx, userRepo)
+	profileID, err := ensureDefaultUser(ctx, r.user)
 	if err != nil {
 		wailsRuntime.LogFatalf(ctx, "ensure default user: %v", err)
 	}
 
-	settingsRepo := database.NewSettingsRepo(conn)
+	a.initDebugLogging(ctx, r.settings)
 
-	if dbg, err := settingsRepo.GetSetting(ctx, applog.DebugLoggingKey); err == nil && dbg == "1" {
-		applog.SetLevel(slog.LevelDebug)
-	}
-	if err := applog.RotateLogs(a.logDir, applog.LogRetentionDays); err != nil {
-		applog.Warn("log rotation", err, nil)
-	}
-	a.LogHandler.Bind(ctx, settingsRepo, a.logDir)
-
-	tickerCollector := database.NewTickerCollector(conn)
-
+	wailsEmitter := presenter.NewWailsEmitter(ctx)
+	yahoo := scraper.NewYahoo()
+	sectorRegistry := watchlistconfig.NewSectorRegistry()
 	liveDeps := liveconfig.Deps{
-		Settings: settingsRepo,
+		Settings: r.settings,
 		Emitter:  wailsEmitter,
 	}
 
@@ -175,50 +172,17 @@ func (a *App) Startup(ctx context.Context) {
 
 	indexLoader := watchlistconfig.NewIndexLoader(dataDir, liveDeps)
 	indexResult := indexLoader.Load(ctx)
-	sectorRegistry := watchlistconfig.NewSectorRegistry()
 	swappableIndexReg := watchlistconfig.NewSwappableIndexRegistry(indexResult.Data)
-	watchlistSvc := usecase.NewWatchlistService(
-		watchlistRepo,
-		watchlistItemRepo,
-		stockRepo,
-		swappableIndexReg,
-		sectorRegistry,
-	)
 
-	screenerSvc := usecase.NewScreenerService(stockRepo, swappableIndexReg, sectorRegistry)
-	a.ScreenerHandler.Bind(ctx, screenerSvc)
+	svc := a.initServices(r, yahoo, wailsEmitter, sectorRegistry, swappableIndexReg)
 
-	priceHistoryRepo := database.NewPriceHistoryRepo(conn)
-	priceHistorySvc := usecase.NewPriceHistoryService(priceHistoryRepo, yahoo)
-	a.PriceHistoryHandler.Bind(ctx, priceHistorySvc)
-
-	divHistoryRepo := database.NewDividendHistoryRepo(conn)
-	divHistorySvc := usecase.NewDividendHistoryService(divHistoryRepo, yahoo, holdingRepo, portfolioRepo, stockRepo)
-	a.DividendCalendarHandler.Bind(ctx, divHistorySvc)
-
-	snapshotRepo := database.NewSnapshotRepo(conn)
-	alertRepo := database.NewAlertRepo(conn)
-
-	refreshSvc := usecase.NewRefreshService(
-		stockRepo, yahoo, settingsRepo, tickerCollector, wailsEmitter, snapshotRepo, alertRepo,
-	)
-	a.refresh = refreshSvc
-
-	dividendSvc := usecase.NewDividendService(portfolioRepo, holdingRepo, stockRepo)
-
-	a.StockHandler.Bind(ctx, stocks)
-	a.PortfolioHandler.Bind(ctx, portfolios, sectorRegistry)
-	a.DividendHandler.Bind(ctx, dividendSvc)
-	a.BrokerageHandler.Bind(ctx, profileID, brokerages)
-	a.BrokerConfigHandler.Bind(brokerResult.Data)
-	a.WatchlistHandler.Bind(ctx, profileID, watchlistSvc)
-	a.RefreshHandler.Bind(ctx, refreshSvc, settingsRepo)
+	a.bindHandlers(ctx, svc, r, profileID, sectorRegistry)
 
 	a.Init(ctx)
 	a.RegisterLoader("brokers", brokerLoader, func(_ context.Context) {
 		configs := brokerLoader.LastResult().Data
 		a.BrokerConfigHandler.Bind(configs)
-		if _, err := brokerages.SyncFeesFromConfig(ctx, profileID, configs); err != nil {
+		if _, err := svc.brokerages.SyncFeesFromConfig(ctx, profileID, configs); err != nil {
 			applog.Warn("broker fee sync", err, nil)
 		}
 	})
@@ -226,63 +190,15 @@ func (a *App) Startup(ctx context.Context) {
 		swappableIndexReg.Swap(indexLoader.LastResult().Data)
 	})
 
-	alertSvc := usecase.NewAlertService(alertRepo)
-	a.AlertHandler.Bind(ctx, alertSvc)
-
-	checklistRepo := database.NewChecklistResultRepo(conn)
-	checklistSvc := usecase.NewChecklistService(
-		checklistRepo, portfolioRepo, holdingRepo, brokerageRepo, stockRepo, alertSvc,
-	)
-	a.ChecklistHandler.Bind(ctx, checklistSvc)
-
-	paydayRepo := database.NewPaydayRepo(conn)
-	cashFlowRepo := database.NewCashFlowRepo(conn)
-	paydaySvc := usecase.NewPaydayService(paydayRepo, cashFlowRepo, portfolioRepo, settingsRepo)
-	a.PaydayHandler.Bind(ctx, paydaySvc)
-
-	txnHistoryRepo := database.NewTransactionHistoryRepo(conn)
-	transactionSvc := usecase.NewTransactionService(txnHistoryRepo)
-	a.TransactionHandler.Bind(ctx, transactionSvc)
-
-	dashboardSvc := usecase.NewDashboardService(
-		portfolioRepo, holdingRepo, stockRepo, paydayRepo, txnHistoryRepo, sectorRegistry,
-	)
-	a.DashboardHandler.Bind(ctx, dashboardSvc)
-
-	crashCapitalRepo := database.NewCrashCapitalRepo(conn)
-	crashPlaybookSvc := usecase.NewCrashPlaybookService(
-		stockRepo,
-		yahoo,
-		portfolioRepo,
-		holdingRepo,
-		crashCapitalRepo,
-		settingsRepo,
-		refreshSvc,
-	)
-	a.CrashPlaybookHandler.Bind(ctx, crashPlaybookSvc, portfolioRepo)
-
-	ghClient := github.NewClient()
-	updateChecker := &releaseCheckerAdapter{client: ghClient}
-	updateSvc := usecase.NewUpdateService(updateChecker, Version())
-
-	downloader := updater.NewDownloader(ghClient)
-	verifier := &updater.SHA256Verifier{}
-	extractor := &updater.Extractor{}
-	installer := updater.NewPlatformInstaller()
-	selfUpdateSvc := usecase.NewSelfUpdateService(
-		updateChecker, downloader, verifier, extractor,
-		installer, wailsEmitter, Version(),
-	)
-
-	a.UpdateHandler.Bind(ctx, updateSvc, selfUpdateSvc, settingsRepo)
+	a.BrokerConfigHandler.Bind(brokerResult.Data)
 
 	a.BackupHandler.Bind(ctx, a.backup, a.dbPath, a.backupDir)
-	a.BindBackup(a.backup, a.dbPath, a.backupDir)
+	a.PortfolioHandler.BindBackup(a.backup, a.dbPath, a.backupDir)
 
-	refreshSvc.Start(ctx)
+	svc.refresh.Start(ctx)
 
 	go a.CheckForUpdateOnStartup()
-	go selfUpdateSvc.CleanupPreviousUpdate()
+	go svc.selfUpdate.CleanupPreviousUpdate()
 }
 
 // Shutdown stops background services and closes the database connection.
@@ -308,6 +224,171 @@ func (a *App) initLogging(ctx context.Context) {
 		wailsRuntime.LogFatalf(ctx, "init logging: %v", err)
 	}
 	a.logDir = logDir
+}
+
+// initDataDir resolves and creates the data/backup directories,
+// attempts database recovery if needed, and sets a.dbPath and a.backupDir.
+func (a *App) initDataDir(ctx context.Context) string {
+	dataDir, err := platform.DataDir()
+	if err != nil {
+		wailsRuntime.LogFatalf(ctx, "resolve data dir: %v", err)
+	}
+	if err := os.MkdirAll(dataDir, 0o750); err != nil {
+		wailsRuntime.LogFatalf(ctx, "create data dir: %v", err)
+	}
+
+	backupDir, err := platform.BackupDir()
+	if err != nil {
+		wailsRuntime.LogFatalf(ctx, "resolve backup dir: %v", err)
+	}
+	a.backupDir = backupDir
+	a.dbPath = filepath.Join(dataDir, "panen.db")
+
+	if restored, err := backup.TryRecover(dataDir, backupDir); err != nil {
+		wailsRuntime.LogWarningf(ctx, "recovery check: %v", err)
+	} else if restored != "" {
+		wailsRuntime.LogInfof(ctx, "database restored from backup: %s", restored)
+	}
+
+	return dataDir
+}
+
+// initRepos creates all database repository instances from the given connection.
+func (a *App) initRepos(conn *sql.DB) repos {
+	return repos{
+		user:            database.NewUserRepo(conn),
+		brokerage:       database.NewBrokerageRepo(conn),
+		portfolio:       database.NewPortfolioRepo(conn),
+		holding:         database.NewHoldingRepo(conn),
+		buyTxn:          database.NewBuyTransactionRepo(conn),
+		stock:           database.NewStockDataRepo(conn),
+		watchlist:       database.NewWatchlistRepo(conn),
+		watchlistItem:   database.NewWatchlistItemRepo(conn),
+		peak:            database.NewPeakRepo(conn),
+		settings:        database.NewSettingsRepo(conn),
+		tickerCollector: database.NewTickerCollector(conn),
+		priceHistory:    database.NewPriceHistoryRepo(conn),
+		divHistory:      database.NewDividendHistoryRepo(conn),
+		snapshot:        database.NewSnapshotRepo(conn),
+		alert:           database.NewAlertRepo(conn),
+		checklistResult: database.NewChecklistResultRepo(conn),
+		payday:          database.NewPaydayRepo(conn),
+		cashFlow:        database.NewCashFlowRepo(conn),
+		txnHistory:      database.NewTransactionHistoryRepo(conn),
+		crashCapital:    database.NewCrashCapitalRepo(conn),
+	}
+}
+
+// initDebugLogging enables debug-level logging if the setting is persisted,
+// and rotates old log files.
+func (a *App) initDebugLogging(ctx context.Context, settingsRepo *database.SettingsRepo) {
+	if dbg, err := settingsRepo.GetSetting(ctx, applog.DebugLoggingKey); err == nil && dbg == "1" {
+		applog.SetLevel(slog.LevelDebug)
+	}
+	if err := applog.RotateLogs(a.logDir, applog.LogRetentionDays); err != nil {
+		applog.Warn("log rotation", err, nil)
+	}
+}
+
+// initServices constructs all application services from repositories and infrastructure.
+func (a *App) initServices(
+	r repos,
+	yahoo *scraper.Yahoo,
+	emitter *presenter.WailsEmitter,
+	sectorRegistry *watchlistconfig.SectorRegistry,
+	indexReg *watchlistconfig.SwappableIndexRegistry,
+) services {
+	stocks := usecase.NewStockService(r.stock, yahoo)
+	portfolios := usecase.NewPortfolioService(
+		r.portfolio, r.holding, r.buyTxn, r.brokerage, r.stock, r.peak,
+	)
+	brokerages := usecase.NewBrokerageService(r.brokerage, r.portfolio, emitter)
+	watchlists := usecase.NewWatchlistService(
+		r.watchlist, r.watchlistItem, r.stock, indexReg, sectorRegistry,
+	)
+	screener := usecase.NewScreenerService(r.stock, indexReg, sectorRegistry)
+	priceHistory := usecase.NewPriceHistoryService(r.priceHistory, yahoo)
+	divHistory := usecase.NewDividendHistoryService(
+		r.divHistory, yahoo, r.holding, r.portfolio, r.stock,
+	)
+	refreshSvc := usecase.NewRefreshService(
+		r.stock, yahoo, r.settings, r.tickerCollector, emitter, r.snapshot, r.alert,
+	)
+	a.refresh = refreshSvc
+
+	dividends := usecase.NewDividendService(r.portfolio, r.holding, r.stock)
+	alertSvc := usecase.NewAlertService(r.alert)
+	checklists := usecase.NewChecklistService(
+		r.checklistResult, r.portfolio, r.holding, r.brokerage, r.stock, alertSvc,
+	)
+	paydaySvc := usecase.NewPaydayService(r.payday, r.cashFlow, r.portfolio, r.settings)
+	transactions := usecase.NewTransactionService(r.txnHistory)
+	dashboard := usecase.NewDashboardService(
+		r.portfolio, r.holding, r.stock, r.payday, r.txnHistory, sectorRegistry,
+	)
+	crashPlaybook := usecase.NewCrashPlaybookService(
+		r.stock, yahoo, r.portfolio, r.holding, r.crashCapital, r.settings, refreshSvc,
+	)
+
+	ghClient := github.NewClient()
+	updateChecker := &releaseCheckerAdapter{client: ghClient}
+	updateSvc := usecase.NewUpdateService(updateChecker, Version())
+
+	downloader := updater.NewDownloader(ghClient)
+	verifier := &updater.SHA256Verifier{}
+	extractor := &updater.Extractor{}
+	installer := updater.NewPlatformInstaller()
+	selfUpdateSvc := usecase.NewSelfUpdateService(
+		updateChecker, downloader, verifier, extractor,
+		installer, emitter, Version(),
+	)
+
+	return services{
+		stocks:        stocks,
+		portfolios:    portfolios,
+		brokerages:    brokerages,
+		watchlists:    watchlists,
+		screener:      screener,
+		priceHistory:  priceHistory,
+		divHistory:    divHistory,
+		refresh:       refreshSvc,
+		dividends:     dividends,
+		alerts:        alertSvc,
+		checklists:    checklists,
+		payday:        paydaySvc,
+		transactions:  transactions,
+		dashboard:     dashboard,
+		crashPlaybook: crashPlaybook,
+		update:        updateSvc,
+		selfUpdate:    selfUpdateSvc,
+	}
+}
+
+// bindHandlers wires all presenter handlers to their service dependencies.
+func (a *App) bindHandlers(
+	ctx context.Context,
+	svc services,
+	r repos,
+	profileID string,
+	sectorRegistry *watchlistconfig.SectorRegistry,
+) {
+	a.StockHandler.Bind(ctx, svc.stocks)
+	a.PortfolioHandler.Bind(ctx, svc.portfolios, sectorRegistry)
+	a.DividendHandler.Bind(ctx, svc.dividends)
+	a.BrokerageHandler.Bind(ctx, profileID, svc.brokerages)
+	a.WatchlistHandler.Bind(ctx, profileID, svc.watchlists)
+	a.RefreshHandler.Bind(ctx, svc.refresh, r.settings)
+	a.ScreenerHandler.Bind(ctx, svc.screener)
+	a.PriceHistoryHandler.Bind(ctx, svc.priceHistory)
+	a.DividendCalendarHandler.Bind(ctx, svc.divHistory)
+	a.AlertHandler.Bind(ctx, svc.alerts)
+	a.ChecklistHandler.Bind(ctx, svc.checklists)
+	a.PaydayHandler.Bind(ctx, svc.payday)
+	a.TransactionHandler.Bind(ctx, svc.transactions)
+	a.DashboardHandler.Bind(ctx, svc.dashboard)
+	a.CrashPlaybookHandler.Bind(ctx, svc.crashPlaybook, r.portfolio)
+	a.UpdateHandler.Bind(ctx, svc.update, svc.selfUpdate, r.settings)
+	a.LogHandler.Bind(ctx, r.settings, a.logDir)
 }
 
 // releaseCheckerAdapter bridges github.Client to usecase.ReleaseChecker.
