@@ -412,7 +412,7 @@ Price and change use `price.toLocaleString("id-ID")` and `changePercent.toFixed(
 ```
 
 Props:
-- `open`: `boolean` — controls visibility (default: `true`)
+- `open`: `boolean` — controls visibility; callers always drive this prop explicitly (default: `true`)
 - `title`: `string` (optional) — rendered as `<h3>` with `aria-labelledby`
 - `aria-label`: `string` (optional) — use when no visible title; mutually exclusive with `title`
 - `size`: `"sm"` | `"md"` | `"lg"` — maps to `max-w-sm` / `max-w-md` / `max-w-lg` (default: `"md"`)
@@ -436,14 +436,16 @@ Wraps `Modal` with confirm/cancel buttons — use for destructive or irreversibl
   import ConfirmDialog from "../components/ConfirmDialog.svelte";
 </script>
 
-<ConfirmDialog
-  title="Delete Holding"
-  confirmVariant="danger"
-  onConfirm={handleDelete}
-  onCancel={() => (showConfirm = false)}
->
-  Are you sure you want to delete this holding?
-</ConfirmDialog>
+{#if showConfirm}
+  <ConfirmDialog
+    title="Delete Holding"
+    confirmVariant="danger"
+    onConfirm={handleDelete}
+    onCancel={() => (showConfirm = false)}
+  >
+    Are you sure you want to delete this holding?
+  </ConfirmDialog>
+{/if}
 ```
 
 Props:
@@ -570,7 +572,7 @@ The transition utilities set `transition-duration` and `transition-timing-functi
 
 | Component | When to use | Key props |
 |---|---|---|
-| `LoadingState` | Generic spinner for pages with unpredictable layout, inline loading indicators | `message`, `size` (`"sm"` \| `"md"`) |
+| `LoadingState` | Generic spinner for pages with unpredictable layout, inline loading indicators | `message`, `size` (`"sm"` \| `"md"`), `class` |
 | `SkeletonTable` | Pages with known table layout — preserves visual structure during load | `rows` (default 5), `columns` (default 4), `label` |
 | `SkeletonCard` | Pages with known card layout — mimics card content shape | `lines` (default 3), `label` |
 | `SkeletonLine` | Individual shimmer line — building block for custom skeleton layouts | `height`, `width` |
