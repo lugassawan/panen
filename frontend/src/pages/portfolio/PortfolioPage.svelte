@@ -9,7 +9,7 @@ import {
 } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
 import ConfirmDialog from "../../lib/components/ConfirmDialog.svelte";
-import LoadingState from "../../lib/components/LoadingState.svelte";
+import SkeletonTable from "../../lib/components/SkeletonTable.svelte";
 import { toastStore } from "../../lib/stores/toast.svelte";
 import type {
   ActionType,
@@ -108,7 +108,7 @@ load();
 
 <div class="mx-auto max-w-4xl px-4 py-8">
   {#if state === "loading"}
-    <LoadingState message={t("portfolio.loading")} class="py-12" />
+    <SkeletonTable rows={5} columns={7} />
   {:else if state === "error"}
     <div class="rounded border border-negative/20 bg-negative-bg px-4 py-3 text-sm text-negative" role="alert">
       {error}
