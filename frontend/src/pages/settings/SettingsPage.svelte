@@ -8,10 +8,13 @@ import {
   GetAppVersion,
   GetBackupStatus,
   GetLogStats,
+  GetProviderStatus,
   GetRefreshSettings,
   IsDebugMode,
   OpenReleaseURL,
+  RunProviderHealthCheck,
   SetDebugMode,
+  SetProviderEnabled,
   TriggerRefresh,
   UpdateRefreshSettings,
 } from "../../../wailsjs/go/backend/App";
@@ -52,6 +55,18 @@ let backupStatus = $state<{
 } | null>(null);
 let backupCreating = $state(false);
 
+type ProviderStatus = {
+  name: string;
+  priority: number;
+  status: string;
+  lastCheck: string;
+  lastError: string;
+  enabled: boolean;
+};
+
+let providers = $state<ProviderStatus[]>([]);
+let healthChecking = $state(false);
+
 let debugMode = $state(false);
 let logStats = $state<{
   fileCount: number;
@@ -91,6 +106,12 @@ onMount(async () => {
 
   try {
     logStats = await GetLogStats();
+  } catch {
+    // non-critical
+  }
+
+  try {
+    providers = await GetProviderStatus();
   } catch {
     // non-critical
   }
@@ -156,6 +177,60 @@ async function exportLogs() {
     toastStore.add(t("settings.logsExportError", { error: msg }), "error");
   } finally {
     exportingLogs = false;
+  }
+}
+
+function providerStatusColor(status: string): string {
+  switch (status) {
+    case "healthy":
+      return "bg-profit";
+    case "degraded":
+      return "bg-gold-500";
+    case "down":
+      return "bg-loss";
+    default:
+      return "bg-text-tertiary";
+  }
+}
+
+function providerStatusLabel(status: string): string {
+  switch (status) {
+    case "healthy":
+      return t("settings.providerHealthy");
+    case "degraded":
+      return t("settings.providerDegraded");
+    case "down":
+      return t("settings.providerDown");
+    default:
+      return t("settings.providerUnknown");
+  }
+}
+
+async function checkProviderHealth() {
+  healthChecking = true;
+  try {
+    await RunProviderHealthCheck();
+    // Wait briefly for async health check to complete, then refresh.
+    setTimeout(async () => {
+      try {
+        providers = await GetProviderStatus();
+      } catch {
+        // non-critical
+      }
+      healthChecking = false;
+    }, 3000);
+  } catch {
+    healthChecking = false;
+  }
+}
+
+async function toggleProvider(name: string, enabled: boolean) {
+  try {
+    await SetProviderEnabled(name, enabled);
+    providers = await GetProviderStatus();
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    toastStore.add(msg, "error");
   }
 }
 
@@ -246,6 +321,50 @@ async function createBackup() {
           class="w-full rounded border border-green-700 px-3 py-2 text-sm font-medium text-green-700 transition-fast hover:bg-green-100 disabled:opacity-60 focus-ring dark:hover:bg-green-900/30"
         >
           {sync.isSyncing ? t("settings.syncing") : t("settings.refreshNow")}
+        </button>
+      </div>
+    </div>
+
+    <div>
+      <p class="mb-3 text-sm text-text-secondary">
+        <Tooltip text={t("settings.dataProvidersTooltip")}>
+          <span class="underline decoration-dotted cursor-help">{t("settings.dataProviders")}</span>
+        </Tooltip>
+      </p>
+      <div class="space-y-3 rounded-lg border border-border-default bg-bg-elevated p-4">
+        {#each providers as provider}
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="inline-block h-2 w-2 rounded-full {providerStatusColor(provider.status)}"></span>
+              <span class="text-sm font-medium text-text-primary capitalize">{provider.name}</span>
+              <span class="font-mono text-xs text-text-tertiary">#{provider.priority}</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-xs text-text-tertiary">{providerStatusLabel(provider.status)}</span>
+              <input
+                type="checkbox"
+                checked={provider.enabled}
+                onchange={() => toggleProvider(provider.name, !provider.enabled)}
+                class="h-4 w-4 rounded border-border-default text-green-700 focus-ring"
+              />
+            </div>
+          </div>
+          {#if provider.lastCheck}
+            <p class="ml-4 text-xs text-text-tertiary">
+              {t("settings.providerLastCheck")}: <span class="font-mono">{formatRelativeTime(provider.lastCheck)}</span>
+            </p>
+          {/if}
+          {#if provider.lastError}
+            <p class="ml-4 text-xs text-loss">{provider.lastError}</p>
+          {/if}
+        {/each}
+
+        <button
+          onclick={checkProviderHealth}
+          disabled={healthChecking}
+          class="w-full rounded border border-green-700 px-3 py-2 text-sm font-medium text-green-700 transition-fast hover:bg-green-100 disabled:opacity-60 focus-ring dark:hover:bg-green-900/30"
+        >
+          {healthChecking ? t("settings.providerCheckingHealth") : t("settings.providerCheckHealth")}
         </button>
       </div>
     </div>
