@@ -12,6 +12,11 @@ import (
 	"github.com/lugassawan/panen/backend/infra/applog"
 )
 
+const (
+	sourceRegistry    = "registry"
+	healthCheckTicker = "BBCA"
+)
+
 // entry holds a provider alongside its registration metadata.
 type entry struct {
 	provider  stock.DataProvider
@@ -60,7 +65,7 @@ func (r *Registry) Source() string {
 	if p := r.Primary(); p != nil {
 		return p.Source()
 	}
-	return "registry"
+	return sourceRegistry
 }
 
 // Primary returns the highest-priority enabled provider, or nil if none.
@@ -221,7 +226,7 @@ func (r *Registry) HealthCheckAll(ctx context.Context) {
 		status := domainProvider.StatusHealthy
 		var errMsg string
 
-		_, err := e.provider.FetchPrice(ctx, "BBCA")
+		_, err := e.provider.FetchPrice(ctx, healthCheckTicker)
 		if err != nil {
 			status = domainProvider.StatusDown
 			errMsg = err.Error()
