@@ -41,6 +41,32 @@ import {
   formatRupiah,
 } from "./format";
 
+// Helper to compute expected Intl output (platform-independent)
+function expectedRupiah(value: number, loc: "en-US" | "id-ID"): string {
+  return new Intl.NumberFormat(loc, {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+function expectedDecimal(value: number, loc: "en-US" | "id-ID", digits = 2): string {
+  return new Intl.NumberFormat(loc, {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(value);
+}
+
+function expectedPercent(value: number, loc: "en-US" | "id-ID"): string {
+  return (
+    new Intl.NumberFormat(loc, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value) + "%"
+  );
+}
+
 describe("formatRupiah", () => {
   beforeEach(() => {
     mockLocale = "en";
@@ -48,71 +74,71 @@ describe("formatRupiah", () => {
 
   it("formats with EN locale", () => {
     mockLocale = "en";
-    expect(formatRupiah(9250)).toBe("IDR\u00A09,250");
+    expect(formatRupiah(9250)).toBe(expectedRupiah(9250, "en-US"));
   });
 
   it("formats with ID locale", () => {
     mockLocale = "id";
-    expect(formatRupiah(9250)).toBe("Rp\u00A09.250");
+    expect(formatRupiah(9250)).toBe(expectedRupiah(9250, "id-ID"));
   });
 
   it("formats zero", () => {
     mockLocale = "id";
-    expect(formatRupiah(0)).toBe("Rp\u00A00");
+    expect(formatRupiah(0)).toBe(expectedRupiah(0, "id-ID"));
   });
 
   it("formats large values", () => {
     mockLocale = "id";
-    expect(formatRupiah(1500000)).toBe("Rp\u00A01.500.000");
+    expect(formatRupiah(1500000)).toBe(expectedRupiah(1500000, "id-ID"));
   });
 });
 
 describe("formatDecimal", () => {
   it("formats with EN locale", () => {
     mockLocale = "en";
-    expect(formatDecimal(1.5678)).toBe("1.57");
+    expect(formatDecimal(1.5678)).toBe(expectedDecimal(1.5678, "en-US"));
   });
 
   it("formats with ID locale", () => {
     mockLocale = "id";
-    expect(formatDecimal(1.5678)).toBe("1,57");
+    expect(formatDecimal(1.5678)).toBe(expectedDecimal(1.5678, "id-ID"));
   });
 
   it("formats with custom digits", () => {
     mockLocale = "en";
-    expect(formatDecimal(12.3, 1)).toBe("12.3");
+    expect(formatDecimal(12.3, 1)).toBe(expectedDecimal(12.3, "en-US", 1));
   });
 
   it("formats zero", () => {
     mockLocale = "en";
-    expect(formatDecimal(0)).toBe("0.00");
+    expect(formatDecimal(0)).toBe(expectedDecimal(0, "en-US"));
   });
 
   it("formats negative values", () => {
     mockLocale = "id";
-    expect(formatDecimal(-7.89, 2)).toBe("-7,89");
+    expect(formatDecimal(-7.89, 2)).toBe(expectedDecimal(-7.89, "id-ID"));
   });
 });
 
 describe("formatPercent", () => {
   it("formats with EN locale", () => {
     mockLocale = "en";
-    expect(formatPercent(25.5)).toBe("25.50%");
+    expect(formatPercent(25.5)).toBe(expectedPercent(25.5, "en-US"));
   });
 
   it("formats with ID locale", () => {
     mockLocale = "id";
-    expect(formatPercent(25.5)).toBe("25,50%");
+    expect(formatPercent(25.5)).toBe(expectedPercent(25.5, "id-ID"));
   });
 
   it("formats zero", () => {
     mockLocale = "en";
-    expect(formatPercent(0)).toBe("0.00%");
+    expect(formatPercent(0)).toBe(expectedPercent(0, "en-US"));
   });
 
   it("formats negative percentages", () => {
     mockLocale = "id";
-    expect(formatPercent(-12.5)).toBe("-12,50%");
+    expect(formatPercent(-12.5)).toBe(expectedPercent(-12.5, "id-ID"));
   });
 });
 
