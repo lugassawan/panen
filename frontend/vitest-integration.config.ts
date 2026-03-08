@@ -7,7 +7,7 @@ export default defineConfig({
     conditions: ["browser"],
   },
   test: {
-    pool: "threads",
+    pool: "vmThreads",
     environment: "jsdom",
     include: ["src/**/*.integration.test.ts"],
     passWithNoTests: true,
