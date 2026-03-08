@@ -2,6 +2,7 @@
 import { CreateWatchlist } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
 import Alert from "../../lib/components/Alert.svelte";
+import Button from "../../lib/components/Button.svelte";
 import Input from "../../lib/components/Input.svelte";
 
 let {
@@ -51,13 +52,9 @@ async function submit(e: Event) {
     </div>
   {/if}
   <div class="flex gap-1.5">
-    <button
-      type="submit"
-      disabled={loading || !name.trim()}
-      class="flex-1 rounded bg-green-700 px-2 py-1 text-xs font-medium text-text-inverse transition-fast focus-ring hover:bg-green-800 disabled:pointer-events-none disabled:opacity-50"
-    >
+    <Button type="submit" size="sm" disabled={loading || !name.trim()}>
       {loading ? t("watchlist.adding") : t("common.add")}
-    </button>
+    </Button>
     <button
       type="button"
       class="rounded px-2 py-1 text-xs text-text-secondary transition-fast focus-ring hover:bg-bg-tertiary"

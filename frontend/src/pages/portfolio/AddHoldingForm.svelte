@@ -2,6 +2,7 @@
 import { AddHolding } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
 import Alert from "../../lib/components/Alert.svelte";
+import Button from "../../lib/components/Button.svelte";
 import Input from "../../lib/components/Input.svelte";
 
 let { portfolioId, onAdded }: { portfolioId: string; onAdded: () => void } = $props();
@@ -97,13 +98,9 @@ async function submit() {
 		/>
 	</div>
 
-	<button
-		type="submit"
-		disabled={loading}
-		class="rounded bg-green-700 px-5 py-2 text-sm font-medium text-text-inverse hover:bg-green-800 disabled:opacity-50 focus-ring transition-fast"
-	>
+	<Button type="submit" disabled={loading}>
 		{loading ? t("holding.adding") : t("holding.addHolding")}
-	</button>
+	</Button>
 
 	{#if error}
 		<Alert variant="negative">{error}</Alert>

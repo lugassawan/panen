@@ -107,11 +107,11 @@ function formatPL(amount: number, pct: number): string {
 function txnTypeBadge(type: string): string {
   switch (type) {
     case "BUY":
-      return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
+      return "bg-green-100 text-green-700";
     case "SELL":
-      return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
+      return "bg-negative-bg text-negative";
     case "DIVIDEND":
-      return "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400";
+      return "bg-gold-100 text-gold-700";
     default:
       return "bg-bg-tertiary text-text-secondary";
   }

@@ -1,5 +1,6 @@
 <script lang="ts">
 import { t } from "../../i18n";
+import Button from "../../lib/components/Button.svelte";
 import Input from "../../lib/components/Input.svelte";
 import Select from "../../lib/components/Select.svelte";
 import type { RiskProfile } from "../../lib/types";
@@ -119,13 +120,11 @@ const riskProfiles: { value: RiskProfile; labelKey: string; thresholdsKey: strin
       </div>
     </div>
 
-    <button
-      type="button"
-      class="rounded bg-green-700 px-5 py-1.5 text-sm font-medium text-white transition-fast focus-ring hover:bg-green-800 disabled:opacity-50"
+    <Button
       disabled={loading || (universeType !== "CUSTOM" && !universeName)}
       onclick={onrun}
     >
       {loading ? t("screener.screening") : t("screener.runScreen")}
-    </button>
+    </Button>
   </div>
 </div>

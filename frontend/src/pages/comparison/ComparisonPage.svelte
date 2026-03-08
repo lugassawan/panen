@@ -3,6 +3,7 @@ import { ArrowLeftRight, LoaderCircle, Minus, Plus } from "lucide-svelte";
 import { GetWatchlistItems, ListWatchlists, LookupStock } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
 import Alert from "../../lib/components/Alert.svelte";
+import Button from "../../lib/components/Button.svelte";
 import EmptyState from "../../lib/components/EmptyState.svelte";
 import Input from "../../lib/components/Input.svelte";
 import Select from "../../lib/components/Select.svelte";
@@ -187,13 +188,9 @@ let successCount = $derived(results.filter((r) => r !== null).length);
           {t("comparison.addTicker")}
         </button>
       {/if}
-      <button
-        type="submit"
-        disabled={!canCompare}
-        class="rounded bg-green-700 px-5 py-2 text-sm font-medium text-text-inverse hover:bg-green-800 disabled:opacity-50 focus-ring transition-fast"
-      >
+      <Button type="submit" disabled={!canCompare}>
         {comparing ? t("comparison.comparing") : t("comparison.compare")}
-      </button>
+      </Button>
       {#if hasCompared && successCount < filledCount}
         <span class="text-xs text-warning">
           {t("comparison.partialResults", { success: successCount, total: filledCount })}
