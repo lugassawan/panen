@@ -4,12 +4,15 @@ import {
   CheckForUpdate,
   CreateManualBackup,
   DownloadAndInstallUpdate,
+  ExportData,
   ExportLogs,
   GetAppVersion,
   GetBackupStatus,
   GetLogStats,
   GetProviderStatus,
   GetRefreshSettings,
+  ImportData,
+  ImportPreview,
   IsDebugMode,
   OpenReleaseURL,
   RunProviderHealthCheck,
@@ -22,6 +25,7 @@ import type { Locale } from "../../i18n";
 import { locale, t } from "../../i18n";
 import Alert from "../../lib/components/Alert.svelte";
 import Button from "../../lib/components/Button.svelte";
+import ConfirmDialog from "../../lib/components/ConfirmDialog.svelte";
 import Select from "../../lib/components/Select.svelte";
 import ThemeToggle from "../../lib/components/ThemeToggle.svelte";
 import Tooltip from "../../lib/components/Tooltip.svelte";
@@ -75,6 +79,17 @@ let logStats = $state<{
   newestDate: string;
 } | null>(null);
 let exportingLogs = $state(false);
+
+let exportingData = $state(false);
+let importingData = $state(false);
+let importPreviewData = $state<{
+  filePath: string;
+  appVersion: string;
+  exportedAt: string;
+  checksum: string;
+  dbSize: number;
+} | null>(null);
+let showImportConfirm = $state(false);
 
 onMount(async () => {
   try {
@@ -244,6 +259,50 @@ async function createBackup() {
     backupCreating = false;
   }
 }
+
+async function exportData() {
+  exportingData = true;
+  try {
+    const path = await ExportData();
+    if (path) {
+      toastStore.add(t("settings.exportSuccess"), "success");
+    }
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    toastStore.add(t("settings.exportError", { error: msg }), "error");
+  } finally {
+    exportingData = false;
+  }
+}
+
+async function startImport() {
+  try {
+    const preview = await ImportPreview();
+    if (preview?.filePath) {
+      importPreviewData = preview;
+      showImportConfirm = true;
+    }
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    toastStore.add(t("settings.importError", { error: msg }), "error");
+  }
+}
+
+async function confirmImport() {
+  if (!importPreviewData) return;
+  showImportConfirm = false;
+  importingData = true;
+  try {
+    await ImportData(importPreviewData.filePath);
+    toastStore.add(t("settings.importSuccess"), "success");
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    toastStore.add(t("settings.importError", { error: msg }), "error");
+  } finally {
+    importingData = false;
+    importPreviewData = null;
+  }
+}
 </script>
 
 <div class="mx-auto max-w-lg px-4 py-8">
@@ -410,6 +469,35 @@ async function createBackup() {
     </div>
 
     <div>
+      <p class="mb-3 text-sm text-text-secondary">
+        <Tooltip text={t("settings.exportImportTooltip")}>
+          <span class="underline decoration-dotted cursor-help">{t("settings.exportImport")}</span>
+        </Tooltip>
+      </p>
+      <div class="space-y-4 rounded-lg border border-border-default bg-bg-elevated p-4">
+        <p class="text-xs text-text-tertiary">{t("settings.importWarning")}</p>
+
+        <div class="flex gap-3">
+          <button
+            onclick={exportData}
+            disabled={exportingData}
+            class="flex-1 rounded border border-green-700 px-3 py-2 text-sm font-medium text-green-700 transition-fast hover:bg-green-100 disabled:opacity-60 focus-ring dark:hover:bg-green-900/30"
+          >
+            {exportingData ? t("settings.exporting") : t("settings.exportData")}
+          </button>
+
+          <button
+            onclick={startImport}
+            disabled={importingData}
+            class="flex-1 rounded border border-green-700 px-3 py-2 text-sm font-medium text-green-700 transition-fast hover:bg-green-100 disabled:opacity-60 focus-ring dark:hover:bg-green-900/30"
+          >
+            {importingData ? t("settings.importing") : t("settings.importData")}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div>
       <p class="mb-3 text-sm text-text-secondary">{t("settings.debugAndLogs")}</p>
       <div class="space-y-4 rounded-lg border border-border-default bg-bg-elevated p-4">
         <label class="flex items-center justify-between">
@@ -507,5 +595,46 @@ async function createBackup() {
     </div>
   </div>
 </div>
+
+{#if showImportConfirm && importPreviewData}
+  <ConfirmDialog
+    title={t("settings.importPreviewTitle")}
+    confirmLabel={t("settings.importConfirm")}
+    confirmVariant="primary"
+    onConfirm={confirmImport}
+    onCancel={() => { showImportConfirm = false; importPreviewData = null; }}
+  >
+    <div class="space-y-3">
+      {#if importPreviewData.appVersion !== appVersion}
+        <Alert variant="warning">
+          {t("settings.importVersionMismatch", { version: importPreviewData.appVersion })}
+        </Alert>
+      {/if}
+
+      <div class="space-y-2 text-sm">
+        <div class="flex justify-between">
+          <span class="text-text-secondary">{t("settings.importVersion")}</span>
+          <span class="font-mono text-text-primary">{importPreviewData.appVersion}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-text-secondary">{t("settings.importExportedAt")}</span>
+          <span class="font-mono text-text-primary">{formatRelativeTime(importPreviewData.exportedAt)}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-text-secondary">{t("settings.importDbSize")}</span>
+          <span class="font-mono text-text-primary">{formatFileSize(importPreviewData.dbSize)}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-text-secondary">{t("settings.importChecksum")}</span>
+          <span class="font-mono text-text-primary text-xs truncate max-w-48" title={importPreviewData.checksum}>
+            {importPreviewData.checksum.slice(0, 16)}...
+          </span>
+        </div>
+      </div>
+
+      <Alert variant="warning">{t("settings.importWarning")}</Alert>
+    </div>
+  </ConfirmDialog>
+{/if}
 
 <UpdateDialog />

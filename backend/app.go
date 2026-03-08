@@ -44,6 +44,7 @@ type App struct {
 	*presenter.DividendCalendarHandler
 	*presenter.AlertHandler
 	*presenter.BackupHandler
+	*presenter.ExportImportHandler
 	*presenter.LogHandler
 	*presenter.LiveConfigHandler
 	*presenter.TransactionHandler
@@ -122,6 +123,7 @@ func NewApp() *App {
 		DividendCalendarHandler: &presenter.DividendCalendarHandler{},
 		AlertHandler:            &presenter.AlertHandler{},
 		BackupHandler:           &presenter.BackupHandler{},
+		ExportImportHandler:     &presenter.ExportImportHandler{},
 		LogHandler:              &presenter.LogHandler{},
 		LiveConfigHandler:       &presenter.LiveConfigHandler{},
 		TransactionHandler:      &presenter.TransactionHandler{},
@@ -202,6 +204,10 @@ func (a *App) Startup(ctx context.Context) {
 
 	a.BackupHandler.Bind(ctx, a.backup, a.dbPath, a.backupDir)
 	a.BindBackup(a.CreateBeforeDestructive)
+
+	exportSvc := usecase.NewExportService(a.dbPath, Version(), a.backup.Checkpoint)
+	importSvc := usecase.NewImportService(a.dbPath, a.backupDir, Version(), a.backup.CreateBeforeDestructive)
+	a.ExportImportHandler.Bind(ctx, exportSvc, importSvc)
 
 	svc.refresh.Start(ctx)
 
