@@ -111,7 +111,7 @@ $effect(() => {
   </div>
 
   {#if state === "loading"}
-    <LoadingState message={t("brokerage.loading")} />
+    <LoadingState message={t("brokerage.loading")} class="py-12" />
   {:else if state === "error"}
     <div class="rounded border border-negative/20 bg-negative-bg px-4 py-3 text-sm text-negative" role="alert">
       {error}

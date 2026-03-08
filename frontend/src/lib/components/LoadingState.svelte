@@ -13,7 +13,7 @@ let {
 </script>
 
 <div
-  class="flex items-center justify-center gap-2 py-12 text-text-secondary {className}"
+  class="flex items-center justify-center gap-2 text-text-secondary {className}"
   role="status"
 >
   <LoaderCircle

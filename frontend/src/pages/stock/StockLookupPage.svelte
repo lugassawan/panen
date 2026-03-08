@@ -82,7 +82,7 @@ function percentInRange(value: number, min: number, max: number): number {
 
   <!-- Loading -->
   {#if loading}
-    <LoadingState message={t("lookup.fetchingValuation")} />
+    <LoadingState message={t("lookup.fetchingValuation")} class="py-12" />
   {/if}
 
   <!-- Error -->

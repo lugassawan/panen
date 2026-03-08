@@ -18,6 +18,13 @@ describe("LoadingState", () => {
     expect(container.querySelector("span")).toBeNull();
   });
 
+  it("renders md size icon by default", () => {
+    const { container } = render(LoadingStateWrapper);
+    const svg = container.querySelector("svg");
+    expect(svg?.getAttribute("width")).toBe("20");
+    expect(svg?.getAttribute("height")).toBe("20");
+  });
+
   it("applies size sm with smaller icon and text-sm class", () => {
     const { container } = render(LoadingStateWrapper, {
       props: { size: "sm", message: "Loading..." },
