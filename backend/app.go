@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/lugassawan/panen/backend/domain/user"
+	domainProvider "github.com/lugassawan/panen/backend/domain/provider"
 	"github.com/lugassawan/panen/backend/infra/applog"
 	"github.com/lugassawan/panen/backend/infra/backup"
 	brokerConfigLoader "github.com/lugassawan/panen/backend/infra/brokerconfig"
@@ -378,7 +379,7 @@ func (a *App) bindHandlers(
 	r repos,
 	profileID string,
 	sectorRegistry *watchlistconfig.SectorRegistry,
-	registry *infraProvider.Registry,
+	registry domainProvider.Registry,
 ) {
 	a.StockHandler.Bind(ctx, svc.stocks)
 	a.PortfolioHandler.Bind(ctx, svc.portfolios, sectorRegistry)

@@ -1,6 +1,9 @@
 package provider
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 // Status represents the health state of a data provider.
 type Status string
@@ -20,4 +23,11 @@ type Info struct {
 	LastCheck time.Time
 	LastError string
 	Enabled   bool
+}
+
+// Registry provides read and control operations over registered data providers.
+type Registry interface {
+	List() []Info
+	SetEnabled(name string, enabled bool) bool
+	HealthCheckAll(ctx context.Context)
 }

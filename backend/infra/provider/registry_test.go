@@ -317,6 +317,55 @@ func TestRegistryHealthCheckAll(t *testing.T) {
 	}
 }
 
+func TestRegistrySetEnabledPreventsDisablingAll(t *testing.T) {
+	reg := NewRegistry()
+	reg.Register(&mockProvider{name: "yahoo"}, 1)
+	reg.Register(&mockProvider{name: "idx"}, 2)
+
+	// Disable one — should succeed.
+	if !reg.SetEnabled("yahoo", false) {
+		t.Fatal("SetEnabled(yahoo, false) = false, want true")
+	}
+
+	// Try to disable the last one — should fail.
+	if reg.SetEnabled("idx", false) {
+		t.Fatal("SetEnabled(idx, false) = true, want false (last enabled)")
+	}
+
+	// Re-enable yahoo, then disable idx — should succeed.
+	reg.SetEnabled("yahoo", true)
+	if !reg.SetEnabled("idx", false) {
+		t.Fatal("SetEnabled(idx, false) after re-enabling yahoo = false, want true")
+	}
+}
+
+func TestRegistrySetEnabledClearsStatus(t *testing.T) {
+	reg := NewRegistry()
+	reg.Register(&mockProvider{
+		name:        "yahoo",
+		priceResult: &stock.PriceResult{Price: 9000},
+	}, 1)
+	reg.Register(&mockProvider{name: "idx"}, 2)
+
+	// Run health check so yahoo has a status.
+	reg.HealthCheckAll(context.Background())
+
+	infos := reg.List()
+	if infos[0].Status != domainProvider.StatusHealthy {
+		t.Fatalf("before disable: status = %q, want healthy", infos[0].Status)
+	}
+
+	// Disable yahoo — status should reset to unknown.
+	reg.SetEnabled("yahoo", false)
+	infos = reg.List()
+	if infos[0].Status != domainProvider.StatusUnknown {
+		t.Errorf("after disable: status = %q, want unknown", infos[0].Status)
+	}
+	if infos[0].LastError != "" {
+		t.Errorf("after disable: lastError = %q, want empty", infos[0].LastError)
+	}
+}
+
 func TestRegistryPriorityOrdering(t *testing.T) {
 	reg := NewRegistry()
 

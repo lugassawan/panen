@@ -3,17 +3,17 @@ package presenter
 import (
 	"context"
 
-	infraProvider "github.com/lugassawan/panen/backend/infra/provider"
+	domainProvider "github.com/lugassawan/panen/backend/domain/provider"
 )
 
 // ProviderHandler handles provider-related requests from the frontend.
 type ProviderHandler struct {
 	ctx      context.Context
-	registry *infraProvider.Registry
+	registry domainProvider.Registry
 }
 
 // Bind wires the handler to its dependencies.
-func (h *ProviderHandler) Bind(ctx context.Context, registry *infraProvider.Registry) {
+func (h *ProviderHandler) Bind(ctx context.Context, registry domainProvider.Registry) {
 	h.ctx = ctx
 	h.registry = registry
 }
@@ -40,7 +40,7 @@ func (h *ProviderHandler) SetProviderEnabled(name string, enabled bool) bool {
 	return h.registry.SetEnabled(name, enabled)
 }
 
-// RunProviderHealthCheck triggers a health check on all providers.
+// RunProviderHealthCheck triggers a health check on all providers and waits for completion.
 func (h *ProviderHandler) RunProviderHealthCheck() {
-	go h.registry.HealthCheckAll(h.ctx)
+	h.registry.HealthCheckAll(h.ctx)
 }

@@ -109,17 +109,40 @@ func (r *Registry) List() []domainProvider.Info {
 }
 
 // SetEnabled enables or disables a provider by name.
+// Returns false if the provider is not found or if disabling would leave no enabled providers.
 func (r *Registry) SetEnabled(name string, enabled bool) bool {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
+	idx := -1
+	enabledCount := 0
 	for i, e := range r.entries {
 		if e.provider.Source() == name {
-			r.entries[i].enabled = enabled
-			return true
+			idx = i
+		}
+		if e.enabled {
+			enabledCount++
 		}
 	}
-	return false
+
+	if idx < 0 {
+		return false
+	}
+
+	// Prevent disabling the last enabled provider.
+	if !enabled && enabledCount <= 1 && r.entries[idx].enabled {
+		return false
+	}
+
+	r.entries[idx].enabled = enabled
+
+	// Clear health status when disabling so stale data isn't shown.
+	if !enabled {
+		r.entries[idx].status = domainProvider.StatusUnknown
+		r.entries[idx].lastError = ""
+	}
+
+	return true
 }
 
 // FetchPrice tries each enabled provider in priority order until one succeeds.

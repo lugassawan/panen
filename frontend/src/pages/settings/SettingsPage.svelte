@@ -185,7 +185,7 @@ function providerStatusColor(status: string): string {
     case "healthy":
       return "bg-profit";
     case "degraded":
-      return "bg-gold-500";
+      return "bg-warning";
     case "down":
       return "bg-loss";
     default:
@@ -210,16 +210,10 @@ async function checkProviderHealth() {
   healthChecking = true;
   try {
     await RunProviderHealthCheck();
-    // Wait briefly for async health check to complete, then refresh.
-    setTimeout(async () => {
-      try {
-        providers = await GetProviderStatus();
-      } catch {
-        // non-critical
-      }
-      healthChecking = false;
-    }, 3000);
+    providers = await GetProviderStatus();
   } catch {
+    // non-critical
+  } finally {
     healthChecking = false;
   }
 }
