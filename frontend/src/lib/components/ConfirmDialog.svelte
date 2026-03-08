@@ -24,7 +24,7 @@ let {
 </script>
 
 <Modal {title} onClose={onCancel} size="md">
-  <div class="mb-6 text-sm text-text-secondary">
+  <div class="text-sm text-text-secondary">
     {@render children()}
   </div>
   {#snippet footer()}

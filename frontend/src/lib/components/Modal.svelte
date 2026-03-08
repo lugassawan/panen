@@ -19,6 +19,8 @@ let {
   footer?: Snippet;
 } = $props();
 
+const titleId = crypto.randomUUID().slice(0, 8);
+
 const sizeClass: Record<string, string> = {
   sm: "max-w-sm",
   md: "max-w-md",
@@ -66,13 +68,13 @@ function handleKeydown(e: KeyboardEvent) {
       class="relative z-10 w-full {sizeClass[size]} rounded-lg border border-border-default bg-bg-elevated p-6 shadow-lg"
       role="dialog"
       aria-modal="true"
-      aria-labelledby={title ? "modal-title" : undefined}
+      aria-labelledby={title ? `modal-title-${titleId}` : undefined}
       aria-label={title ? undefined : ariaLabel}
       tabindex="-1"
       onkeydown={handleKeydown}
     >
       {#if title}
-        <h3 id="modal-title" class="mb-2 font-display text-lg font-semibold text-text-primary">{title}</h3>
+        <h3 id={`modal-title-${titleId}`} class="mb-2 font-display text-lg font-semibold text-text-primary">{title}</h3>
       {/if}
       {@render children()}
       {#if footer}

@@ -16,7 +16,7 @@ describe("Modal", () => {
     render(ModalTest, { props: { title: "Test Title", onClose: vi.fn() } });
 
     expect(screen.getByText("Test Title")).toBeInTheDocument();
-    expect(screen.getByRole("dialog")).toHaveAttribute("aria-labelledby", "modal-title");
+    expect(screen.getByRole("dialog").getAttribute("aria-labelledby")).toMatch(/^modal-title-/);
   });
 
   it("uses aria-label when no title provided", () => {
