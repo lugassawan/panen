@@ -134,6 +134,44 @@ func (s *PortfolioService) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
+// RemoveHolding removes a single holding from a portfolio.
+func (s *PortfolioService) RemoveHolding(ctx context.Context, portfolioID, holdingID string) error {
+	if strings.TrimSpace(portfolioID) == "" || strings.TrimSpace(holdingID) == "" {
+		return ErrEmptyID
+	}
+	h, err := s.holdings.GetByID(ctx, holdingID)
+	if err != nil {
+		return fmt.Errorf("remove holding: %w", err)
+	}
+	if h.PortfolioID != portfolioID {
+		return fmt.Errorf("remove holding: %w", shared.ErrNotFound)
+	}
+	if err := s.holdings.Delete(ctx, holdingID); err != nil {
+		return fmt.Errorf("remove holding: %w", err)
+	}
+	return nil
+}
+
+// ClearHoldings removes all holdings from a portfolio and returns the count deleted.
+func (s *PortfolioService) ClearHoldings(ctx context.Context, portfolioID string) (int, error) {
+	if strings.TrimSpace(portfolioID) == "" {
+		return 0, ErrEmptyID
+	}
+	if _, err := s.portfolios.GetByID(ctx, portfolioID); err != nil {
+		return 0, fmt.Errorf("clear holdings: %w", err)
+	}
+	holdings, err := s.holdings.ListByPortfolioID(ctx, portfolioID)
+	if err != nil {
+		return 0, fmt.Errorf("clear holdings: %w", err)
+	}
+	for _, h := range holdings {
+		if err := s.holdings.Delete(ctx, h.ID); err != nil {
+			return 0, fmt.Errorf("clear holdings: %w", err)
+		}
+	}
+	return len(holdings), nil
+}
+
 // ListByBrokerageAccountID returns all portfolios for a brokerage account.
 func (s *PortfolioService) ListByBrokerageAccountID(
 	ctx context.Context,

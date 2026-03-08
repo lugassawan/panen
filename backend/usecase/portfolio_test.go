@@ -733,6 +733,110 @@ func TestPortfolioServiceGetDetailTrailingStopSeedsFromHigh52Week(t *testing.T) 
 	}
 }
 
+func TestPortfolioServiceRemoveHoldingHappy(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	holding, err := f.svc.AddHolding(f.ctx, f.port.ID, "BBCA", 8500, 10, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("AddHolding() error = %v", err)
+	}
+
+	err = f.svc.RemoveHolding(f.ctx, f.port.ID, holding.ID)
+	if err != nil {
+		t.Fatalf("RemoveHolding() error = %v", err)
+	}
+
+	// Verify holding is gone.
+	holdings, _ := f.holdingRepo.ListByPortfolioID(f.ctx, f.port.ID)
+	if len(holdings) != 0 {
+		t.Errorf("expected 0 holdings after remove, got %d", len(holdings))
+	}
+}
+
+func TestPortfolioServiceRemoveHoldingEmptyID(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	err := f.svc.RemoveHolding(f.ctx, "", "some-id")
+	if !errors.Is(err, ErrEmptyID) {
+		t.Errorf("RemoveHolding() error = %v, want ErrEmptyID", err)
+	}
+
+	err = f.svc.RemoveHolding(f.ctx, "some-id", "")
+	if !errors.Is(err, ErrEmptyID) {
+		t.Errorf("RemoveHolding() error = %v, want ErrEmptyID", err)
+	}
+}
+
+func TestPortfolioServiceRemoveHoldingWrongPortfolio(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	holding, err := f.svc.AddHolding(f.ctx, f.port.ID, "BBCA", 8500, 10, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("AddHolding() error = %v", err)
+	}
+
+	err = f.svc.RemoveHolding(f.ctx, "wrong-portfolio-id", holding.ID)
+	if !errors.Is(err, shared.ErrNotFound) {
+		t.Errorf("RemoveHolding() error = %v, want ErrNotFound", err)
+	}
+}
+
+func TestPortfolioServiceRemoveHoldingNotFound(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	err := f.svc.RemoveHolding(f.ctx, f.port.ID, "nonexistent")
+	if !errors.Is(err, shared.ErrNotFound) {
+		t.Errorf("RemoveHolding() error = %v, want ErrNotFound", err)
+	}
+}
+
+func TestPortfolioServiceClearHoldingsHappy(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	_, err := f.svc.AddHolding(f.ctx, f.port.ID, "BBCA", 8500, 10, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("AddHolding() error = %v", err)
+	}
+	_, err = f.svc.AddHolding(f.ctx, f.port.ID, "BBRI", 5000, 5, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("AddHolding() error = %v", err)
+	}
+
+	count, err := f.svc.ClearHoldings(f.ctx, f.port.ID)
+	if err != nil {
+		t.Fatalf("ClearHoldings() error = %v", err)
+	}
+	if count != 2 {
+		t.Errorf("ClearHoldings() count = %d, want 2", count)
+	}
+
+	holdings, _ := f.holdingRepo.ListByPortfolioID(f.ctx, f.port.ID)
+	if len(holdings) != 0 {
+		t.Errorf("expected 0 holdings after clear, got %d", len(holdings))
+	}
+}
+
+func TestPortfolioServiceClearHoldingsEmpty(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	count, err := f.svc.ClearHoldings(f.ctx, f.port.ID)
+	if err != nil {
+		t.Fatalf("ClearHoldings() error = %v", err)
+	}
+	if count != 0 {
+		t.Errorf("ClearHoldings() count = %d, want 0", count)
+	}
+}
+
+func TestPortfolioServiceClearHoldingsNotFound(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	_, err := f.svc.ClearHoldings(f.ctx, "nonexistent")
+	if !errors.Is(err, shared.ErrNotFound) {
+		t.Errorf("ClearHoldings() error = %v, want ErrNotFound", err)
+	}
+}
+
 func TestGetDetailDoesNotPersistPeaks(t *testing.T) {
 	f := setupPortfolioTest(t)
 
