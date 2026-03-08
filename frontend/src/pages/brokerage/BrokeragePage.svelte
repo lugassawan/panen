@@ -1,5 +1,5 @@
 <script lang="ts">
-import { LoaderCircle, Pencil, Plus, Trash2 } from "lucide-svelte";
+import { Pencil, Plus, Trash2 } from "lucide-svelte";
 import {
   DeleteBrokerageAccount,
   ListBrokerageAccounts,
@@ -10,6 +10,7 @@ import BrokerageAccountForm from "../../components/BrokerageAccountForm.svelte";
 import { t } from "../../i18n";
 import Button from "../../lib/components/Button.svelte";
 import ConfirmDialog from "../../lib/components/ConfirmDialog.svelte";
+import LoadingState from "../../lib/components/LoadingState.svelte";
 import { EventBrokerFeesSynced } from "../../lib/events";
 import { formatPercent } from "../../lib/format";
 import { toastStore } from "../../lib/stores/toast.svelte";
@@ -110,10 +111,7 @@ $effect(() => {
   </div>
 
   {#if state === "loading"}
-    <div class="flex items-center justify-center gap-2 py-12 text-text-secondary" role="status">
-      <LoaderCircle size={20} strokeWidth={2} class="animate-spin" />
-      <span>{t("brokerage.loading")}</span>
-    </div>
+    <LoadingState message={t("brokerage.loading")} />
   {:else if state === "error"}
     <div class="rounded border border-negative/20 bg-negative-bg px-4 py-3 text-sm text-negative" role="alert">
       {error}

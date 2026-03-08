@@ -1,5 +1,5 @@
 <script lang="ts">
-import { ArrowLeft, LoaderCircle } from "lucide-svelte";
+import { ArrowLeft } from "lucide-svelte";
 import {
   DeletePortfolio,
   GetPortfolio,
@@ -9,6 +9,7 @@ import {
 } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
 import ConfirmDialog from "../../lib/components/ConfirmDialog.svelte";
+import LoadingState from "../../lib/components/LoadingState.svelte";
 import { toastStore } from "../../lib/stores/toast.svelte";
 import type {
   ActionType,
@@ -107,10 +108,7 @@ load();
 
 <div class="mx-auto max-w-4xl px-4 py-8">
   {#if state === "loading"}
-    <div class="flex items-center justify-center gap-2 py-12 text-text-secondary" role="status">
-      <LoaderCircle size={20} strokeWidth={2} class="animate-spin" />
-      <span>{t("portfolio.loading")}</span>
-    </div>
+    <LoadingState message={t("portfolio.loading")} />
   {:else if state === "error"}
     <div class="rounded border border-negative/20 bg-negative-bg px-4 py-3 text-sm text-negative" role="alert">
       {error}

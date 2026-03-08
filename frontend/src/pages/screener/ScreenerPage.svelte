@@ -1,5 +1,5 @@
 <script lang="ts">
-import { CheckCircle2, LoaderCircle, XCircle } from "lucide-svelte";
+import { CheckCircle2, XCircle } from "lucide-svelte";
 import {
   ListScreenerIndices,
   ListScreenerSectors,
@@ -7,6 +7,7 @@ import {
 } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
 import Badge from "../../lib/components/Badge.svelte";
+import LoadingState from "../../lib/components/LoadingState.svelte";
 import SortableHeader from "../../lib/components/SortableHeader.svelte";
 import Tooltip from "../../lib/components/Tooltip.svelte";
 import { formatPercent, formatRupiah } from "../../lib/format";
@@ -159,10 +160,7 @@ loadReferenceData();
       </div>
     </div>
   {:else if state === "loading"}
-    <div class="flex flex-1 items-center justify-center gap-2 py-16 text-text-secondary" role="status">
-      <LoaderCircle size={20} strokeWidth={2} class="animate-spin" />
-      <span>{t("screener.screening")}</span>
-    </div>
+    <LoadingState message={t("screener.screening")} class="flex-1 py-16" />
   {:else if state === "error"}
     <div class="mx-6 mt-4 rounded border border-negative/20 bg-negative-bg px-4 py-3 text-sm text-negative" role="alert">
       <p>{error}</p>

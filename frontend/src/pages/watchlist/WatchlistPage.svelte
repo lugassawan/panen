@@ -10,6 +10,7 @@ import {
 } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
 import Badge from "../../lib/components/Badge.svelte";
+import LoadingState from "../../lib/components/LoadingState.svelte";
 import Tooltip from "../../lib/components/Tooltip.svelte";
 import { formatPercent, formatRupiah } from "../../lib/format";
 import { toastStore } from "../../lib/stores/toast.svelte";
@@ -283,10 +284,7 @@ load();
 
       <!-- Items Content -->
       {#if itemsState === "loading"}
-        <div class="flex flex-1 items-center justify-center gap-2 py-16 text-text-secondary" role="status">
-          <LoaderCircle size={20} strokeWidth={2} class="animate-spin" />
-          <span>{t("watchlist.loadingItems")}</span>
-        </div>
+        <LoadingState message={t("watchlist.loadingItems")} class="flex-1 py-16" />
       {:else if itemsState === "error"}
         <div class="mx-6 mt-4 rounded border border-negative/20 bg-negative-bg px-4 py-3 text-sm text-negative" role="alert">
           {itemsError}

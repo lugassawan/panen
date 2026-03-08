@@ -1,7 +1,8 @@
 <script lang="ts">
-import { LoaderCircle, TrendingUp } from "lucide-svelte";
+import { TrendingUp } from "lucide-svelte";
 import { GetDividendRanking } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
+import LoadingState from "../../lib/components/LoadingState.svelte";
 import { getDividendIndicatorDisplay } from "../../lib/dividend-indicator";
 import { formatDecimal, formatPercent } from "../../lib/format";
 import type { DividendRankItemResponse } from "../../lib/types";
@@ -39,10 +40,7 @@ loadRanking();
   </div>
 
   {#if loading}
-    <div class="flex items-center justify-center gap-2 py-6 text-text-secondary" role="status">
-      <LoaderCircle size={16} strokeWidth={2} class="animate-spin" />
-      <span class="text-sm">{t("dividendRanking.loading")}</span>
-    </div>
+    <LoadingState size="sm" message={t("dividendRanking.loading")} class="py-6" />
   {:else if error}
     <div class="rounded border border-negative/20 bg-negative-bg px-4 py-3 text-sm text-negative" role="alert">
       {error}

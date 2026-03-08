@@ -1,5 +1,4 @@
 <script lang="ts">
-import { LoaderCircle } from "lucide-svelte";
 import {
   ConfirmPayday,
   DeferPayday,
@@ -11,6 +10,7 @@ import {
 import { t } from "../../i18n";
 import Badge from "../../lib/components/Badge.svelte";
 import Button from "../../lib/components/Button.svelte";
+import LoadingState from "../../lib/components/LoadingState.svelte";
 import Tooltip from "../../lib/components/Tooltip.svelte";
 import { formatRupiah } from "../../lib/format";
 import { toastStore } from "../../lib/stores/toast.svelte";
@@ -134,10 +134,7 @@ $effect(() => {
   <p class="mt-1 text-sm text-text-secondary">{t("payday.subtitle")}</p>
 
   {#if state === "loading"}
-    <div class="flex items-center justify-center gap-2 py-16 text-text-secondary" role="status">
-      <LoaderCircle size={20} strokeWidth={2} class="animate-spin" />
-      <span class="text-sm">{t("payday.loading")}</span>
-    </div>
+    <LoadingState message={t("payday.loading")} class="py-16" />
   {:else if state === "error"}
     <div class="mt-6 rounded-lg border border-negative bg-negative-bg p-4">
       <p class="text-sm text-negative">{error}</p>
