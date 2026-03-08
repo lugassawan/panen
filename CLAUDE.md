@@ -144,7 +144,7 @@ Full reference: `docs/design-system.md`
 
 ### Components
 
-Reusable components in `frontend/src/lib/components/`: Alert, Badge, Button, CommandPalette, DataTimestamp, EmptyState, Input, LoadingState, ModeTabs, Select, SkeletonCard, SkeletonLine, SkeletonTable, SortableHeader, StockCard, SyncIndicator, ThemeToggle, Toast, ToastContainer, Tooltip
+Reusable components in `frontend/src/lib/components/`: Alert, Badge, BrokerPicker, Button, CommandPalette, ConfirmDialog, DataTimestamp, EmptyState, Input, LoadingState, Modal, ModeTabs, SearchableSelect, Select, SkeletonCard, SkeletonLine, SkeletonTable, SortableHeader, StockCard, SyncIndicator, ThemeToggle, Toast, ToastContainer, Tooltip, UpdateDialog
 
 ### Key Rules
 
@@ -170,6 +170,7 @@ Reusable components in `frontend/src/lib/components/`: Alert, Badge, Button, Com
 - `App` embeds per-domain handler structs from `backend/presenter/`; Go promotes their methods for Wails binding
 - Go methods on bound structs are auto-exposed to the frontend via `frontend/wailsjs/`
 - Frontend is a standard Vite project; Wails proxies it during dev
+- Database repos use generic scan helpers (`queryRow`, `queryAll`) in `backend/infra/database/scan.go` — each repo provides a `scanFn` that maps columns to a domain entity, keeping SQL and struct mapping co-located
 - Git hooks live in `.githooks/` — other tools can inject blocks using `# BEGIN/END` markers
 
 ## Release
