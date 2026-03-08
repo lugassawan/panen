@@ -10,6 +10,8 @@ import (
 	"github.com/lugassawan/panen/backend/usecase"
 )
 
+const warnPreDeleteBackup = "pre-delete backup failed"
+
 // PortfolioHandler handles portfolio management requests.
 type PortfolioHandler struct {
 	ctx             context.Context
@@ -158,11 +160,40 @@ func (h *PortfolioHandler) UpdatePortfolio(
 func (h *PortfolioHandler) DeletePortfolio(id string) error {
 	if h.preDeleteBackup != nil {
 		if err := h.preDeleteBackup("delete"); err != nil {
-			applog.Warn("pre-delete backup failed", err, applog.Fields{"portfolioID": id})
+			applog.Warn(warnPreDeleteBackup, err, applog.Fields{"portfolioID": id})
 		}
 	}
 	if err := h.portfolios.Delete(h.ctx, id); err != nil {
 		return toAppError(fmt.Errorf("delete portfolio: %w", err))
 	}
 	return nil
+}
+
+// RemoveHolding removes a single holding from a portfolio.
+// A pre-destructive backup is attempted before deletion (non-fatal on failure).
+func (h *PortfolioHandler) RemoveHolding(portfolioID, holdingID string) error {
+	if h.preDeleteBackup != nil {
+		if err := h.preDeleteBackup("remove-holding"); err != nil {
+			applog.Warn(warnPreDeleteBackup, err, applog.Fields{"holdingID": holdingID})
+		}
+	}
+	if err := h.portfolios.RemoveHolding(h.ctx, portfolioID, holdingID); err != nil {
+		return fmt.Errorf("remove holding: %w", err)
+	}
+	return nil
+}
+
+// ClearHoldings removes all holdings from a portfolio and returns the count deleted.
+// A pre-destructive backup is attempted before deletion (non-fatal on failure).
+func (h *PortfolioHandler) ClearHoldings(portfolioID string) (int, error) {
+	if h.preDeleteBackup != nil {
+		if err := h.preDeleteBackup("clear-holdings"); err != nil {
+			applog.Warn(warnPreDeleteBackup, err, applog.Fields{"portfolioID": portfolioID})
+		}
+	}
+	count, err := h.portfolios.ClearHoldings(h.ctx, portfolioID)
+	if err != nil {
+		return 0, fmt.Errorf("clear holdings: %w", err)
+	}
+	return count, nil
 }

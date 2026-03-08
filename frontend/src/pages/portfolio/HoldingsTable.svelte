@@ -1,5 +1,5 @@
 <script lang="ts">
-import { PackageOpen } from "lucide-svelte";
+import { PackageOpen, Trash2 } from "lucide-svelte";
 import { t } from "../../i18n";
 import Button from "../../lib/components/Button.svelte";
 import EmptyState from "../../lib/components/EmptyState.svelte";
@@ -7,15 +7,16 @@ import Tooltip from "../../lib/components/Tooltip.svelte";
 import { getDividendIndicatorDisplay } from "../../lib/dividend-indicator";
 import { formatPercent, formatRupiah } from "../../lib/format";
 import { calcPL } from "../../lib/portfolio";
-import type { HoldingResponse } from "../../lib/types";
+import type { HoldingDetailResponse } from "../../lib/types";
 import { getVerdictDisplay } from "../../lib/verdict";
 
 interface Props {
-  holdings: HoldingResponse[];
+  holdings: HoldingDetailResponse[];
   onChecklist: (ticker: string) => void;
+  onRemove: (holdingId: string, ticker: string) => void;
 }
 
-let { holdings, onChecklist }: Props = $props();
+let { holdings, onChecklist, onRemove }: Props = $props();
 </script>
 
 {#if holdings.length === 0}
@@ -80,13 +81,23 @@ let { holdings, onChecklist }: Props = $props();
               {/if}
             </td>
             <td class="px-4 py-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onclick={() => onChecklist(holding.ticker)}
-              >
-                {t("holding.checklistButton")}
-              </Button>
+              <div class="flex gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onclick={() => onChecklist(holding.ticker)}
+                >
+                  {t("holding.checklistButton")}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  aria-label={t("common.removeItem", { name: holding.ticker })}
+                  onclick={() => onRemove(holding.id, holding.ticker)}
+                >
+                  <Trash2 size={14} strokeWidth={2} aria-hidden="true" />
+                </Button>
+              </div>
             </td>
           </tr>
         {/each}

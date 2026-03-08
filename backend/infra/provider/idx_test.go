@@ -49,8 +49,8 @@ func newTestIDXProvider(t *testing.T, srv *httptest.Server) *IDXProvider {
 
 func TestIDXProviderSource(t *testing.T) {
 	p := NewIDXProvider()
-	if got := p.Source(); got != "idx" {
-		t.Errorf("Source() = %q, want %q", got, "idx")
+	if got := p.Source(); got != IDXSource {
+		t.Errorf("Source() = %q, want %q", got, IDXSource)
 	}
 }
 

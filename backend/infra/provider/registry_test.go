@@ -79,7 +79,7 @@ func TestRegistryGet(t *testing.T) {
 func TestRegistryList(t *testing.T) {
 	reg := NewRegistry()
 	reg.Register(&mockProvider{name: "yahoo"}, 1)
-	reg.Register(&mockProvider{name: "idx"}, 2)
+	reg.Register(&mockProvider{name: IDXSource}, 2)
 
 	infos := reg.List()
 	if len(infos) != 2 {
@@ -91,15 +91,15 @@ func TestRegistryList(t *testing.T) {
 	if infos[0].Priority != 1 {
 		t.Errorf("List()[0].Priority = %d, want 1", infos[0].Priority)
 	}
-	if infos[1].Name != "idx" {
-		t.Errorf("List()[1].Name = %q, want %q", infos[1].Name, "idx")
+	if infos[1].Name != IDXSource {
+		t.Errorf("List()[1].Name = %q, want %q", infos[1].Name, IDXSource)
 	}
 }
 
 func TestRegistrySetEnabled(t *testing.T) {
 	reg := NewRegistry()
 	reg.Register(&mockProvider{name: "yahoo"}, 1)
-	reg.Register(&mockProvider{name: "idx"}, 2)
+	reg.Register(&mockProvider{name: IDXSource}, 2)
 
 	if !reg.SetEnabled("yahoo", false) {
 		t.Fatal("SetEnabled(yahoo, false) = false, want true")
@@ -107,7 +107,7 @@ func TestRegistrySetEnabled(t *testing.T) {
 
 	// Primary should now be idx since yahoo is disabled.
 	got := reg.Primary()
-	if got == nil || got.Source() != "idx" {
+	if got == nil || got.Source() != IDXSource {
 		t.Errorf("Primary() after disabling yahoo = %v, want idx", got)
 	}
 
@@ -320,7 +320,7 @@ func TestRegistryHealthCheckAll(t *testing.T) {
 func TestRegistrySetEnabledPreventsDisablingAll(t *testing.T) {
 	reg := NewRegistry()
 	reg.Register(&mockProvider{name: "yahoo"}, 1)
-	reg.Register(&mockProvider{name: "idx"}, 2)
+	reg.Register(&mockProvider{name: IDXSource}, 2)
 
 	// Disable one — should succeed.
 	if !reg.SetEnabled("yahoo", false) {
@@ -328,13 +328,13 @@ func TestRegistrySetEnabledPreventsDisablingAll(t *testing.T) {
 	}
 
 	// Try to disable the last one — should fail.
-	if reg.SetEnabled("idx", false) {
+	if reg.SetEnabled(IDXSource, false) {
 		t.Fatal("SetEnabled(idx, false) = true, want false (last enabled)")
 	}
 
 	// Re-enable yahoo, then disable idx — should succeed.
 	reg.SetEnabled("yahoo", true)
-	if !reg.SetEnabled("idx", false) {
+	if !reg.SetEnabled(IDXSource, false) {
 		t.Fatal("SetEnabled(idx, false) after re-enabling yahoo = false, want true")
 	}
 }
@@ -345,7 +345,7 @@ func TestRegistrySetEnabledClearsStatus(t *testing.T) {
 		name:        "yahoo",
 		priceResult: &stock.PriceResult{Price: 9000},
 	}, 1)
-	reg.Register(&mockProvider{name: "idx"}, 2)
+	reg.Register(&mockProvider{name: IDXSource}, 2)
 
 	// Run health check so yahoo has a status.
 	reg.HealthCheckAll(context.Background())

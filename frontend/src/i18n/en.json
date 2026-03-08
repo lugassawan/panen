@@ -330,7 +330,13 @@
     "addHolding": "Add Holding",
     "tickerRequired": "Ticker is required",
     "buyPriceError": "Buy price must be greater than 0",
-    "loadingActions": "Loading actions..."
+    "loadingActions": "Loading actions...",
+    "removeHolding": "Remove Holding",
+    "confirmRemoveMessage": "Are you sure you want to remove {ticker} from this portfolio?",
+    "holdingRemoved": "{ticker} removed from portfolio",
+    "clearAllHoldings": "Clear All Holdings",
+    "confirmClearMessage": "Are you sure you want to remove all holdings from this portfolio?",
+    "holdingsCleared": "All holdings cleared"
   },
   "checklist": {
     "evaluating": "Evaluating checklist...",
