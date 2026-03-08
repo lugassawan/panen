@@ -20,7 +20,27 @@
     "cannotUndo": "Tindakan ini tidak dapat dibatalkan.",
     "noData": "Tidak ada data",
     "pass": "Lolos",
-    "fail": "Gagal"
+    "fail": "Gagal",
+    "dismiss": "Tutup",
+    "remove": "Hapus",
+    "settings": "Pengaturan",
+    "runDiagnostic": "Jalankan Diagnostik",
+    "deleteItem": "Hapus {name}",
+    "removeItem": "Hapus {name}",
+    "confirmDeleteMessage": "Apakah Anda yakin ingin menghapus {name}?",
+    "deferDate": "Tanggal penundaan",
+    "chooseDeferDate": "Pilih tanggal untuk menunda {name}.",
+    "watchlistCreated": "Watchlist dibuat",
+    "watchlistDeleted": "Watchlist dihapus",
+    "tickerRemoved": "{ticker} dihapus",
+    "portfolioDeleted": "Portofolio dihapus",
+    "accountCreated": "Akun dibuat",
+    "accountUpdated": "Akun diperbarui",
+    "accountDeleted": "Akun dihapus",
+    "paydayConfirmed": "Gajian dikonfirmasi",
+    "paydayDeferred": "Gajian ditangguhkan",
+    "paydaySkipped": "Gajian dilewati",
+    "riskProfile": "profil risiko"
   },
   "nav": {
     "dashboard": "Dasbor",
@@ -194,7 +214,8 @@
     "conservativeThresholds": "ROE > 15%, DER < 0,8",
     "moderateThresholds": "ROE > 12%, DER < 1,0",
     "aggressiveThresholds": "ROE > 8%, DER < 1,5",
-    "runScreen": "Jalankan Screening"
+    "runScreen": "Jalankan Screening",
+    "verdict": "Verdict"
   },
   "portfolio": {
     "title": "Portofolio",
@@ -579,6 +600,7 @@
     "namePlaceholder": "Nama watchlist",
     "adding": "Menambahkan...",
     "deleteTitle": "Hapus Watchlist",
-    "addTickerPlaceholder": "Tambah ticker (cth. BBCA)"
+    "addTickerPlaceholder": "Tambah ticker (cth. BBCA)",
+    "tableLabel": "Daftar watchlist"
   }
 }
