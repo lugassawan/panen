@@ -208,9 +208,9 @@ describe("WatchlistPage", () => {
 
     await user.click(await screen.findByRole("button", { name: /new watchlist/i }));
 
-    expect(screen.getByLabelText(/new watchlist name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/watchlist name/i)).toBeInTheDocument();
 
-    await user.type(screen.getByLabelText(/new watchlist name/i), "My Telco");
+    await user.type(screen.getByLabelText(/watchlist name/i), "My Telco");
     await user.click(screen.getByRole("button", { name: /^add$/i }));
 
     expect(mockCreateWatchlist).toHaveBeenCalledWith("My Telco");
@@ -253,7 +253,7 @@ describe("WatchlistPage", () => {
 
     await screen.findByRole("table", { name: /watchlist items/i });
 
-    await user.type(screen.getByLabelText(/add ticker to watchlist/i), "bmri");
+    await user.type(screen.getByLabelText(/add ticker/i), "bmri");
     await user.click(screen.getByRole("button", { name: /^add$/i }));
 
     expect(mockAddToWatchlist).toHaveBeenCalledWith("wl1", "BMRI");

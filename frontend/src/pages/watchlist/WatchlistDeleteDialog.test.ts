@@ -21,7 +21,9 @@ describe("WatchlistDeleteDialog", () => {
     render(WatchlistDeleteDialog, {
       props: { watchlist, onDeleted: vi.fn(), onCancel: vi.fn() },
     });
-    expect(screen.getByText("My Watchlist")).toBeInTheDocument();
+    expect(
+      screen.getByText("Are you sure you want to delete My Watchlist?"),
+    ).toBeInTheDocument();
     expect(screen.getByText("This action cannot be undone.")).toBeInTheDocument();
   });
 

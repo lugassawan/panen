@@ -19,7 +19,7 @@ describe("WatchlistCreateForm", () => {
     render(WatchlistCreateForm, {
       props: { onCreated: vi.fn(), onCancel: vi.fn() },
     });
-    expect(screen.getByLabelText("New watchlist name")).toBeInTheDocument();
+    expect(screen.getByLabelText("Watchlist name")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Add/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Cancel/i })).toBeInTheDocument();
   });
@@ -43,7 +43,7 @@ describe("WatchlistCreateForm", () => {
       props: { onCreated, onCancel: vi.fn() },
     });
 
-    await user.type(screen.getByLabelText("New watchlist name"), "My List");
+    await user.type(screen.getByLabelText("Watchlist name"), "My List");
     await user.click(screen.getByRole("button", { name: /Add/i }));
 
     await waitFor(() => {
@@ -60,7 +60,7 @@ describe("WatchlistCreateForm", () => {
       props: { onCreated: vi.fn(), onCancel: vi.fn() },
     });
 
-    await user.type(screen.getByLabelText("New watchlist name"), "Duplicate");
+    await user.type(screen.getByLabelText("Watchlist name"), "Duplicate");
     await user.click(screen.getByRole("button", { name: /Add/i }));
 
     await waitFor(() => {
