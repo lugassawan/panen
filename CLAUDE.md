@@ -38,6 +38,7 @@ panen/
 ## Commands
 
 ```sh
+make init              # Lightweight setup for worktrees (skip wails CLI)
 make setup             # Full project setup (wails CLI + deps + hooks)
 make dev               # Start Wails dev server with HMR
 make build             # Production build → build/bin/

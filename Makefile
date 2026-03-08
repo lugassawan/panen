@@ -82,7 +82,6 @@ frontend-install:
 init:
 	cd frontend && pnpm install
 	git config core.hooksPath .githooks
-	golangci-lint custom
 
 setup:
 	go install github.com/wailsapp/wails/v2/cmd/wails@latest
