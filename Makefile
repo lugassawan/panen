@@ -1,5 +1,5 @@
 .PHONY: dev build build-darwin build-linux build-windows build-all \
-	lint fmt frontend-install setup custom-gcl \
+	lint fmt frontend-install setup init custom-gcl \
 	test test-unit test-go test-frontend test-integration test-e2e \
 	coverage coverage-go coverage-frontend playwright-install \
 	release-check
@@ -78,6 +78,11 @@ playwright-install:
 
 frontend-install:
 	cd frontend && pnpm install
+
+init:
+	cd frontend && pnpm install
+	git config core.hooksPath .githooks
+	golangci-lint custom
 
 setup:
 	go install github.com/wailsapp/wails/v2/cmd/wails@latest
