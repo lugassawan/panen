@@ -3,9 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
-	"errors"
 
-	"github.com/lugassawan/panen/backend/domain/shared"
 	"github.com/lugassawan/panen/backend/domain/user"
 )
 
@@ -34,48 +32,11 @@ func (r *UserRepo) Create(ctx context.Context, p *user.Profile) error {
 }
 
 func (r *UserRepo) GetByID(ctx context.Context, id string) (*user.Profile, error) {
-	var p user.Profile
-	var createdAt, updatedAt string
-	err := r.db.QueryRowContext(ctx, userGetByID, id).Scan(
-		&p.ID, &p.Name, &createdAt, &updatedAt)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, shared.ErrNotFound
-	}
-	if err != nil {
-		return nil, err
-	}
-	if p.CreatedAt, err = parseTime(createdAt); err != nil {
-		return nil, err
-	}
-	if p.UpdatedAt, err = parseTime(updatedAt); err != nil {
-		return nil, err
-	}
-	return &p, nil
+	return QueryRow(ctx, r.db, userGetByID, scanUser, id)
 }
 
 func (r *UserRepo) List(ctx context.Context) ([]*user.Profile, error) {
-	rows, err := r.db.QueryContext(ctx, userList)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var profiles []*user.Profile
-	for rows.Next() {
-		var p user.Profile
-		var createdAt, updatedAt string
-		if err := rows.Scan(&p.ID, &p.Name, &createdAt, &updatedAt); err != nil {
-			return nil, err
-		}
-		if p.CreatedAt, err = parseTime(createdAt); err != nil {
-			return nil, err
-		}
-		if p.UpdatedAt, err = parseTime(updatedAt); err != nil {
-			return nil, err
-		}
-		profiles = append(profiles, &p)
-	}
-	return profiles, rows.Err()
+	return QueryAll(ctx, r.db, userList, scanUser)
 }
 
 func (r *UserRepo) Update(ctx context.Context, p *user.Profile) error {
@@ -92,4 +53,20 @@ func (r *UserRepo) Delete(ctx context.Context, id string) error {
 		return err
 	}
 	return checkRowsAffected(res)
+}
+
+func scanUser(scan func(dest ...any) error) (*user.Profile, error) {
+	var p user.Profile
+	var createdAt, updatedAt string
+	if err := scan(&p.ID, &p.Name, &createdAt, &updatedAt); err != nil {
+		return nil, err
+	}
+	var err error
+	if p.CreatedAt, err = parseTime(createdAt); err != nil {
+		return nil, err
+	}
+	if p.UpdatedAt, err = parseTime(updatedAt); err != nil {
+		return nil, err
+	}
+	return &p, nil
 }

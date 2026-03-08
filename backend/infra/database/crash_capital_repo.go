@@ -3,10 +3,8 @@ package database
 import (
 	"context"
 	"database/sql"
-	"errors"
 
 	"github.com/lugassawan/panen/backend/domain/crashplaybook"
-	"github.com/lugassawan/panen/backend/domain/shared"
 )
 
 const (
@@ -41,22 +39,21 @@ func (r *CrashCapitalRepo) GetByPortfolioID(
 	ctx context.Context,
 	portfolioID string,
 ) (*crashplaybook.CrashCapital, error) {
+	return QueryRow(ctx, r.db, crashCapitalGetByPortfolioID, scanCrashCapital, portfolioID)
+}
+
+func scanCrashCapital(scan func(dest ...any) error) (*crashplaybook.CrashCapital, error) {
 	var cc crashplaybook.CrashCapital
 	var createdAt, updatedAt string
-	err := r.db.QueryRowContext(ctx, crashCapitalGetByPortfolioID, portfolioID).Scan(
-		&cc.ID, &cc.PortfolioID, &cc.Amount, &cc.Deployed, &createdAt, &updatedAt)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, shared.ErrNotFound
-	}
-	if err != nil {
+	if err := scan(&cc.ID, &cc.PortfolioID, &cc.Amount, &cc.Deployed, &createdAt, &updatedAt); err != nil {
 		return nil, err
 	}
-	var parseErr error
-	if cc.CreatedAt, parseErr = parseTime(createdAt); parseErr != nil {
-		return nil, parseErr
+	var err error
+	if cc.CreatedAt, err = parseTime(createdAt); err != nil {
+		return nil, err
 	}
-	if cc.UpdatedAt, parseErr = parseTime(updatedAt); parseErr != nil {
-		return nil, parseErr
+	if cc.UpdatedAt, err = parseTime(updatedAt); err != nil {
+		return nil, err
 	}
 	return &cc, nil
 }
