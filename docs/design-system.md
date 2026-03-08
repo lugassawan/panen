@@ -391,6 +391,75 @@ The `metrics` array renders in a 3-column grid. Set `positive: true` for green t
 
 Price and change use `price.toLocaleString("id-ID")` and `changePercent.toFixed(2)` for Indonesian number formatting.
 
+### Modal
+
+```svelte
+<script lang="ts">
+  import Modal from "../components/Modal.svelte";
+
+  let showModal = $state(false);
+</script>
+
+<Modal open={showModal} title="Edit Holding" onClose={() => (showModal = false)}>
+  <p>Modal body content here.</p>
+  {#snippet footer()}
+    <div class="flex justify-end gap-3">
+      <Button variant="secondary" onclick={() => (showModal = false)}>Cancel</Button>
+      <Button variant="primary" onclick={save}>Save</Button>
+    </div>
+  {/snippet}
+</Modal>
+```
+
+Props:
+- `open`: `boolean` — controls visibility (default: `true`)
+- `title`: `string` (optional) — rendered as `<h3>` with `aria-labelledby`
+- `aria-label`: `string` (optional) — use when no visible title; mutually exclusive with `title`
+- `size`: `"sm"` | `"md"` | `"lg"` — maps to `max-w-sm` / `max-w-md` / `max-w-lg` (default: `"md"`)
+- `onClose`: `() => void` (required) — called on Escape key or backdrop click
+- `children`: Snippet (required) — modal body
+- `footer`: Snippet (optional) — rendered below body with `mt-6` spacing
+
+Behavior:
+- **Backdrop click** closes the modal (calls `onClose`)
+- **Escape key** closes the modal
+- **Focus trapping**: Tab cycles through focusable elements inside the modal; Shift+Tab wraps backward
+- **Auto-focus**: Modal container receives focus when opened
+- Renders with `aria-modal="true"`, `role="dialog"`, and `z-50` stacking
+
+### ConfirmDialog
+
+Wraps `Modal` with confirm/cancel buttons — use for destructive or irreversible actions.
+
+```svelte
+<script lang="ts">
+  import ConfirmDialog from "../components/ConfirmDialog.svelte";
+</script>
+
+<ConfirmDialog
+  title="Delete Holding"
+  confirmVariant="danger"
+  onConfirm={handleDelete}
+  onCancel={() => (showConfirm = false)}
+>
+  Are you sure you want to delete this holding?
+</ConfirmDialog>
+```
+
+Props:
+- `title`: `string` (required)
+- `confirmLabel`: `string` (default: localized "Confirm")
+- `confirmVariant`: `"primary"` | `"danger"` (default: `"danger"`)
+- `loading`: `boolean` — disables buttons during async action (default: `false`)
+- `onConfirm`: `() => void` (required)
+- `onCancel`: `() => void` (required) — also used as Modal's `onClose`
+- `children`: Snippet (required) — description text
+
+**When to use which:**
+- `Modal` — custom layouts (forms, detail views, multi-step flows)
+- `ConfirmDialog` — simple yes/no decisions, especially destructive actions
+- Inline content — lightweight toggles that don't need overlay isolation
+
 ---
 
 ## 7. Layout Structure
