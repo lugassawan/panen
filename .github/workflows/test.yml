@@ -7,6 +7,15 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "tools/**"
+      - "main.go"
+      - "go.mod"
+      - "go.sum"
+      - "Makefile"
+      - ".github/workflows/test.yml"
 
 permissions:
   contents: read
@@ -56,20 +65,15 @@ jobs:
 
       - uses: jdx/mise-action@v3
 
-      - name: Install Wails CLI
-        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.11.0
-
       - name: Install frontend dependencies
         run: cd frontend && pnpm install
 
-      - name: Create frontend dist placeholder
-        run: mkdir -p frontend/dist && echo '<html></html>' > frontend/dist/index.html
-
-      - name: Generate Wails bindings
-        run: wails generate module
-
       - name: Run unit tests
+        env:
+          NODE_NO_WARNINGS: "1"
         run: make test-frontend
 
       - name: Run integration tests
+        env:
+          NODE_NO_WARNINGS: "1"
         run: make test-integration
