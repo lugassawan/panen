@@ -2,9 +2,9 @@
 import { AddHolding } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
 import Alert from "../../lib/components/Alert.svelte";
-import { formatError } from "../../lib/error";
 import Button from "../../lib/components/Button.svelte";
 import Input from "../../lib/components/Input.svelte";
+import { formatError } from "../../lib/error";
 
 let { portfolioId, onAdded }: { portfolioId: string; onAdded: () => void } = $props();
 

@@ -9,9 +9,9 @@ import {
 } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
 import Alert from "../../lib/components/Alert.svelte";
-import { formatError } from "../../lib/error";
 import ConfirmDialog from "../../lib/components/ConfirmDialog.svelte";
 import SkeletonTable from "../../lib/components/SkeletonTable.svelte";
+import { formatError } from "../../lib/error";
 import { toastStore } from "../../lib/stores/toast.svelte";
 import type {
   ActionType,

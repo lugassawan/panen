@@ -7,10 +7,10 @@ type AppError struct {
 	Err  error
 }
 
-func (e *AppError) Error() string { return e.Code + "|" + e.Err.Error() }
-func (e *AppError) Unwrap() error { return e.Err }
-
 // NewAppError creates a new AppError from a code and an existing error.
 func NewAppError(code string, err error) *AppError {
 	return &AppError{Code: code, Err: err}
 }
+
+func (e *AppError) Error() string { return e.Code + "|" + e.Err.Error() }
+func (e *AppError) Unwrap() error { return e.Err }

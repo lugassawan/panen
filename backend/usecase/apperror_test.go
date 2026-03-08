@@ -18,8 +18,8 @@ func TestAppErrorFields(t *testing.T) {
 	if err.Code != "ERR_EMPTY_NAME" {
 		t.Errorf("Code = %q, want ERR_EMPTY_NAME", err.Code)
 	}
-	if err.Err.Error() != "name is required" {
-		t.Errorf("Err.Error() = %q, want %q", err.Err.Error(), "name is required")
+	if err.Err.Error() != ErrEmptyName.Error() {
+		t.Errorf("Err.Error() = %q, want %q", err.Err.Error(), ErrEmptyName.Error())
 	}
 }
 

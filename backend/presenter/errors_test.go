@@ -16,8 +16,8 @@ func TestToAppErrorNil(t *testing.T) {
 
 func TestToAppErrorKnownSentinel(t *testing.T) {
 	err := toAppError(usecase.ErrHasHoldings)
-	appErr, ok := err.(*usecase.AppError)
-	if !ok {
+	var appErr *usecase.AppError
+	if !errors.As(err, &appErr) {
 		t.Fatalf("expected *AppError, got %T", err)
 	}
 	if appErr.Code != "ERR_HAS_HOLDINGS" {
@@ -28,8 +28,8 @@ func TestToAppErrorKnownSentinel(t *testing.T) {
 func TestToAppErrorWrappedSentinel(t *testing.T) {
 	wrapped := fmt.Errorf("delete portfolio: %w", usecase.ErrHasHoldings)
 	err := toAppError(wrapped)
-	appErr, ok := err.(*usecase.AppError)
-	if !ok {
+	var appErr *usecase.AppError
+	if !errors.As(err, &appErr) {
 		t.Fatalf("expected *AppError, got %T", err)
 	}
 	if appErr.Code != "ERR_HAS_HOLDINGS" {
@@ -40,10 +40,11 @@ func TestToAppErrorWrappedSentinel(t *testing.T) {
 func TestToAppErrorUnknown(t *testing.T) {
 	unknown := errors.New("something unexpected")
 	err := toAppError(unknown)
-	if _, ok := err.(*usecase.AppError); ok {
+	var appErr *usecase.AppError
+	if errors.As(err, &appErr) {
 		t.Error("unknown errors should not be converted to AppError")
 	}
-	if err != unknown {
+	if !errors.Is(err, unknown) {
 		t.Error("unknown errors should pass through unchanged")
 	}
 }

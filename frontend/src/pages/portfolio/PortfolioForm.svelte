@@ -3,8 +3,8 @@ import { untrack } from "svelte";
 import { CreatePortfolio, UpdatePortfolio } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
 import Button from "../../lib/components/Button.svelte";
-import { formatError } from "../../lib/error";
 import Input from "../../lib/components/Input.svelte";
+import { formatError } from "../../lib/error";
 import type { Mode, PortfolioResponse, RiskProfile } from "../../lib/types";
 
 let {

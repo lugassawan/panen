@@ -26,9 +26,7 @@ describe("formatError", () => {
   });
 
   it("falls back to message portion for unknown codes", () => {
-    expect(formatError("ERR_UNKNOWN|something went wrong")).toBe(
-      "something went wrong",
-    );
+    expect(formatError("ERR_UNKNOWN|something went wrong")).toBe("something went wrong");
   });
 
   it("returns raw string when no pipe delimiter", () => {
