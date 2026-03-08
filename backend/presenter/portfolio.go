@@ -7,18 +7,15 @@ import (
 
 	"github.com/lugassawan/panen/backend/domain/portfolio"
 	"github.com/lugassawan/panen/backend/infra/applog"
-	"github.com/lugassawan/panen/backend/infra/backup"
 	"github.com/lugassawan/panen/backend/usecase"
 )
 
 // PortfolioHandler handles portfolio management requests.
 type PortfolioHandler struct {
-	ctx        context.Context
-	portfolios *usecase.PortfolioService
-	sectors    usecase.SectorRegistry
-	backupSvc  *backup.BackupService
-	dbPath     string
-	backupDir  string
+	ctx             context.Context
+	portfolios      *usecase.PortfolioService
+	sectors         usecase.SectorRegistry
+	preDeleteBackup func(label string) error
 }
 
 // NewPortfolioHandler creates a new PortfolioHandler.
@@ -42,11 +39,9 @@ func (h *PortfolioHandler) Bind(
 	h.sectors = sectors
 }
 
-// BindBackup injects backup dependencies for pre-destructive backup support.
-func (h *PortfolioHandler) BindBackup(backupSvc *backup.BackupService, dbPath, backupDir string) {
-	h.backupSvc = backupSvc
-	h.dbPath = dbPath
-	h.backupDir = backupDir
+// BindBackup injects the pre-destructive backup callback.
+func (h *PortfolioHandler) BindBackup(fn func(label string) error) {
+	h.preDeleteBackup = fn
 }
 
 // GetHoldingSectors returns the sector for each ticker.
@@ -161,8 +156,8 @@ func (h *PortfolioHandler) UpdatePortfolio(
 // DeletePortfolio removes a portfolio by ID.
 // A pre-destructive backup is attempted before deletion (non-fatal on failure).
 func (h *PortfolioHandler) DeletePortfolio(id string) error {
-	if h.backupSvc != nil {
-		if err := h.backupSvc.CreateBeforeDestructive(h.dbPath, h.backupDir, "delete"); err != nil {
+	if h.preDeleteBackup != nil {
+		if err := h.preDeleteBackup("delete"); err != nil {
 			applog.Warn("pre-delete backup failed", err, applog.Fields{"portfolioID": id})
 		}
 	}

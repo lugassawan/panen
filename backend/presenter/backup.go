@@ -25,6 +25,14 @@ func (h *BackupHandler) Bind(ctx context.Context, backupSvc *backup.BackupServic
 	h.backupDir = backupDir
 }
 
+// CreateBeforeDestructive creates a pre-destructive backup (e.g., before delete).
+func (h *BackupHandler) CreateBeforeDestructive(label string) error {
+	if err := h.backup.CreateBeforeDestructive(h.dbPath, h.backupDir, label); err != nil {
+		return fmt.Errorf("create pre-destructive backup: %w", err)
+	}
+	return nil
+}
+
 // CreateManualBackup creates a user-triggered backup.
 func (h *BackupHandler) CreateManualBackup() error {
 	if err := h.backup.CreateManualBackup(h.dbPath, h.backupDir); err != nil {

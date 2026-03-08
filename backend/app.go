@@ -193,7 +193,7 @@ func (a *App) Startup(ctx context.Context) {
 	a.BrokerConfigHandler.Bind(brokerResult.Data)
 
 	a.BackupHandler.Bind(ctx, a.backup, a.dbPath, a.backupDir)
-	a.PortfolioHandler.BindBackup(a.backup, a.dbPath, a.backupDir)
+	a.PortfolioHandler.BindBackup(a.BackupHandler.CreateBeforeDestructive)
 
 	svc.refresh.Start(ctx)
 
