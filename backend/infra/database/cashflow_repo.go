@@ -34,30 +34,7 @@ func (r *CashFlowRepo) Create(ctx context.Context, cf *payday.CashFlow) error {
 }
 
 func (r *CashFlowRepo) ListByPortfolioID(ctx context.Context, portfolioID string) ([]*payday.CashFlow, error) {
-	rows, err := r.db.QueryContext(ctx, cashFlowListByPortfolioID, portfolioID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var flows []*payday.CashFlow
-	for rows.Next() {
-		var cf payday.CashFlow
-		var flowType, date, createdAt string
-		if err := rows.Scan(&cf.ID, &cf.PortfolioID, &flowType, &cf.Amount,
-			&date, &cf.Note, &createdAt); err != nil {
-			return nil, err
-		}
-		cf.Type = payday.FlowType(flowType)
-		if cf.Date, err = parseTime(date); err != nil {
-			return nil, err
-		}
-		if cf.CreatedAt, err = parseTime(createdAt); err != nil {
-			return nil, err
-		}
-		flows = append(flows, &cf)
-	}
-	return flows, rows.Err()
+	return QueryAll(ctx, r.db, cashFlowListByPortfolioID, scanCashflow, portfolioID)
 }
 
 func (r *CashFlowRepo) Delete(ctx context.Context, id string) error {
@@ -66,4 +43,22 @@ func (r *CashFlowRepo) Delete(ctx context.Context, id string) error {
 		return err
 	}
 	return checkRowsAffected(res)
+}
+
+func scanCashflow(scan func(dest ...any) error) (*payday.CashFlow, error) {
+	var cf payday.CashFlow
+	var flowType, date, createdAt string
+	if err := scan(&cf.ID, &cf.PortfolioID, &flowType, &cf.Amount,
+		&date, &cf.Note, &createdAt); err != nil {
+		return nil, err
+	}
+	cf.Type = payday.FlowType(flowType)
+	var err error
+	if cf.Date, err = parseTime(date); err != nil {
+		return nil, err
+	}
+	if cf.CreatedAt, err = parseTime(createdAt); err != nil {
+		return nil, err
+	}
+	return &cf, nil
 }
