@@ -3,10 +3,8 @@ package database
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"time"
 
-	"github.com/lugassawan/panen/backend/domain/shared"
 	"github.com/lugassawan/panen/backend/domain/stock"
 )
 
@@ -51,11 +49,11 @@ func (r *StockDataRepo) Upsert(ctx context.Context, d *stock.Data) error {
 }
 
 func (r *StockDataRepo) GetByTicker(ctx context.Context, ticker string) (*stock.Data, error) {
-	return r.scanStockRow(r.db.QueryRowContext(ctx, stockGetByTicker, ticker))
+	return queryRow(ctx, r.db, stockGetByTicker, scanStockData, ticker)
 }
 
 func (r *StockDataRepo) GetByTickerAndSource(ctx context.Context, ticker string, source string) (*stock.Data, error) {
-	return r.scanStockRow(r.db.QueryRowContext(ctx, stockGetByTickerAndSource, ticker, source))
+	return queryRow(ctx, r.db, stockGetByTickerAndSource, scanStockData, ticker, source)
 }
 
 func (r *StockDataRepo) DeleteOlderThan(ctx context.Context, before time.Time) (int64, error) {
@@ -83,19 +81,16 @@ func (r *StockDataRepo) ListAllTickers(ctx context.Context) ([]string, error) {
 	return tickers, rows.Err()
 }
 
-func (r *StockDataRepo) scanStockRow(row *sql.Row) (*stock.Data, error) {
+func scanStockData(scan func(dest ...any) error) (*stock.Data, error) {
 	var d stock.Data
 	var fetchedAt string
-	err := row.Scan(
+	if err := scan(
 		&d.ID, &d.Ticker, &d.Price, &d.High52Week, &d.Low52Week,
 		&d.EPS, &d.BVPS, &d.ROE, &d.DER, &d.PBV, &d.PER,
-		&d.DividendYield, &d.PayoutRatio, &fetchedAt, &d.Source)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, shared.ErrNotFound
-	}
-	if err != nil {
+		&d.DividendYield, &d.PayoutRatio, &fetchedAt, &d.Source); err != nil {
 		return nil, err
 	}
+	var err error
 	if d.FetchedAt, err = parseTime(fetchedAt); err != nil {
 		return nil, err
 	}

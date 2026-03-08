@@ -3,11 +3,9 @@ package database
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"time"
 
 	"github.com/lugassawan/panen/backend/domain/payday"
-	"github.com/lugassawan/panen/backend/domain/shared"
 )
 
 const (
@@ -50,38 +48,15 @@ func (r *PaydayRepo) Create(ctx context.Context, event *payday.PaydayEvent) erro
 func (r *PaydayRepo) GetByMonthAndPortfolio(
 	ctx context.Context, month, portfolioID string,
 ) (*payday.PaydayEvent, error) {
-	var e payday.PaydayEvent
-	var status string
-	var deferUntil, confirmedAt sql.NullString
-	var createdAt, updatedAt string
-	err := r.db.QueryRowContext(ctx, paydayEventGetByMonthAndPortfolio, month, portfolioID).Scan(
-		&e.ID, &e.Month, &e.PortfolioID, &e.Expected, &e.Actual, &status,
-		&deferUntil, &confirmedAt, &createdAt, &updatedAt)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, shared.ErrNotFound
-	}
-	if err != nil {
-		return nil, err
-	}
-	return scanPaydayEvent(&e, status, deferUntil, confirmedAt, createdAt, updatedAt)
+	return queryRow(ctx, r.db, paydayEventGetByMonthAndPortfolio, scanPaydayEvent, month, portfolioID)
 }
 
 func (r *PaydayRepo) ListByMonth(ctx context.Context, month string) ([]*payday.PaydayEvent, error) {
-	rows, err := r.db.QueryContext(ctx, paydayEventListByMonth, month)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	return scanPaydayEvents(rows)
+	return queryAll(ctx, r.db, paydayEventListByMonth, scanPaydayEvent, month)
 }
 
 func (r *PaydayRepo) ListByPortfolioID(ctx context.Context, portfolioID string) ([]*payday.PaydayEvent, error) {
-	rows, err := r.db.QueryContext(ctx, paydayEventListByPortfolioID, portfolioID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	return scanPaydayEvents(rows)
+	return queryAll(ctx, r.db, paydayEventListByPortfolioID, scanPaydayEvent, portfolioID)
 }
 
 func (r *PaydayRepo) Update(ctx context.Context, event *payday.PaydayEvent) error {
@@ -103,45 +78,28 @@ func formatNullableTime(t *time.Time) sql.NullString {
 	return sql.NullString{String: formatTime(*t), Valid: true}
 }
 
-func scanPaydayEvents(rows *sql.Rows) ([]*payday.PaydayEvent, error) {
-	var events []*payday.PaydayEvent
-	for rows.Next() {
-		var e payday.PaydayEvent
-		var status string
-		var deferUntil, confirmedAt sql.NullString
-		var createdAt, updatedAt string
-		if err := rows.Scan(&e.ID, &e.Month, &e.PortfolioID, &e.Expected, &e.Actual,
-			&status, &deferUntil, &confirmedAt, &createdAt, &updatedAt); err != nil {
-			return nil, err
-		}
-		ev, err := scanPaydayEvent(&e, status, deferUntil, confirmedAt, createdAt, updatedAt)
-		if err != nil {
-			return nil, err
-		}
-		events = append(events, ev)
+func scanPaydayEvent(scan func(dest ...any) error) (*payday.PaydayEvent, error) {
+	var e payday.PaydayEvent
+	var status string
+	var deferUntil, confirmedAt sql.NullString
+	var createdAt, updatedAt string
+	if err := scan(&e.ID, &e.Month, &e.PortfolioID, &e.Expected, &e.Actual,
+		&status, &deferUntil, &confirmedAt, &createdAt, &updatedAt); err != nil {
+		return nil, err
 	}
-	return events, rows.Err()
-}
-
-func scanPaydayEvent(
-	e *payday.PaydayEvent,
-	status string,
-	deferUntil, confirmedAt sql.NullString,
-	createdAt, updatedAt string,
-) (*payday.PaydayEvent, error) {
 	e.Status = payday.Status(status)
 	var err error
 	if deferUntil.Valid {
-		t, err := parseTime(deferUntil.String)
-		if err != nil {
-			return nil, err
+		t, parseErr := parseTime(deferUntil.String)
+		if parseErr != nil {
+			return nil, parseErr
 		}
 		e.DeferUntil = &t
 	}
 	if confirmedAt.Valid {
-		t, err := parseTime(confirmedAt.String)
-		if err != nil {
-			return nil, err
+		t, parseErr := parseTime(confirmedAt.String)
+		if parseErr != nil {
+			return nil, parseErr
 		}
 		e.ConfirmedAt = &t
 	}
@@ -151,5 +109,5 @@ func scanPaydayEvent(
 	if e.UpdatedAt, err = parseTime(updatedAt); err != nil {
 		return nil, err
 	}
-	return e, nil
+	return &e, nil
 }

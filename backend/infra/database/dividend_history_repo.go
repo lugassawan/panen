@@ -63,25 +63,20 @@ func (r *DividendHistoryRepo) GetByTicker(
 	ctx context.Context,
 	ticker, source string,
 ) ([]dividend.DividendEvent, error) {
-	rows, err := r.db.QueryContext(ctx, dividendHistoryGetByTicker, ticker, source)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
+	return queryAll(ctx, r.db, dividendHistoryGetByTicker, scanDividendEvent, ticker, source)
+}
 
-	var events []dividend.DividendEvent
-	for rows.Next() {
-		var e dividend.DividendEvent
-		var dateStr string
-		if err := rows.Scan(&e.ID, &e.Ticker, &dateStr, &e.Amount, &e.Source); err != nil {
-			return nil, err
-		}
-		if e.ExDate, err = parseTime(dateStr); err != nil {
-			return nil, err
-		}
-		events = append(events, e)
+func scanDividendEvent(scan func(dest ...any) error) (dividend.DividendEvent, error) {
+	var e dividend.DividendEvent
+	var dateStr string
+	if err := scan(&e.ID, &e.Ticker, &dateStr, &e.Amount, &e.Source); err != nil {
+		return e, err
 	}
-	return events, rows.Err()
+	var err error
+	if e.ExDate, err = parseTime(dateStr); err != nil {
+		return e, err
+	}
+	return e, nil
 }
 
 func (r *DividendHistoryRepo) LatestDate(

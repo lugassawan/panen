@@ -4,10 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"errors"
 
 	"github.com/lugassawan/panen/backend/domain/portfolio"
-	"github.com/lugassawan/panen/backend/domain/shared"
 )
 
 const (
@@ -52,83 +50,17 @@ func (r *PortfolioRepo) Create(ctx context.Context, p *portfolio.Portfolio) erro
 }
 
 func (r *PortfolioRepo) GetByID(ctx context.Context, id string) (*portfolio.Portfolio, error) {
-	var p portfolio.Portfolio
-	var mode, riskProfile, universe, createdAt, updatedAt string
-	err := r.db.QueryRowContext(ctx, portfolioGetByID, id).Scan(
-		&p.ID, &p.BrokerageAccountID, &p.Name, &mode, &riskProfile,
-		&p.Capital, &p.MonthlyAddition, &p.MaxStocks, &universe,
-		&createdAt, &updatedAt)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, shared.ErrNotFound
-	}
-	if err != nil {
-		return nil, err
-	}
-	p.Mode = portfolio.Mode(mode)
-	p.RiskProfile = portfolio.RiskProfile(riskProfile)
-	if err := json.Unmarshal([]byte(universe), &p.Universe); err != nil {
-		return nil, err
-	}
-	if p.Universe == nil {
-		p.Universe = []string{}
-	}
-	if p.CreatedAt, err = parseTime(createdAt); err != nil {
-		return nil, err
-	}
-	if p.UpdatedAt, err = parseTime(updatedAt); err != nil {
-		return nil, err
-	}
-	return &p, nil
+	return queryRow(ctx, r.db, portfolioGetByID, scanPortfolio, id)
 }
 
 func (r *PortfolioRepo) ListAll(ctx context.Context) ([]*portfolio.Portfolio, error) {
-	rows, err := r.db.QueryContext(ctx, portfolioListAll)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	return scanPortfolios(rows)
+	return queryAll(ctx, r.db, portfolioListAll, scanPortfolio)
 }
 
 func (r *PortfolioRepo) ListByBrokerageAccountID(
 	ctx context.Context, brokerageAccountID string,
 ) ([]*portfolio.Portfolio, error) {
-	rows, err := r.db.QueryContext(ctx, portfolioListByBrokerageAccountID, brokerageAccountID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	return scanPortfolios(rows)
-}
-
-func scanPortfolios(rows *sql.Rows) ([]*portfolio.Portfolio, error) {
-	var portfolios []*portfolio.Portfolio
-	for rows.Next() {
-		var p portfolio.Portfolio
-		var mode, riskProfile, universe, createdAt, updatedAt string
-		if err := rows.Scan(&p.ID, &p.BrokerageAccountID, &p.Name, &mode, &riskProfile,
-			&p.Capital, &p.MonthlyAddition, &p.MaxStocks, &universe,
-			&createdAt, &updatedAt); err != nil {
-			return nil, err
-		}
-		p.Mode = portfolio.Mode(mode)
-		p.RiskProfile = portfolio.RiskProfile(riskProfile)
-		if err := json.Unmarshal([]byte(universe), &p.Universe); err != nil {
-			return nil, err
-		}
-		if p.Universe == nil {
-			p.Universe = []string{}
-		}
-		var err error
-		if p.CreatedAt, err = parseTime(createdAt); err != nil {
-			return nil, err
-		}
-		if p.UpdatedAt, err = parseTime(updatedAt); err != nil {
-			return nil, err
-		}
-		portfolios = append(portfolios, &p)
-	}
-	return portfolios, rows.Err()
+	return queryAll(ctx, r.db, portfolioListByBrokerageAccountID, scanPortfolio, brokerageAccountID)
 }
 
 func (r *PortfolioRepo) Update(ctx context.Context, p *portfolio.Portfolio) error {
@@ -152,4 +84,31 @@ func (r *PortfolioRepo) Delete(ctx context.Context, id string) error {
 		return err
 	}
 	return checkRowsAffected(res)
+}
+
+func scanPortfolio(scan func(dest ...any) error) (*portfolio.Portfolio, error) {
+	var p portfolio.Portfolio
+	var mode, riskProfile, universe, createdAt, updatedAt string
+	if err := scan(
+		&p.ID, &p.BrokerageAccountID, &p.Name, &mode, &riskProfile,
+		&p.Capital, &p.MonthlyAddition, &p.MaxStocks, &universe,
+		&createdAt, &updatedAt); err != nil {
+		return nil, err
+	}
+	p.Mode = portfolio.Mode(mode)
+	p.RiskProfile = portfolio.RiskProfile(riskProfile)
+	if err := json.Unmarshal([]byte(universe), &p.Universe); err != nil {
+		return nil, err
+	}
+	if p.Universe == nil {
+		p.Universe = []string{}
+	}
+	var err error
+	if p.CreatedAt, err = parseTime(createdAt); err != nil {
+		return nil, err
+	}
+	if p.UpdatedAt, err = parseTime(updatedAt); err != nil {
+		return nil, err
+	}
+	return &p, nil
 }

@@ -3,9 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
-	"errors"
 
-	"github.com/lugassawan/panen/backend/domain/shared"
 	"github.com/lugassawan/panen/backend/domain/trailingstop"
 )
 
@@ -39,21 +37,7 @@ func (r *PeakRepo) GetByHoldingID(
 	ctx context.Context,
 	holdingID string,
 ) (*trailingstop.HoldingPeak, error) {
-	var hp trailingstop.HoldingPeak
-	var updatedAt string
-	err := r.db.QueryRowContext(ctx, peakGetByHoldingID, holdingID).Scan(
-		&hp.ID, &hp.HoldingID, &hp.PeakPrice, &updatedAt)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, shared.ErrNotFound
-	}
-	if err != nil {
-		return nil, err
-	}
-	var parseErr error
-	if hp.UpdatedAt, parseErr = parseTime(updatedAt); parseErr != nil {
-		return nil, parseErr
-	}
-	return &hp, nil
+	return queryRow(ctx, r.db, peakGetByHoldingID, scanPeak, holdingID)
 }
 
 func (r *PeakRepo) ListByHoldingIDs(
@@ -74,23 +58,18 @@ func (r *PeakRepo) ListByHoldingIDs(
 		len(holdingIDs),
 	)
 
-	rows, err := r.db.QueryContext(ctx, query, args...)
-	if err != nil {
+	return queryAll(ctx, r.db, query, scanPeak, args...)
+}
+
+func scanPeak(scan func(dest ...any) error) (*trailingstop.HoldingPeak, error) {
+	var hp trailingstop.HoldingPeak
+	var updatedAt string
+	if err := scan(&hp.ID, &hp.HoldingID, &hp.PeakPrice, &updatedAt); err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-
-	var peaks []*trailingstop.HoldingPeak
-	for rows.Next() {
-		var hp trailingstop.HoldingPeak
-		var updatedAt string
-		if err := rows.Scan(&hp.ID, &hp.HoldingID, &hp.PeakPrice, &updatedAt); err != nil {
-			return nil, err
-		}
-		if hp.UpdatedAt, err = parseTime(updatedAt); err != nil {
-			return nil, err
-		}
-		peaks = append(peaks, &hp)
+	var err error
+	if hp.UpdatedAt, err = parseTime(updatedAt); err != nil {
+		return nil, err
 	}
-	return peaks, rows.Err()
+	return &hp, nil
 }

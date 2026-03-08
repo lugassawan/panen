@@ -3,10 +3,8 @@ package database
 import (
 	"context"
 	"database/sql"
-	"errors"
 
 	"github.com/lugassawan/panen/backend/domain/brokerage"
-	"github.com/lugassawan/panen/backend/domain/shared"
 )
 
 const (
@@ -45,34 +43,15 @@ func (r *BrokerageRepo) Create(ctx context.Context, a *brokerage.Account) error 
 }
 
 func (r *BrokerageRepo) GetByID(ctx context.Context, id string) (*brokerage.Account, error) {
-	var a brokerage.Account
-	var isManual int
-	var createdAt, updatedAt string
-	err := r.db.QueryRowContext(ctx, brokerageGetByID, id).Scan(
-		&a.ID, &a.ProfileID, &a.BrokerName, &a.BrokerCode, &a.BuyFeePct, &a.SellFeePct,
-		&a.SellTaxPct, &isManual, &createdAt, &updatedAt)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, shared.ErrNotFound
-	}
-	if err != nil {
-		return nil, err
-	}
-	a.IsManualFee = isManual != 0
-	if a.CreatedAt, err = parseTime(createdAt); err != nil {
-		return nil, err
-	}
-	if a.UpdatedAt, err = parseTime(updatedAt); err != nil {
-		return nil, err
-	}
-	return &a, nil
+	return queryRow(ctx, r.db, brokerageGetByID, scanBrokerageAccount, id)
 }
 
 func (r *BrokerageRepo) ListByProfileID(ctx context.Context, profileID string) ([]*brokerage.Account, error) {
-	return r.queryAccounts(ctx, brokerageListByProfileID, profileID)
+	return queryAll(ctx, r.db, brokerageListByProfileID, scanBrokerageAccount, profileID)
 }
 
 func (r *BrokerageRepo) ListNonManualByProfileID(ctx context.Context, profileID string) ([]*brokerage.Account, error) {
-	return r.queryAccounts(ctx, brokerageListNonManual, profileID)
+	return queryAll(ctx, r.db, brokerageListNonManual, scanBrokerageAccount, profileID)
 }
 
 func (r *BrokerageRepo) Update(ctx context.Context, a *brokerage.Account) error {
@@ -93,30 +72,21 @@ func (r *BrokerageRepo) Delete(ctx context.Context, id string) error {
 	return checkRowsAffected(res)
 }
 
-func (r *BrokerageRepo) queryAccounts(ctx context.Context, query string, args ...any) ([]*brokerage.Account, error) {
-	rows, err := r.db.QueryContext(ctx, query, args...)
-	if err != nil {
+func scanBrokerageAccount(scan func(dest ...any) error) (*brokerage.Account, error) {
+	var a brokerage.Account
+	var isManual int
+	var createdAt, updatedAt string
+	if err := scan(&a.ID, &a.ProfileID, &a.BrokerName, &a.BrokerCode, &a.BuyFeePct,
+		&a.SellFeePct, &a.SellTaxPct, &isManual, &createdAt, &updatedAt); err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-
-	var accounts []*brokerage.Account
-	for rows.Next() {
-		var a brokerage.Account
-		var isManual int
-		var createdAt, updatedAt string
-		if err := rows.Scan(&a.ID, &a.ProfileID, &a.BrokerName, &a.BrokerCode, &a.BuyFeePct,
-			&a.SellFeePct, &a.SellTaxPct, &isManual, &createdAt, &updatedAt); err != nil {
-			return nil, err
-		}
-		a.IsManualFee = isManual != 0
-		if a.CreatedAt, err = parseTime(createdAt); err != nil {
-			return nil, err
-		}
-		if a.UpdatedAt, err = parseTime(updatedAt); err != nil {
-			return nil, err
-		}
-		accounts = append(accounts, &a)
+	a.IsManualFee = isManual != 0
+	var err error
+	if a.CreatedAt, err = parseTime(createdAt); err != nil {
+		return nil, err
 	}
-	return accounts, rows.Err()
+	if a.UpdatedAt, err = parseTime(updatedAt); err != nil {
+		return nil, err
+	}
+	return &a, nil
 }

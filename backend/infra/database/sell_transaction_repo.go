@@ -3,10 +3,8 @@ package database
 import (
 	"context"
 	"database/sql"
-	"errors"
 
 	"github.com/lugassawan/panen/backend/domain/portfolio"
-	"github.com/lugassawan/panen/backend/domain/shared"
 )
 
 const (
@@ -36,54 +34,13 @@ func (r *SellTransactionRepo) Create(ctx context.Context, tx *portfolio.SellTran
 }
 
 func (r *SellTransactionRepo) GetByID(ctx context.Context, id string) (*portfolio.SellTransaction, error) {
-	var tx portfolio.SellTransaction
-	var date, createdAt string
-	err := r.db.QueryRowContext(ctx, sellTxGetByID, id).Scan(
-		&tx.ID, &tx.HoldingID, &date, &tx.Price, &tx.Lots, &tx.Fee,
-		&tx.Tax, &tx.RealizedGain, &createdAt)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, shared.ErrNotFound
-	}
-	if err != nil {
-		return nil, err
-	}
-	if tx.Date, err = parseTime(date); err != nil {
-		return nil, err
-	}
-	if tx.CreatedAt, err = parseTime(createdAt); err != nil {
-		return nil, err
-	}
-	return &tx, nil
+	return queryRow(ctx, r.db, sellTxGetByID, scanSellTransaction, id)
 }
 
 func (r *SellTransactionRepo) ListByHoldingID(
 	ctx context.Context, holdingID string,
 ) ([]*portfolio.SellTransaction, error) {
-	rows, err := r.db.QueryContext(ctx, sellTxListByHoldingID, holdingID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var txns []*portfolio.SellTransaction
-	for rows.Next() {
-		var tx portfolio.SellTransaction
-		var date, createdAt string
-		if err := rows.Scan(
-			&tx.ID, &tx.HoldingID, &date, &tx.Price, &tx.Lots, &tx.Fee,
-			&tx.Tax, &tx.RealizedGain, &createdAt,
-		); err != nil {
-			return nil, err
-		}
-		if tx.Date, err = parseTime(date); err != nil {
-			return nil, err
-		}
-		if tx.CreatedAt, err = parseTime(createdAt); err != nil {
-			return nil, err
-		}
-		txns = append(txns, &tx)
-	}
-	return txns, rows.Err()
+	return queryAll(ctx, r.db, sellTxListByHoldingID, scanSellTransaction, holdingID)
 }
 
 func (r *SellTransactionRepo) Delete(ctx context.Context, id string) error {
@@ -92,4 +49,23 @@ func (r *SellTransactionRepo) Delete(ctx context.Context, id string) error {
 		return err
 	}
 	return checkRowsAffected(res)
+}
+
+func scanSellTransaction(scan func(dest ...any) error) (*portfolio.SellTransaction, error) {
+	var tx portfolio.SellTransaction
+	var date, createdAt string
+	if err := scan(
+		&tx.ID, &tx.HoldingID, &date, &tx.Price, &tx.Lots, &tx.Fee,
+		&tx.Tax, &tx.RealizedGain, &createdAt,
+	); err != nil {
+		return nil, err
+	}
+	var err error
+	if tx.Date, err = parseTime(date); err != nil {
+		return nil, err
+	}
+	if tx.CreatedAt, err = parseTime(createdAt); err != nil {
+		return nil, err
+	}
+	return &tx, nil
 }

@@ -3,9 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
-	"errors"
 
-	"github.com/lugassawan/panen/backend/domain/shared"
 	"github.com/lugassawan/panen/backend/domain/watchlist"
 )
 
@@ -48,50 +46,11 @@ func (r *WatchlistRepo) Create(ctx context.Context, w *watchlist.Watchlist) erro
 }
 
 func (r *WatchlistRepo) GetByID(ctx context.Context, id string) (*watchlist.Watchlist, error) {
-	var w watchlist.Watchlist
-	var createdAt, updatedAt string
-	err := r.db.QueryRowContext(ctx, watchlistGetByID, id).Scan(
-		&w.ID, &w.ProfileID, &w.Name,
-		&createdAt, &updatedAt)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, shared.ErrNotFound
-	}
-	if err != nil {
-		return nil, err
-	}
-	if w.CreatedAt, err = parseTime(createdAt); err != nil {
-		return nil, err
-	}
-	if w.UpdatedAt, err = parseTime(updatedAt); err != nil {
-		return nil, err
-	}
-	return &w, nil
+	return queryRow(ctx, r.db, watchlistGetByID, scanWatchlist, id)
 }
 
 func (r *WatchlistRepo) ListByProfileID(ctx context.Context, profileID string) ([]*watchlist.Watchlist, error) {
-	rows, err := r.db.QueryContext(ctx, watchlistListByProfileID, profileID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var watchlists []*watchlist.Watchlist
-	for rows.Next() {
-		var w watchlist.Watchlist
-		var createdAt, updatedAt string
-		if err := rows.Scan(&w.ID, &w.ProfileID, &w.Name,
-			&createdAt, &updatedAt); err != nil {
-			return nil, err
-		}
-		if w.CreatedAt, err = parseTime(createdAt); err != nil {
-			return nil, err
-		}
-		if w.UpdatedAt, err = parseTime(updatedAt); err != nil {
-			return nil, err
-		}
-		watchlists = append(watchlists, &w)
-	}
-	return watchlists, rows.Err()
+	return queryAll(ctx, r.db, watchlistListByProfileID, scanWatchlist, profileID)
 }
 
 func (r *WatchlistRepo) Update(ctx context.Context, w *watchlist.Watchlist) error {
@@ -136,25 +95,7 @@ func (r *WatchlistItemRepo) Remove(ctx context.Context, watchlistID, ticker stri
 }
 
 func (r *WatchlistItemRepo) ListByWatchlistID(ctx context.Context, watchlistID string) ([]*watchlist.Item, error) {
-	rows, err := r.db.QueryContext(ctx, watchlistItemListByWatchlistID, watchlistID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var items []*watchlist.Item
-	for rows.Next() {
-		var item watchlist.Item
-		var createdAt string
-		if err := rows.Scan(&item.ID, &item.WatchlistID, &item.Ticker, &createdAt); err != nil {
-			return nil, err
-		}
-		if item.CreatedAt, err = parseTime(createdAt); err != nil {
-			return nil, err
-		}
-		items = append(items, &item)
-	}
-	return items, rows.Err()
+	return queryAll(ctx, r.db, watchlistItemListByWatchlistID, scanWatchlistItem, watchlistID)
 }
 
 func (r *WatchlistItemRepo) ExistsByWatchlistAndTicker(ctx context.Context, watchlistID, ticker string) (bool, error) {
@@ -164,4 +105,33 @@ func (r *WatchlistItemRepo) ExistsByWatchlistAndTicker(ctx context.Context, watc
 		return false, err
 	}
 	return count > 0, nil
+}
+
+func scanWatchlist(scan func(dest ...any) error) (*watchlist.Watchlist, error) {
+	var w watchlist.Watchlist
+	var createdAt, updatedAt string
+	if err := scan(&w.ID, &w.ProfileID, &w.Name, &createdAt, &updatedAt); err != nil {
+		return nil, err
+	}
+	var err error
+	if w.CreatedAt, err = parseTime(createdAt); err != nil {
+		return nil, err
+	}
+	if w.UpdatedAt, err = parseTime(updatedAt); err != nil {
+		return nil, err
+	}
+	return &w, nil
+}
+
+func scanWatchlistItem(scan func(dest ...any) error) (*watchlist.Item, error) {
+	var item watchlist.Item
+	var createdAt string
+	if err := scan(&item.ID, &item.WatchlistID, &item.Ticker, &createdAt); err != nil {
+		return nil, err
+	}
+	var err error
+	if item.CreatedAt, err = parseTime(createdAt); err != nil {
+		return nil, err
+	}
+	return &item, nil
 }

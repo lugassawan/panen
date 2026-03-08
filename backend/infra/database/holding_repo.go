@@ -3,10 +3,8 @@ package database
 import (
 	"context"
 	"database/sql"
-	"errors"
 
 	"github.com/lugassawan/panen/backend/domain/portfolio"
-	"github.com/lugassawan/panen/backend/domain/shared"
 )
 
 const (
@@ -42,74 +40,18 @@ func (r *HoldingRepo) Create(ctx context.Context, h *portfolio.Holding) error {
 }
 
 func (r *HoldingRepo) GetByID(ctx context.Context, id string) (*portfolio.Holding, error) {
-	var h portfolio.Holding
-	var createdAt, updatedAt string
-	err := r.db.QueryRowContext(ctx, holdingGetByID, id).Scan(
-		&h.ID, &h.PortfolioID, &h.Ticker, &h.AvgBuyPrice, &h.Lots,
-		&createdAt, &updatedAt)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, shared.ErrNotFound
-	}
-	if err != nil {
-		return nil, err
-	}
-	if h.CreatedAt, err = parseTime(createdAt); err != nil {
-		return nil, err
-	}
-	if h.UpdatedAt, err = parseTime(updatedAt); err != nil {
-		return nil, err
-	}
-	return &h, nil
+	return queryRow(ctx, r.db, holdingGetByID, scanHolding, id)
 }
 
 func (r *HoldingRepo) GetByPortfolioAndTicker(
 	ctx context.Context,
 	portfolioID, ticker string,
 ) (*portfolio.Holding, error) {
-	var h portfolio.Holding
-	var createdAt, updatedAt string
-	err := r.db.QueryRowContext(ctx, holdingGetByPortfolioAndTicker, portfolioID, ticker).Scan(
-		&h.ID, &h.PortfolioID, &h.Ticker, &h.AvgBuyPrice, &h.Lots,
-		&createdAt, &updatedAt)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, shared.ErrNotFound
-	}
-	if err != nil {
-		return nil, err
-	}
-	if h.CreatedAt, err = parseTime(createdAt); err != nil {
-		return nil, err
-	}
-	if h.UpdatedAt, err = parseTime(updatedAt); err != nil {
-		return nil, err
-	}
-	return &h, nil
+	return queryRow(ctx, r.db, holdingGetByPortfolioAndTicker, scanHolding, portfolioID, ticker)
 }
 
 func (r *HoldingRepo) ListByPortfolioID(ctx context.Context, portfolioID string) ([]*portfolio.Holding, error) {
-	rows, err := r.db.QueryContext(ctx, holdingListByPortfolioID, portfolioID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var holdings []*portfolio.Holding
-	for rows.Next() {
-		var h portfolio.Holding
-		var createdAt, updatedAt string
-		if err := rows.Scan(&h.ID, &h.PortfolioID, &h.Ticker, &h.AvgBuyPrice, &h.Lots,
-			&createdAt, &updatedAt); err != nil {
-			return nil, err
-		}
-		if h.CreatedAt, err = parseTime(createdAt); err != nil {
-			return nil, err
-		}
-		if h.UpdatedAt, err = parseTime(updatedAt); err != nil {
-			return nil, err
-		}
-		holdings = append(holdings, &h)
-	}
-	return holdings, rows.Err()
+	return queryAll(ctx, r.db, holdingListByPortfolioID, scanHolding, portfolioID)
 }
 
 func (r *HoldingRepo) Update(ctx context.Context, h *portfolio.Holding) error {
@@ -127,4 +69,21 @@ func (r *HoldingRepo) Delete(ctx context.Context, id string) error {
 		return err
 	}
 	return checkRowsAffected(res)
+}
+
+func scanHolding(scan func(dest ...any) error) (*portfolio.Holding, error) {
+	var h portfolio.Holding
+	var createdAt, updatedAt string
+	if err := scan(&h.ID, &h.PortfolioID, &h.Ticker, &h.AvgBuyPrice, &h.Lots,
+		&createdAt, &updatedAt); err != nil {
+		return nil, err
+	}
+	var err error
+	if h.CreatedAt, err = parseTime(createdAt); err != nil {
+		return nil, err
+	}
+	if h.UpdatedAt, err = parseTime(updatedAt); err != nil {
+		return nil, err
+	}
+	return &h, nil
 }
