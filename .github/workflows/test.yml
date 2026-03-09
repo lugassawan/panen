@@ -87,3 +87,48 @@ jobs:
       - name: Run integration tests
         if: matrix.shard == '1/3'
         run: make test-integration
+
+  coverage:
+    runs-on: ubuntu-latest
+    name: Coverage
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: jdx/mise-action@v3
+
+      - name: Install Wails CLI
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.11.0
+
+      - name: Install frontend dependencies
+        run: cd frontend && pnpm install
+
+      - name: Create frontend dist placeholder
+        run: mkdir -p frontend/dist && echo '<html></html>' > frontend/dist/index.html
+
+      - name: Generate Wails bindings
+        run: wails generate module
+
+      - name: Check Go coverage
+        env:
+          CGO_ENABLED: "0"
+        run: |
+          go test -coverprofile=coverage.out ./...
+          COVERAGE=$(go tool cover -func=coverage.out | grep total: | awk '{print $3}' | tr -d '%')
+          echo "Go coverage: ${COVERAGE}%"
+          THRESHOLD=74
+          if [ "$(echo "$COVERAGE < $THRESHOLD" | bc)" -eq 1 ]; then
+            echo "::error::Go coverage ${COVERAGE}% is below threshold ${THRESHOLD}%"
+            exit 1
+          fi
+
+      - name: Check frontend coverage
+        run: |
+          cd frontend && pnpm vitest run --coverage
+          COVERAGE=$(node -e "const s = require('../coverage/frontend/coverage-summary.json'); console.log(s.total.statements.pct)")
+          echo "Frontend statement coverage: ${COVERAGE}%"
+          THRESHOLD=78
+          if [ "$(echo "$COVERAGE < $THRESHOLD" | bc)" -eq 1 ]; then
+            echo "::error::Frontend coverage ${COVERAGE}% is below threshold ${THRESHOLD}%"
+            exit 1
+          fi

@@ -14,6 +14,7 @@ export default defineConfig({
     setupFiles: ["src/test-setup.ts"],
     coverage: {
       provider: "v8",
+      reporter: ["text", "json-summary"],
       reportsDirectory: "../coverage/frontend",
       include: ["src/**/*.{ts,svelte}"],
       exclude: ["src/test-setup.ts", "src/vite-env.d.ts"],
