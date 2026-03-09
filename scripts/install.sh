@@ -117,13 +117,14 @@ install_darwin() {
   INSTALL_DIR="${HOME}/Applications"
   mkdir -p "$INSTALL_DIR"
 
-  log "Extracting to ${INSTALL_DIR}/panen.app..."
-  # Remove existing installation
+  log "Extracting to ${INSTALL_DIR}/Panen.app..."
+  # Remove old lowercase version (pre-rename) and current installation
   rm -rf "${INSTALL_DIR}/panen.app"
+  rm -rf "${INSTALL_DIR}/Panen.app"
   unzip -q "${WORK_DIR}/${ARCHIVE}" -d "$INSTALL_DIR"
 
   log ""
-  log "Panen has been installed to ${INSTALL_DIR}/panen.app"
+  log "Panen has been installed to ${INSTALL_DIR}/Panen.app"
   log "You can launch it from ~/Applications or Spotlight."
 }
 

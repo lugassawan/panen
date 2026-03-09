@@ -72,7 +72,7 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           cd build/bin
-          zip -r ../../${{ matrix.archive_name }} panen.app/
+          zip -r ../../${{ matrix.archive_name }} Panen.app/
 
       - name: Package (Linux)
         if: runner.os == 'Linux'

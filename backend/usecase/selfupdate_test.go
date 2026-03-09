@@ -139,7 +139,7 @@ func TestSelfUpdateHappyPath(t *testing.T) {
 	extractor := &mockExtractor{}
 	installer := &mockInstaller{
 		archiveName: "panen-test.zip",
-		installPath: filepath.Join(tmpDir, "panen.app"),
+		installPath: filepath.Join(tmpDir, "Panen.app"),
 	}
 	emitter := newMockEventEmitter()
 

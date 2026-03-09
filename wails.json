@@ -1,6 +1,6 @@
 {
   "$schema": "https://wails.io/schemas/config.v2.json",
-  "name": "panen",
+  "name": "Panen",
   "outputfilename": "panen",
   "frontend:install": "pnpm install",
   "frontend:build": "pnpm run build",
