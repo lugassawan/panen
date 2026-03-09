@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from "@testing-library/svelte";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../../i18n", () => ({
@@ -58,6 +59,10 @@ vi.mock("../../i18n", () => ({
       "settings.logsExported": "Logs exported successfully",
       "settings.logsExportError": "Export failed: {error}",
       "settings.noLogs": "No logs yet",
+      "settings.tab.general": "General",
+      "settings.tab.data": "Data",
+      "settings.tab.storage": "Storage",
+      "settings.tab.system": "System",
       "common.loading": "Loading...",
       "format.lastUpdated": "Last updated",
       "format.notSynced": "Not synced yet",
@@ -128,6 +133,28 @@ vi.mock("../../../wailsjs/go/backend/App", () => ({
 
 import SettingsPage from "./SettingsPage.svelte";
 
+function setupMocks() {
+  mockGetRefreshSettings.mockResolvedValue({
+    autoRefreshEnabled: true,
+    intervalMinutes: 720,
+    lastRefreshedAt: "",
+  });
+  mockGetAppVersion.mockResolvedValue("1.0.0");
+  mockGetBackupStatus.mockResolvedValue({
+    lastBackupDate: "",
+    backupCount: 0,
+    totalSizeBytes: 0,
+    dbSizeBytes: 0,
+  });
+  mockIsDebugMode.mockResolvedValue(false);
+  mockGetLogStats.mockResolvedValue({
+    fileCount: 0,
+    totalBytes: 0,
+    oldestDate: "",
+    newestDate: "",
+  });
+}
+
 describe("SettingsPage", () => {
   beforeEach(() => {
     mockGetRefreshSettings.mockReset();
@@ -141,53 +168,46 @@ describe("SettingsPage", () => {
     mockSetDebugMode.mockReset();
     mockExportLogs.mockReset();
     mockGetLogStats.mockReset();
-    mockGetBackupStatus.mockResolvedValue({
-      lastBackupDate: "",
-      backupCount: 0,
-      totalSizeBytes: 0,
-      dbSizeBytes: 0,
-    });
-    mockIsDebugMode.mockResolvedValue(false);
-    mockGetLogStats.mockResolvedValue({
-      fileCount: 0,
-      totalBytes: 0,
-      oldestDate: "",
-      newestDate: "",
-    });
+    setupMocks();
   });
 
-  it("renders settings heading", async () => {
-    mockGetRefreshSettings.mockResolvedValueOnce({
-      autoRefreshEnabled: true,
-      intervalMinutes: 720,
-      lastRefreshedAt: "",
-    });
-    mockGetAppVersion.mockResolvedValueOnce("1.0.0");
-
+  it("renders settings heading and tab bar", async () => {
     render(SettingsPage);
 
     expect(screen.getByText("Settings")).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "General" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Data" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Storage" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "System" })).toBeInTheDocument();
   });
 
-  it("loads and displays refresh settings", async () => {
-    mockGetRefreshSettings.mockResolvedValueOnce({
+  it("shows General tab by default with theme and language", async () => {
+    render(SettingsPage);
+
+    expect(screen.getByRole("tab", { name: "General" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByText("Theme")).toBeInTheDocument();
+    expect(screen.getByText("Language")).toBeInTheDocument();
+  });
+
+  it("loads and displays refresh settings on Data tab", async () => {
+    const user = userEvent.setup();
+    mockGetRefreshSettings.mockResolvedValue({
       autoRefreshEnabled: true,
       intervalMinutes: 720,
       lastRefreshedAt: "2025-06-01T10:00:00Z",
     });
-    mockGetAppVersion.mockResolvedValueOnce("1.2.0");
+    mockGetAppVersion.mockResolvedValue("1.2.0");
 
     render(SettingsPage);
+    await user.click(screen.getByRole("tab", { name: "Data" }));
 
     await waitFor(() => {
-      expect(screen.getByText("1.2.0")).toBeInTheDocument();
       expect(screen.getByText("5m ago")).toBeInTheDocument();
     });
   });
 
   it("shows load error on failure", async () => {
-    mockGetRefreshSettings.mockRejectedValueOnce(new Error("load failed"));
-    mockGetAppVersion.mockResolvedValueOnce("1.0.0");
+    mockGetRefreshSettings.mockRejectedValue(new Error("load failed"));
 
     render(SettingsPage);
 
@@ -196,40 +216,17 @@ describe("SettingsPage", () => {
     });
   });
 
-  it("renders theme section", async () => {
-    mockGetRefreshSettings.mockResolvedValueOnce({
-      autoRefreshEnabled: true,
-      intervalMinutes: 720,
-      lastRefreshedAt: "",
-    });
-    mockGetAppVersion.mockResolvedValueOnce("1.0.0");
-
+  it("renders check for updates button on System tab", async () => {
+    const user = userEvent.setup();
     render(SettingsPage);
-
-    expect(screen.getByText("Theme")).toBeInTheDocument();
-  });
-
-  it("renders check for updates button", async () => {
-    mockGetRefreshSettings.mockResolvedValueOnce({
-      autoRefreshEnabled: true,
-      intervalMinutes: 720,
-      lastRefreshedAt: "",
-    });
-    mockGetAppVersion.mockResolvedValueOnce("1.0.0");
-
-    render(SettingsPage);
+    await user.click(screen.getByRole("tab", { name: "System" }));
 
     expect(screen.getByRole("button", { name: /Check for Updates/i })).toBeInTheDocument();
   });
 
-  it("renders backup section with status", async () => {
-    mockGetRefreshSettings.mockResolvedValueOnce({
-      autoRefreshEnabled: true,
-      intervalMinutes: 720,
-      lastRefreshedAt: "",
-    });
-    mockGetAppVersion.mockResolvedValueOnce("1.0.0");
-    mockGetBackupStatus.mockResolvedValueOnce({
+  it("renders backup section on Storage tab", async () => {
+    const user = userEvent.setup();
+    mockGetBackupStatus.mockResolvedValue({
       lastBackupDate: "2026-03-07T10:00:00Z",
       backupCount: 3,
       totalSizeBytes: 2048,
@@ -237,6 +234,7 @@ describe("SettingsPage", () => {
     });
 
     render(SettingsPage);
+    await user.click(screen.getByRole("tab", { name: "Storage" }));
 
     await waitFor(() => {
       expect(screen.getByText("Database Backup")).toBeInTheDocument();
@@ -245,15 +243,10 @@ describe("SettingsPage", () => {
     });
   });
 
-  it("renders debug and logs section", async () => {
-    mockGetRefreshSettings.mockResolvedValueOnce({
-      autoRefreshEnabled: true,
-      intervalMinutes: 720,
-      lastRefreshedAt: "",
-    });
-    mockGetAppVersion.mockResolvedValueOnce("1.0.0");
-
+  it("renders debug and logs section on System tab", async () => {
+    const user = userEvent.setup();
     render(SettingsPage);
+    await user.click(screen.getByRole("tab", { name: "System" }));
 
     await waitFor(() => {
       expect(screen.getByText("Debug & Logs")).toBeInTheDocument();
@@ -263,14 +256,9 @@ describe("SettingsPage", () => {
     });
   });
 
-  it("renders log stats with file count and date range", async () => {
-    mockGetRefreshSettings.mockResolvedValueOnce({
-      autoRefreshEnabled: true,
-      intervalMinutes: 720,
-      lastRefreshedAt: "",
-    });
-    mockGetAppVersion.mockResolvedValueOnce("1.0.0");
-    mockGetLogStats.mockResolvedValueOnce({
+  it("renders log stats with file count and date range on System tab", async () => {
+    const user = userEvent.setup();
+    mockGetLogStats.mockResolvedValue({
       fileCount: 5,
       totalBytes: 10240,
       oldestDate: "2026-03-01",
@@ -278,6 +266,7 @@ describe("SettingsPage", () => {
     });
 
     render(SettingsPage);
+    await user.click(screen.getByRole("tab", { name: "System" }));
 
     await waitFor(() => {
       expect(screen.getByText("5")).toBeInTheDocument();
@@ -286,14 +275,9 @@ describe("SettingsPage", () => {
     });
   });
 
-  it("renders export logs button", async () => {
-    mockGetRefreshSettings.mockResolvedValueOnce({
-      autoRefreshEnabled: true,
-      intervalMinutes: 720,
-      lastRefreshedAt: "",
-    });
-    mockGetAppVersion.mockResolvedValueOnce("1.0.0");
-    mockGetLogStats.mockResolvedValueOnce({
+  it("renders export logs button on System tab", async () => {
+    const user = userEvent.setup();
+    mockGetLogStats.mockResolvedValue({
       fileCount: 2,
       totalBytes: 512,
       oldestDate: "2026-03-06",
@@ -301,22 +285,19 @@ describe("SettingsPage", () => {
     });
 
     render(SettingsPage);
+    await user.click(screen.getByRole("tab", { name: "System" }));
 
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /Export Logs/i })).toBeInTheDocument();
     });
   });
 
-  it("calls SetDebugMode when debug checkbox is toggled", async () => {
-    mockGetRefreshSettings.mockResolvedValueOnce({
-      autoRefreshEnabled: true,
-      intervalMinutes: 720,
-      lastRefreshedAt: "",
-    });
-    mockGetAppVersion.mockResolvedValueOnce("1.0.0");
+  it("calls SetDebugMode when debug checkbox is toggled on System tab", async () => {
+    const user = userEvent.setup();
     mockSetDebugMode.mockResolvedValue(undefined);
 
     render(SettingsPage);
+    await user.click(screen.getByRole("tab", { name: "System" }));
 
     await waitFor(() => {
       expect(screen.getByText("Debug Mode")).toBeInTheDocument();

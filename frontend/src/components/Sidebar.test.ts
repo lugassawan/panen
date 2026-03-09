@@ -6,6 +6,7 @@ vi.mock("../i18n", () => ({
   locale: { current: "en" },
   t: (key: string) => {
     const keys: Record<string, string> = {
+      "nav.dashboard": "Dashboard",
       "nav.lookup": "Stock Lookup",
       "nav.watchlist": "Watchlist",
       "nav.screener": "Screener",
@@ -14,9 +15,14 @@ vi.mock("../i18n", () => ({
       "nav.crashPlaybook": "Crash Playbook",
       "nav.alerts": "Alerts",
       "nav.brokerage": "Brokerage",
+      "nav.comparison": "Compare",
       "nav.settings": "Settings",
       "nav.searchPages": "Search pages...",
       "nav.noResults": "No results found",
+      "nav.group.overview": "Overview",
+      "nav.group.research": "Research",
+      "nav.group.portfolio": "Portfolio",
+      "nav.group.account": "Account",
     };
     return keys[key] ?? key;
   },
@@ -42,6 +48,7 @@ describe("Sidebar", () => {
       props: { currentPage: "portfolio", onNavigate: vi.fn() },
     });
 
+    expect(screen.getByRole("button", { name: /Dashboard/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Stock Lookup/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Watchlist/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Screener/i })).toBeInTheDocument();
@@ -51,6 +58,16 @@ describe("Sidebar", () => {
     expect(screen.getByRole("button", { name: /Alerts/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Brokerage/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Settings/i })).toBeInTheDocument();
+  });
+
+  it("renders group headers", () => {
+    render(Sidebar, {
+      props: { currentPage: "dashboard", onNavigate: vi.fn() },
+    });
+
+    expect(screen.getByText("Overview")).toBeInTheDocument();
+    expect(screen.getByText("Research")).toBeInTheDocument();
+    expect(screen.getByText("Account")).toBeInTheDocument();
   });
 
   it("marks current page with aria-current", () => {
