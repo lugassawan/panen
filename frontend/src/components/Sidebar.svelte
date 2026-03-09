@@ -22,20 +22,34 @@ import type { Page } from "../lib/types";
 
 let { currentPage, onNavigate }: { currentPage: Page; onNavigate: (page: Page) => void } = $props();
 
-const navItems: { page: Page; labelKey: string; icon: Component }[] = [
-  { page: "dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
-  { page: "lookup", labelKey: "nav.lookup", icon: Search },
-  { page: "watchlist", labelKey: "nav.watchlist", icon: Bookmark },
-  { page: "screener", labelKey: "nav.screener", icon: Filter },
-  { page: "comparison", labelKey: "nav.comparison", icon: ArrowLeftRight },
-  { page: "portfolio", labelKey: "nav.portfolio", icon: Briefcase },
-  { page: "payday", labelKey: "nav.payday", icon: CalendarDays },
-  { page: "crashplaybook", labelKey: "nav.crashPlaybook", icon: Shield },
-  { page: "transactions", labelKey: "nav.transactions", icon: Receipt },
-  { page: "alerts", labelKey: "nav.alerts", icon: Bell },
-  { page: "brokerage", labelKey: "nav.brokerage", icon: Landmark },
-  { page: "settings", labelKey: "nav.settings", icon: Settings },
+type NavGroup = "overview" | "research" | "portfolio" | "account";
+
+const navItems: { page: Page; labelKey: string; icon: Component; group: NavGroup }[] = [
+  { page: "dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard, group: "overview" },
+  { page: "lookup", labelKey: "nav.lookup", icon: Search, group: "research" },
+  { page: "watchlist", labelKey: "nav.watchlist", icon: Bookmark, group: "research" },
+  { page: "screener", labelKey: "nav.screener", icon: Filter, group: "research" },
+  { page: "comparison", labelKey: "nav.comparison", icon: ArrowLeftRight, group: "research" },
+  { page: "portfolio", labelKey: "nav.portfolio", icon: Briefcase, group: "portfolio" },
+  { page: "payday", labelKey: "nav.payday", icon: CalendarDays, group: "portfolio" },
+  { page: "crashplaybook", labelKey: "nav.crashPlaybook", icon: Shield, group: "portfolio" },
+  { page: "transactions", labelKey: "nav.transactions", icon: Receipt, group: "portfolio" },
+  { page: "alerts", labelKey: "nav.alerts", icon: Bell, group: "account" },
+  { page: "brokerage", labelKey: "nav.brokerage", icon: Landmark, group: "account" },
 ];
+
+const groupOrder: NavGroup[] = ["overview", "research", "portfolio", "account"];
+
+const groupedItems = $derived.by(() => {
+  const groups = new Map<NavGroup, typeof navItems>();
+  for (const group of groupOrder) {
+    groups.set(group, []);
+  }
+  for (const item of navItems) {
+    groups.get(item.group)?.push(item);
+  }
+  return groups;
+});
 
 $effect(() => {
   alerts.loadCount();
@@ -49,30 +63,48 @@ $effect(() => {
   </div>
 
   <ul class="flex flex-1 flex-col" role="list">
-    {#each navItems as item}
-      {@const isSettings = item.page === "settings"}
-      {#if isSettings}
-        <li class="mt-auto border-t border-border-default">
-          <SyncIndicator />
-        </li>
-      {/if}
+    {#each groupOrder as group}
       <li>
-        <button
-          onclick={() => onNavigate(item.page)}
-          class="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm font-medium transition-fast focus-ring {currentPage === item.page
-            ? `${mode.config.activeHighlight} font-semibold`
-            : 'text-text-secondary hover:bg-bg-tertiary hover:text-text-primary'}"
-          aria-current={currentPage === item.page ? "page" : undefined}
-        >
-          <item.icon size={20} strokeWidth={1.5} class="shrink-0" />
-          {t(item.labelKey)}
-          {#if item.page === "alerts" && alerts.activeCount > 0}
-            <span class="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-negative px-1.5 text-xs font-bold text-white">
-              {alerts.activeCount}
-            </span>
-          {/if}
-        </button>
+        <span class="block px-3 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
+          {t(`nav.group.${group}`)}
+        </span>
+        <ul role="list">
+          {#each groupedItems.get(group) ?? [] as item}
+            <li>
+              <button
+                onclick={() => onNavigate(item.page)}
+                class="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm font-medium transition-fast focus-ring {currentPage === item.page
+                  ? `${mode.config.activeHighlight} font-semibold`
+                  : 'text-text-secondary hover:bg-bg-tertiary hover:text-text-primary'}"
+                aria-current={currentPage === item.page ? "page" : undefined}
+              >
+                <item.icon size={20} strokeWidth={1.5} class="shrink-0" />
+                {t(item.labelKey)}
+                {#if item.page === "alerts" && alerts.activeCount > 0}
+                  <span class="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-negative px-1.5 text-xs font-bold text-white">
+                    {alerts.activeCount}
+                  </span>
+                {/if}
+              </button>
+            </li>
+          {/each}
+        </ul>
       </li>
     {/each}
+    <li class="mt-auto border-t border-border-default">
+      <SyncIndicator />
+    </li>
+    <li>
+      <button
+        onclick={() => onNavigate("settings")}
+        class="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm font-medium transition-fast focus-ring {currentPage === 'settings'
+          ? `${mode.config.activeHighlight} font-semibold`
+          : 'text-text-secondary hover:bg-bg-tertiary hover:text-text-primary'}"
+        aria-current={currentPage === "settings" ? "page" : undefined}
+      >
+        <Settings size={20} strokeWidth={1.5} class="shrink-0" />
+        {t("nav.settings")}
+      </button>
+    </li>
   </ul>
 </nav>
