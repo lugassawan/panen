@@ -69,7 +69,13 @@
     "comparison": "Bandingkan",
     "settings": "Pengaturan",
     "searchPages": "Cari halaman...",
-    "noResults": "Tidak ada hasil"
+    "noResults": "Tidak ada hasil",
+    "group": {
+      "overview": "Ringkasan",
+      "research": "Riset",
+      "portfolio": "Portofolio",
+      "account": "Akun"
+    }
   },
   "settings": {
     "title": "Pengaturan",
@@ -108,6 +114,12 @@
     "selfUpdateFailed": "Pembaruan gagal",
     "updateError": "Gagal memeriksa pembaruan: {error}",
     "settingsSaved": "Pengaturan disimpan",
+    "tab": {
+      "general": "Umum",
+      "data": "Data",
+      "storage": "Penyimpanan",
+      "system": "Sistem"
+    },
     "backup": "Cadangan Database",
     "lastBackup": "Cadangan Terakhir",
     "backupCount": "Cadangan",

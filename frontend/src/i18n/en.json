@@ -69,7 +69,13 @@
     "comparison": "Compare",
     "settings": "Settings",
     "searchPages": "Search pages...",
-    "noResults": "No results found"
+    "noResults": "No results found",
+    "group": {
+      "overview": "Overview",
+      "research": "Research",
+      "portfolio": "Portfolio",
+      "account": "Account"
+    }
   },
   "settings": {
     "title": "Settings",
@@ -108,6 +114,12 @@
     "selfUpdateFailed": "Update failed",
     "updateError": "Failed to check for updates: {error}",
     "settingsSaved": "Settings saved",
+    "tab": {
+      "general": "General",
+      "data": "Data",
+      "storage": "Storage",
+      "system": "System"
+    },
     "backup": "Database Backup",
     "lastBackup": "Last Backup",
     "backupCount": "Backups",
