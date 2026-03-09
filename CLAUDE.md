@@ -222,7 +222,7 @@ make release-check VERSION=0.2.0  # Local validation only (no tag/push)
 
 | Platform | Archive | Contents |
 |----------|---------|----------|
-| macOS | `panen-darwin-universal.zip` | `panen.app/` bundle |
+| macOS | `panen-darwin-universal.zip` | `Panen.app/` bundle |
 | Linux | `panen-linux-amd64.tar.gz` | Binary + `.desktop` + icon |
 | Windows | `panen-windows-amd64.zip` | `panen.exe` |
 
@@ -239,5 +239,5 @@ PANEN_VERSION=v0.2.0 curl -fsSL https://raw.githubusercontent.com/lugassawan/pan
 ```
 
 Install locations (no sudo required):
-- **macOS**: `~/Applications/panen.app`
+- **macOS**: `~/Applications/Panen.app`
 - **Linux**: `~/.local/bin/panen` + `.desktop` + icon

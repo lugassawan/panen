@@ -64,7 +64,7 @@ PANEN_VERSION=v1.0.0 curl -fsSL https://raw.githubusercontent.com/lugassawan/pan
 
 | Platform | Location |
 |----------|----------|
-| macOS | `~/Applications/panen.app` |
+| macOS | `~/Applications/Panen.app` |
 | Linux | `~/.local/bin/panen` + `.desktop` + icon |
 
 ### Windows
