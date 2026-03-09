@@ -31,6 +31,7 @@ import ThemeToggle from "../../lib/components/ThemeToggle.svelte";
 import Tooltip from "../../lib/components/Tooltip.svelte";
 import UpdateDialog from "../../lib/components/UpdateDialog.svelte";
 import { formatFileSize, formatRelativeTime } from "../../lib/format";
+import { mode } from "../../lib/stores/mode.svelte";
 import { sync } from "../../lib/stores/sync.svelte";
 import { theme } from "../../lib/stores/theme.svelte";
 import { toastStore } from "../../lib/stores/toast.svelte";
@@ -79,6 +80,10 @@ let logStats = $state<{
   newestDate: string;
 } | null>(null);
 let exportingLogs = $state(false);
+
+type SettingsTab = "general" | "data" | "storage" | "system";
+let settingsTab = $state<SettingsTab>("general");
+const tabs: SettingsTab[] = ["general", "data", "storage", "system"];
 
 let exportingData = $state(false);
 let importingData = $state(false);
@@ -316,7 +321,23 @@ async function confirmImport() {
     <Alert variant="negative" dismissible>{t("settings.saveError", { error: saveError })}</Alert>
   {/if}
 
-  <div class="space-y-6">
+  <div class="mb-6 flex gap-1 border-b border-border-default" role="tablist" aria-label="Settings sections">
+    {#each tabs as tab}
+      <button
+        role="tab"
+        aria-selected={settingsTab === tab}
+        onclick={() => settingsTab = tab}
+        class="px-4 py-2 text-sm font-medium transition-fast focus-ring rounded-t-md {settingsTab === tab
+          ? `${mode.config.activeHighlight} border-b-2 border-current font-semibold`
+          : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary'}"
+      >
+        {t(`settings.tab.${tab}`)}
+      </button>
+    {/each}
+  </div>
+
+  <div class="space-y-6" role="tabpanel">
+    {#if settingsTab === "general"}
     <div>
       <label class="mb-1 block text-sm text-text-secondary" for="language">{t("settings.language")}</label>
       <Select id="language" value={locale.current} onchange={(e) => locale.set(e.currentTarget.value as Locale)}>
@@ -332,7 +353,9 @@ async function confirmImport() {
         <span class="text-sm text-text-tertiary capitalize">{theme.preference}</span>
       </div>
     </div>
+    {/if}
 
+    {#if settingsTab === "data"}
     <div>
       <p class="mb-3 text-sm text-text-secondary">{t("settings.dataRefresh")}</p>
       <div class="space-y-4 rounded-lg border border-border-default bg-bg-elevated p-4">
@@ -424,7 +447,9 @@ async function confirmImport() {
         </button>
       </div>
     </div>
+    {/if}
 
+    {#if settingsTab === "storage"}
     <div>
       <p class="mb-3 text-sm text-text-secondary">
         <Tooltip text={t("settings.backupTooltip")}>
@@ -496,7 +521,9 @@ async function confirmImport() {
         </div>
       </div>
     </div>
+    {/if}
 
+    {#if settingsTab === "system"}
     <div>
       <p class="mb-3 text-sm text-text-secondary">{t("settings.debugAndLogs")}</p>
       <div class="space-y-4 rounded-lg border border-border-default bg-bg-elevated p-4">
@@ -593,6 +620,7 @@ async function confirmImport() {
         {/if}
       </div>
     </div>
+    {/if}
   </div>
 </div>
 
