@@ -67,6 +67,9 @@ describe("Sidebar", () => {
 
     expect(screen.getByText("Overview")).toBeInTheDocument();
     expect(screen.getByText("Research")).toBeInTheDocument();
+    // "Portfolio" appears as both a group header and a nav button — verify at least 2
+    const portfolioElements = screen.getAllByText("Portfolio");
+    expect(portfolioElements.length).toBeGreaterThanOrEqual(2);
     expect(screen.getByText("Account")).toBeInTheDocument();
   });
 

@@ -40,7 +40,7 @@ const navItems: { page: Page; labelKey: string; icon: Component; group: NavGroup
 
 const groupOrder: NavGroup[] = ["overview", "research", "portfolio", "account"];
 
-const groupedItems = $derived(() => {
+const groupedItems = $derived.by(() => {
   const groups = new Map<NavGroup, typeof navItems>();
   for (const group of groupOrder) {
     groups.set(group, []);
@@ -69,7 +69,7 @@ $effect(() => {
           {t(`nav.group.${group}`)}
         </span>
         <ul role="list">
-          {#each groupedItems().get(group) ?? [] as item}
+          {#each groupedItems.get(group) ?? [] as item}
             <li>
               <button
                 onclick={() => onNavigate(item.page)}

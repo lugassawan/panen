@@ -324,8 +324,10 @@ async function confirmImport() {
   <div class="mb-6 flex gap-1 border-b border-border-default" role="tablist" aria-label="Settings sections">
     {#each tabs as tab}
       <button
+        id="settings-tab-{tab}"
         role="tab"
         aria-selected={settingsTab === tab}
+        aria-controls="settings-panel-{tab}"
         onclick={() => settingsTab = tab}
         class="px-4 py-2 text-sm font-medium transition-fast focus-ring rounded-t-md {settingsTab === tab
           ? `${mode.config.activeHighlight} border-b-2 border-current font-semibold`
@@ -336,7 +338,7 @@ async function confirmImport() {
     {/each}
   </div>
 
-  <div class="space-y-6" role="tabpanel">
+  <div class="space-y-6" role="tabpanel" id="settings-panel-{settingsTab}" aria-labelledby="settings-tab-{settingsTab}">
     {#if settingsTab === "general"}
     <div>
       <label class="mb-1 block text-sm text-text-secondary" for="language">{t("settings.language")}</label>
