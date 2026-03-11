@@ -7,21 +7,36 @@ on:
   pull_request:
     branches:
       - main
-    paths:
-      - "backend/**"
-      - "frontend/**"
-      - "tools/**"
-      - "main.go"
-      - "go.mod"
-      - "go.sum"
-      - "Makefile"
-      - ".github/workflows/test.yml"
 
 permissions:
   contents: read
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    name: Detect Changes
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            code:
+              - "backend/**"
+              - "frontend/**"
+              - "tools/**"
+              - "main.go"
+              - "go.mod"
+              - "go.sum"
+              - "Makefile"
+              - ".github/workflows/test.yml"
+
   lint:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     name: Lint
 
@@ -40,6 +55,8 @@ jobs:
         run: make lint
 
   test-go:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     name: Go Tests
 
@@ -57,6 +74,8 @@ jobs:
         run: make test-go
 
   test-frontend:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     name: Frontend Tests (${{ matrix.shard }})
 
@@ -89,6 +108,8 @@ jobs:
         run: make test-integration
 
   coverage:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     name: Coverage
 
