@@ -1,9 +1,10 @@
 <script lang="ts">
-import { AlertCircle, CheckCircle2, Download, Loader2, X } from "lucide-svelte";
+import { AlertCircle, ArrowRight, CheckCircle2, Download, Info, Loader2, X } from "lucide-svelte";
 import {
   CancelUpdate,
   DownloadAndInstallUpdate,
   QuitForRestart,
+  SkipVersion,
 } from "../../../wailsjs/go/backend/App";
 import { t } from "../../i18n";
 import { formatFileSize } from "../format";
@@ -28,15 +29,68 @@ function restart() {
 function startUpdate() {
   DownloadAndInstallUpdate();
 }
+
+async function skipVersion() {
+  const version = updateStore.latestVersion;
+  if (version) {
+    await SkipVersion(version);
+  }
+  dismiss();
+}
 </script>
 
 <Modal
-  open={updateStore.isActive || updateStore.state === "error"}
-  aria-label={t("settings.updateDownloading")}
+  open={updateStore.showNotification || updateStore.isActive || updateStore.state === "error"}
+  aria-label={updateStore.showNotification ? t("settings.updateAvailableTitle") : t("settings.updateDownloading")}
   onClose={dismiss}
   size="md"
 >
-  {#if updateStore.state === "downloading"}
+  {#if updateStore.state === "available"}
+    <div class="space-y-4">
+      <div class="flex items-center gap-3">
+        <Info size={20} class="text-info shrink-0" />
+        <h3 class="text-lg font-semibold text-text-primary">
+          {t("settings.updateAvailableTitle", { version: updateStore.latestVersion })}
+        </h3>
+      </div>
+
+      <div class="flex items-center gap-2 text-sm text-text-secondary">
+        <span class="font-mono">{updateStore.currentVersion}</span>
+        <ArrowRight size={14} class="text-text-tertiary" />
+        <span class="font-mono font-semibold text-text-primary">{updateStore.latestVersion}</span>
+      </div>
+
+      {#if updateStore.releaseNotes}
+        <div>
+          <p class="mb-2 text-xs font-medium text-text-secondary uppercase tracking-wide">
+            {t("settings.whatsChanged")}
+          </p>
+          <div class="max-h-60 overflow-y-auto rounded border border-border-default bg-bg-secondary p-3">
+            <pre class="whitespace-pre-wrap font-mono text-xs text-text-primary leading-relaxed">{updateStore.releaseNotes}</pre>
+          </div>
+        </div>
+      {/if}
+
+      <div class="flex justify-end gap-2">
+        <Button variant="ghost" size="sm" onclick={skipVersion}>
+          {t("settings.skipThisVersion")}
+        </Button>
+        <Button variant="primary" size="sm" onclick={startUpdate}>
+          {t("settings.updateNow")}
+        </Button>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      class="absolute top-4 right-4 text-text-tertiary hover:text-text-primary transition-fast focus-ring rounded"
+      onclick={dismiss}
+      aria-label={t("common.close")}
+    >
+      <X size={16} />
+    </button>
+
+  {:else if updateStore.state === "downloading"}
     <div class="space-y-4">
       <div class="flex items-center gap-3">
         <Download size={20} class="text-info shrink-0" />
@@ -107,6 +161,15 @@ function startUpdate() {
       </div>
     </div>
 
+    <button
+      type="button"
+      class="absolute top-4 right-4 text-text-tertiary hover:text-text-primary transition-fast focus-ring rounded"
+      onclick={dismiss}
+      aria-label={t("common.close")}
+    >
+      <X size={16} />
+    </button>
+
   {:else if updateStore.state === "error"}
     <div class="space-y-4">
       <div class="flex items-center gap-3">
@@ -128,10 +191,7 @@ function startUpdate() {
         </Button>
       </div>
     </div>
-  {/if}
 
-  <!-- Close button for all states -->
-  {#if updateStore.state !== "downloading" && updateStore.state !== "verifying" && updateStore.state !== "installing"}
     <button
       type="button"
       class="absolute top-4 right-4 text-text-tertiary hover:text-text-primary transition-fast focus-ring rounded"

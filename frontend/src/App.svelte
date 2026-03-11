@@ -2,6 +2,7 @@
 import Sidebar from "./components/Sidebar.svelte";
 import CommandPalette from "./lib/components/CommandPalette.svelte";
 import ToastContainer from "./lib/components/ToastContainer.svelte";
+import UpdateDialog from "./lib/components/UpdateDialog.svelte";
 import { handleGlobalShortcut } from "./lib/shortcuts";
 import { commandPalette } from "./lib/stores/command-palette.svelte";
 import { theme } from "./lib/stores/theme.svelte";
@@ -62,3 +63,4 @@ function navigateTo(page: Page) {
 
 <ToastContainer />
 <CommandPalette onNavigate={navigateTo} />
+<UpdateDialog />
