@@ -10,4 +10,5 @@ const (
 	EventConfigChanged    = "config:changed"
 	EventBrokerFeesSynced = "brokers:fees-synced"
 	EventUpdateProgress   = "update:progress"
+	EventUpdateAvailable  = "update:available"
 )

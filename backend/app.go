@@ -186,7 +186,7 @@ func (a *App) Startup(ctx context.Context) {
 
 	svc := a.initServices(r, registry, wailsEmitter, sectorRegistry, swappableIndexReg)
 
-	a.bindHandlers(ctx, svc, r, profileID, sectorRegistry, registry)
+	a.bindHandlers(ctx, svc, r, profileID, sectorRegistry, registry, wailsEmitter)
 
 	a.Init(ctx)
 	a.RegisterLoader("brokers", brokerLoader, func(_ context.Context) {
@@ -386,6 +386,7 @@ func (a *App) bindHandlers(
 	profileID string,
 	sectorRegistry *watchlistconfig.SectorRegistry,
 	registry domainProvider.Registry,
+	emitter *presenter.WailsEmitter,
 ) {
 	a.StockHandler.Bind(ctx, svc.stocks)
 	a.PortfolioHandler.Bind(ctx, svc.portfolios, sectorRegistry)
@@ -402,7 +403,7 @@ func (a *App) bindHandlers(
 	a.TransactionHandler.Bind(ctx, svc.transactions)
 	a.DashboardHandler.Bind(ctx, svc.dashboard)
 	a.CrashPlaybookHandler.Bind(ctx, svc.crashPlaybook, r.portfolio)
-	a.UpdateHandler.Bind(ctx, svc.update, svc.selfUpdate, r.settings)
+	a.UpdateHandler.Bind(ctx, svc.update, svc.selfUpdate, r.settings, emitter)
 	a.LogHandler.Bind(ctx, r.settings, a.logDir)
 	a.ProviderHandler.Bind(ctx, registry)
 }
