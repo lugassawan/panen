@@ -32,11 +32,20 @@ function startUpdate() {
 
 async function skipVersion() {
   const version = updateStore.latestVersion;
-  if (version) {
-    await SkipVersion(version);
+  try {
+    if (version) {
+      await SkipVersion(version);
+    }
+  } finally {
+    dismiss();
   }
-  dismiss();
 }
+
+const showCloseButton = $derived(
+  updateStore.state !== "downloading" &&
+    updateStore.state !== "verifying" &&
+    updateStore.state !== "installing",
+);
 </script>
 
 <Modal
@@ -80,15 +89,6 @@ async function skipVersion() {
         </Button>
       </div>
     </div>
-
-    <button
-      type="button"
-      class="absolute top-4 right-4 text-text-tertiary hover:text-text-primary transition-fast focus-ring rounded"
-      onclick={dismiss}
-      aria-label={t("common.close")}
-    >
-      <X size={16} />
-    </button>
 
   {:else if updateStore.state === "downloading"}
     <div class="space-y-4">
@@ -161,15 +161,6 @@ async function skipVersion() {
       </div>
     </div>
 
-    <button
-      type="button"
-      class="absolute top-4 right-4 text-text-tertiary hover:text-text-primary transition-fast focus-ring rounded"
-      onclick={dismiss}
-      aria-label={t("common.close")}
-    >
-      <X size={16} />
-    </button>
-
   {:else if updateStore.state === "error"}
     <div class="space-y-4">
       <div class="flex items-center gap-3">
@@ -191,7 +182,9 @@ async function skipVersion() {
         </Button>
       </div>
     </div>
+  {/if}
 
+  {#if showCloseButton}
     <button
       type="button"
       class="absolute top-4 right-4 text-text-tertiary hover:text-text-primary transition-fast focus-ring rounded"

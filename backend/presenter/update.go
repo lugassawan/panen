@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/lugassawan/panen/backend/domain/settings"
@@ -66,6 +67,9 @@ func (h *UpdateHandler) GetAppVersion() string {
 
 // SkipVersion persists the given version so it won't trigger the startup notification again.
 func (h *UpdateHandler) SkipVersion(version string) error {
+	if version == "" {
+		return errors.New("version must not be empty")
+	}
 	return h.settings.SetSetting(h.ctx, settingSkippedVersion, version)
 }
 
