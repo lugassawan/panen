@@ -426,9 +426,10 @@ func (a *releaseCheckerAdapter) LatestRelease(ctx context.Context) (*usecase.Rel
 		}
 	}
 	return &usecase.ReleaseInfo{
-		Version:    rel.Version(),
-		ReleaseURL: rel.HTMLURL,
-		Assets:     assets,
+		Version:      rel.Version(),
+		ReleaseURL:   rel.HTMLURL,
+		ReleaseNotes: rel.Body,
+		Assets:       assets,
 	}, nil
 }
 

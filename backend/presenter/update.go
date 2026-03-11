@@ -47,6 +47,7 @@ func (h *UpdateHandler) CheckForUpdate() (*UpdateCheckResponse, error) {
 		CurrentVersion: result.CurrentVer,
 		LatestVersion:  result.LatestVer,
 		ReleaseURL:     result.ReleaseURL,
+		ReleaseNotes:   result.ReleaseNotes,
 	}, nil
 }
 

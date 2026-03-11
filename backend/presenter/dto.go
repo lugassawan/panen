@@ -241,6 +241,7 @@ type UpdateCheckResponse struct {
 	CurrentVersion string `json:"currentVersion"`
 	LatestVersion  string `json:"latestVersion"`
 	ReleaseURL     string `json:"releaseURL"`
+	ReleaseNotes   string `json:"releaseNotes"`
 }
 
 // ChecklistEvaluationResponse is the frontend-facing response for a checklist evaluation.
