@@ -20,7 +20,7 @@ async function retry() {
 <div class="px-4 py-2" role="status">
   {#if sync.isSyncing}
     <div class="flex items-center gap-2">
-      <LoaderCircle size={14} class="animate-spin text-green-700 shrink-0" />
+      <LoaderCircle size={14} class="animate-spin text-green-700 shrink-0" aria-hidden="true" />
       <span class="text-xs text-text-secondary truncate">
         {t("sync.syncing", { ticker: sync.currentTicker ?? "..." })}
         {#if sync.progress}
@@ -38,19 +38,20 @@ async function retry() {
     {/if}
   {:else if sync.hasError}
     <div class="flex items-center gap-2">
-      <AlertTriangle size={14} class="text-negative shrink-0" />
+      <AlertTriangle size={14} class="text-negative shrink-0" aria-hidden="true" />
       <span class="text-xs text-negative truncate">{sync.errorMessage ?? t("sync.syncFailed")}</span>
     </div>
     <button
       onclick={retry}
       disabled={retrying}
+      aria-label={t("sync.retryRefresh")}
       class="mt-1 text-xs text-green-700 hover:text-green-800 transition-fast focus-ring rounded"
     >
       {retrying ? t("sync.retrying") : t("sync.retry")}
     </button>
   {:else}
     <div class="flex items-center gap-2">
-      <Check size={14} class="text-green-700 shrink-0" />
+      <Check size={14} class="text-green-700 shrink-0" aria-hidden="true" />
       <span class="text-xs text-text-muted font-mono">
         {formatRelativeTime(sync.lastRefresh)}
       </span>

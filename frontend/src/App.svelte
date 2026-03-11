@@ -1,5 +1,6 @@
 <script lang="ts">
 import Sidebar from "./components/Sidebar.svelte";
+import { t } from "./i18n";
 import CommandPalette from "./lib/components/CommandPalette.svelte";
 import ToastContainer from "./lib/components/ToastContainer.svelte";
 import UpdateDialog from "./lib/components/UpdateDialog.svelte";
@@ -30,9 +31,12 @@ function navigateTo(page: Page) {
 <svelte:window onkeydown={(e) => handleGlobalShortcut(e, { onNavigate: navigateTo, onToggleCommandPalette: () => commandPalette.toggle() })} />
 
 <div class="flex h-screen" data-theme={theme.current}>
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-bg-elevated focus:text-text-primary focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-accent">
+    {t("a11y.skipToContent")}
+  </a>
   <Sidebar {currentPage} onNavigate={navigateTo} />
 
-  <main class="flex-1 overflow-y-auto">
+  <main id="main-content" class="flex-1 overflow-y-auto">
     {#if currentPage === "dashboard"}
       <DashboardPage onNavigate={navigateTo} />
     {:else if currentPage === "lookup"}
