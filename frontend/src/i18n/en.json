@@ -68,6 +68,7 @@
     "brokerage": "Brokerage",
     "comparison": "Compare",
     "settings": "Settings",
+    "search": "Search",
     "searchPages": "Search pages...",
     "noResults": "No results found",
     "group": {
@@ -218,6 +219,17 @@
   },
   "a11y": {
     "skipToContent": "Skip to main content"
+  },
+  "shortcuts": {
+    "title": "Keyboard Shortcuts",
+    "global": "Global",
+    "navigation": "Navigation",
+    "actions": "Actions",
+    "commandPalette": "Command Palette",
+    "showHelp": "Show Shortcuts",
+    "closeOverlay": "Close Overlay",
+    "search": "Search",
+    "newHolding": "New Holding"
   },
   "lookup": {
     "title": "Stock Lookup",
