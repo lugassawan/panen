@@ -153,3 +153,25 @@ jobs:
             echo "::error::Frontend coverage ${COVERAGE}% is below threshold ${THRESHOLD}%"
             exit 1
           fi
+
+  # Gate job for branch protection — passes when all jobs pass or are correctly skipped.
+  # Required because GitHub treats skipped required checks as "not satisfied".
+  ci:
+    runs-on: ubuntu-latest
+    name: CI
+    needs: [lint, test-go, test-frontend, coverage]
+    if: always()
+    steps:
+      - name: Check results
+        env:
+          LINT: ${{ needs.lint.result }}
+          TEST_GO: ${{ needs.test-go.result }}
+          TEST_FRONTEND: ${{ needs.test-frontend.result }}
+          COVERAGE: ${{ needs.coverage.result }}
+        run: |
+          for r in "$LINT" "$TEST_GO" "$TEST_FRONTEND" "$COVERAGE"; do
+            if [ "$r" != "success" ] && [ "$r" != "skipped" ]; then
+              echo "Job failed with result: $r"
+              exit 1
+            fi
+          done
