@@ -207,17 +207,18 @@ Reusable components in `frontend/src/lib/components/`: Alert, Badge, BrokerPicke
 
 ### Workflow
 
-1. Update version in these files:
-   - `wails.json` → `info.productVersion` (e.g. `"1.0.1"`)
-   - `build/windows/panen.exe.manifest` → `assemblyIdentity version` (4-part: `"1.0.1.0"`)
-2. Commit: `chore: bump version to 1.0.1`
-3. Run: `scripts/release.sh 1.0.1` (validates version, creates tag, pushes)
-4. CI builds all platforms, creates GitHub Release with archives + checksums
+0. Bump version: `scripts/bump-version.sh 1.0.2` or `scripts/bump-version.sh --auto`
+   - Updates `wails.json` and Windows manifest, creates branch, commits, and opens PR
+1. Review and merge the version bump PR
+2. Run: `scripts/release.sh 1.0.2` (validates version, creates tag, pushes)
+3. CI builds all platforms, creates GitHub Release with archives + checksums
 
 ```sh
-scripts/release.sh 0.2.0    # Manual version
-scripts/release.sh --auto    # Auto-detect from conventional commits
-make release-check VERSION=0.2.0  # Local validation only (no tag/push)
+scripts/bump-version.sh 1.0.2   # Bump to explicit version, create PR
+scripts/bump-version.sh --auto   # Auto-detect from conventional commits
+scripts/release.sh 1.0.2         # Tag and push (after PR merges)
+scripts/release.sh --auto         # Auto-detect from conventional commits
+make release-check VERSION=1.0.2  # Local validation only (no tag/push)
 ```
 
 ### Archive Formats
