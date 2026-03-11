@@ -14,7 +14,6 @@ import {
   ImportData,
   ImportPreview,
   IsDebugMode,
-  OpenReleaseURL,
   RunProviderHealthCheck,
   SetDebugMode,
   SetProviderEnabled,
@@ -29,7 +28,6 @@ import ConfirmDialog from "../../lib/components/ConfirmDialog.svelte";
 import Select from "../../lib/components/Select.svelte";
 import ThemeToggle from "../../lib/components/ThemeToggle.svelte";
 import Tooltip from "../../lib/components/Tooltip.svelte";
-import UpdateDialog from "../../lib/components/UpdateDialog.svelte";
 import { formatFileSize, formatRelativeTime } from "../../lib/format";
 import { mode } from "../../lib/stores/mode.svelte";
 import { sync } from "../../lib/stores/sync.svelte";
@@ -49,6 +47,7 @@ let updateResult = $state<{
   available: boolean;
   latestVersion: string;
   releaseURL: string;
+  releaseNotes: string;
 } | null>(null);
 let updateError = $state<string | null>(null);
 
@@ -167,10 +166,6 @@ async function checkForUpdates() {
   } finally {
     updateChecking = false;
   }
-}
-
-function openRelease(url: string) {
-  OpenReleaseURL(url);
 }
 
 async function toggleDebugMode() {
@@ -595,13 +590,12 @@ async function confirmImport() {
           {#if updateResult.available}
             <Alert variant="info">
               {t("settings.updateAvailable", { version: updateResult.latestVersion })}
-              <button
-                class="ml-1 rounded font-medium underline underline-offset-2 hover:opacity-80 focus-ring"
-                onclick={() => openRelease(updateResult!.releaseURL)}
-              >
-                {t("settings.viewRelease")}
-              </button>
             </Alert>
+            {#if updateResult.releaseNotes}
+              <div class="max-h-40 overflow-y-auto rounded border border-border-default bg-bg-secondary p-3">
+                <pre class="whitespace-pre-wrap font-mono text-xs text-text-primary leading-relaxed">{updateResult.releaseNotes}</pre>
+              </div>
+            {/if}
             <Button
               variant="primary"
               size="sm"
@@ -666,5 +660,3 @@ async function confirmImport() {
     </div>
   </ConfirmDialog>
 {/if}
-
-<UpdateDialog />

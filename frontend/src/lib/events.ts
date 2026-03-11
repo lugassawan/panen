@@ -7,3 +7,4 @@ export const EventAlertsUpdated = "alerts:updated";
 export const EventConfigChanged = "config:changed";
 export const EventBrokerFeesSynced = "brokers:fees-synced";
 export const EventUpdateProgress = "update:progress";
+export const EventUpdateAvailable = "update:available";

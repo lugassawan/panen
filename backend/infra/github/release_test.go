@@ -15,6 +15,7 @@ func TestLatestRelease(t *testing.T) {
 		body       string
 		wantVer    string
 		wantURL    string
+		wantBody   string
 		wantErrStr string
 	}{
 		{
@@ -23,11 +24,13 @@ func TestLatestRelease(t *testing.T) {
 			body: `{"tag_name":"v0.2.0",` +
 				`"html_url":"https://github.com/lugassawan/panen/releases/tag/v0.2.0",` +
 				`"name":"v0.2.0",` +
+				`"body":"## What's Changed\n- feat: cool feature",` +
 				`"assets":[{"name":"test.zip",` +
 				`"browser_download_url":"https://example.com/test.zip",` +
 				`"size":12345}]}`,
-			wantVer: "0.2.0",
-			wantURL: "https://github.com/lugassawan/panen/releases/tag/v0.2.0",
+			wantVer:  "0.2.0",
+			wantURL:  "https://github.com/lugassawan/panen/releases/tag/v0.2.0",
+			wantBody: "## What's Changed\n- feat: cool feature",
 		},
 		{
 			name:       "non-200 status",
@@ -71,6 +74,11 @@ func TestLatestRelease(t *testing.T) {
 			}
 			if got := rel.HTMLURL; got != tc.wantURL {
 				t.Errorf("HTMLURL = %q, want %q", got, tc.wantURL)
+			}
+			if tc.wantBody != "" {
+				if got := rel.Body; got != tc.wantBody {
+					t.Errorf("Body = %q, want %q", got, tc.wantBody)
+				}
 			}
 		})
 	}

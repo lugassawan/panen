@@ -32,7 +32,6 @@ vi.mock("../../i18n", () => ({
       "settings.saveError": "Failed to save settings: {error}",
       "settings.updateError": "Failed to check for updates: {error}",
       "settings.updateAvailable": "Panen {version} is available.",
-      "settings.viewRelease": "View Release",
       "settings.backup": "Database Backup",
       "settings.lastBackup": "Last Backup",
       "settings.backupCount": "Backups",
@@ -108,7 +107,6 @@ const mockGetAppVersion = vi.fn();
 const mockUpdateRefreshSettings = vi.fn();
 const mockTriggerRefresh = vi.fn();
 const mockCheckForUpdate = vi.fn();
-const mockOpenReleaseURL = vi.fn();
 const mockGetBackupStatus = vi.fn();
 const mockCreateManualBackup = vi.fn();
 const mockIsDebugMode = vi.fn();
@@ -122,7 +120,6 @@ vi.mock("../../../wailsjs/go/backend/App", () => ({
   UpdateRefreshSettings: (...args: unknown[]) => mockUpdateRefreshSettings(...args),
   TriggerRefresh: (...args: unknown[]) => mockTriggerRefresh(...args),
   CheckForUpdate: (...args: unknown[]) => mockCheckForUpdate(...args),
-  OpenReleaseURL: (...args: unknown[]) => mockOpenReleaseURL(...args),
   GetBackupStatus: (...args: unknown[]) => mockGetBackupStatus(...args),
   CreateManualBackup: (...args: unknown[]) => mockCreateManualBackup(...args),
   IsDebugMode: (...args: unknown[]) => mockIsDebugMode(...args),

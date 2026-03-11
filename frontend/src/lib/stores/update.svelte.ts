@@ -1,7 +1,7 @@
 /**
  * Panen Update Store — Svelte 5 (Runes)
  *
- * Tracks self-update progress via Wails events.
+ * Tracks self-update progress via Wails events and startup update notifications.
  *
  * Usage in components:
  *   import { updateStore } from "../stores/update.svelte";
@@ -11,10 +11,11 @@
  */
 
 import { EventsOn } from "../../../wailsjs/runtime/runtime";
-import { EventUpdateProgress } from "../events";
+import { EventUpdateAvailable, EventUpdateProgress } from "../events";
 
 export type UpdateState =
   | "idle"
+  | "available"
   | "downloading"
   | "verifying"
   | "installing"
@@ -30,6 +31,13 @@ export interface UpdateProgress {
   error?: string;
 }
 
+export interface UpdateAvailablePayload {
+  currentVersion: string;
+  latestVersion: string;
+  releaseNotes: string;
+  releaseURL: string;
+}
+
 const browser = typeof window !== "undefined";
 
 function createUpdateStore() {
@@ -40,9 +48,21 @@ function createUpdateStore() {
     version: "",
   });
 
+  let notification = $state<UpdateAvailablePayload | null>(null);
+
   if (browser) {
     EventsOn(EventUpdateProgress, (data: UpdateProgress) => {
       progress = data;
+    });
+
+    EventsOn(EventUpdateAvailable, (data: UpdateAvailablePayload) => {
+      notification = data;
+      progress = {
+        state: "available",
+        downloadedBytes: 0,
+        totalBytes: 0,
+        version: data.latestVersion,
+      };
     });
   }
 
@@ -74,7 +94,23 @@ function createUpdateStore() {
         progress.state === "ready"
       );
     },
+    get showNotification() {
+      return progress.state === "available";
+    },
+    get releaseNotes() {
+      return notification?.releaseNotes ?? "";
+    },
+    get latestVersion() {
+      return notification?.latestVersion ?? "";
+    },
+    get currentVersion() {
+      return notification?.currentVersion ?? "";
+    },
+    get releaseURL() {
+      return notification?.releaseURL ?? "";
+    },
     reset() {
+      notification = null;
       progress = {
         state: "idle",
         downloadedBytes: 0,

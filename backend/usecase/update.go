@@ -16,9 +16,10 @@ type ReleaseAsset struct {
 
 // ReleaseInfo holds version information about a release.
 type ReleaseInfo struct {
-	Version    string
-	ReleaseURL string
-	Assets     []ReleaseAsset
+	Version      string
+	ReleaseURL   string
+	ReleaseNotes string
+	Assets       []ReleaseAsset
 }
 
 // ReleaseChecker fetches the latest release information.
@@ -28,10 +29,11 @@ type ReleaseChecker interface {
 
 // UpdateResult holds the result of an update check.
 type UpdateResult struct {
-	Available  bool
-	CurrentVer string
-	LatestVer  string
-	ReleaseURL string
+	Available    bool
+	CurrentVer   string
+	LatestVer    string
+	ReleaseURL   string
+	ReleaseNotes string
 }
 
 // UpdateService checks for application updates.
@@ -54,10 +56,11 @@ func (s *UpdateService) Check(ctx context.Context) (*UpdateResult, error) {
 
 	available := compareVersions(s.currentVer, info.Version) < 0
 	return &UpdateResult{
-		Available:  available,
-		CurrentVer: s.currentVer,
-		LatestVer:  info.Version,
-		ReleaseURL: info.ReleaseURL,
+		Available:    available,
+		CurrentVer:   s.currentVer,
+		LatestVer:    info.Version,
+		ReleaseURL:   info.ReleaseURL,
+		ReleaseNotes: cleanReleaseNotes(info.ReleaseNotes),
 	}, nil
 }
 
@@ -104,4 +107,34 @@ func parseSemver(v string) [3]int {
 		result[i] = n
 	}
 	return result
+}
+
+// cleanReleaseNotes extracts only feat: and fix: bullet lines from the
+// GitHub release body, strips the type prefix, and capitalizes the first letter.
+func cleanReleaseNotes(body string) string {
+	var lines []string
+	for line := range strings.SplitSeq(body, "\n") {
+		trimmed := strings.TrimSpace(line)
+		trimmed = strings.TrimPrefix(trimmed, "- ")
+		trimmed = strings.TrimPrefix(trimmed, "* ")
+
+		var rest string
+		switch {
+		case strings.HasPrefix(trimmed, "feat: "):
+			rest = strings.TrimPrefix(trimmed, "feat: ")
+		case strings.HasPrefix(trimmed, "fix: "):
+			rest = strings.TrimPrefix(trimmed, "fix: ")
+		default:
+			continue
+		}
+
+		if rest == "" {
+			continue
+		}
+
+		// Capitalize the first letter.
+		first := strings.ToUpper(rest[:1])
+		lines = append(lines, "- "+first+rest[1:])
+	}
+	return strings.Join(lines, "\n")
 }

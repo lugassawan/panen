@@ -2,18 +2,24 @@ package presenter
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/lugassawan/panen/backend/domain/settings"
+	"github.com/lugassawan/panen/backend/domain/shared"
 	"github.com/lugassawan/panen/backend/usecase"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
-const (
-	settingSkippedVersion   = "skipped_version"
-	allowedReleaseURLPrefix = "https://github.com/lugassawan/panen/releases/"
-)
+const settingSkippedVersion = "skipped_version"
+
+// updateAvailablePayload is the event payload emitted when a new version is detected on startup.
+type updateAvailablePayload struct {
+	CurrentVersion string `json:"currentVersion"`
+	LatestVersion  string `json:"latestVersion"`
+	ReleaseNotes   string `json:"releaseNotes"`
+	ReleaseURL     string `json:"releaseURL"`
+}
 
 // UpdateHandler handles update-related requests from the frontend.
 type UpdateHandler struct {
@@ -21,6 +27,7 @@ type UpdateHandler struct {
 	update     *usecase.UpdateService
 	selfUpdate *usecase.SelfUpdateService
 	settings   settings.Repository
+	emitter    usecase.EventEmitter
 }
 
 // Bind wires the handler to its dependencies.
@@ -29,11 +36,13 @@ func (h *UpdateHandler) Bind(
 	update *usecase.UpdateService,
 	selfUpdate *usecase.SelfUpdateService,
 	settings settings.Repository,
+	emitter usecase.EventEmitter,
 ) {
 	h.ctx = ctx
 	h.update = update
 	h.selfUpdate = selfUpdate
 	h.settings = settings
+	h.emitter = emitter
 }
 
 // CheckForUpdate checks for updates and returns the result for the frontend.
@@ -47,6 +56,7 @@ func (h *UpdateHandler) CheckForUpdate() (*UpdateCheckResponse, error) {
 		CurrentVersion: result.CurrentVer,
 		LatestVersion:  result.LatestVer,
 		ReleaseURL:     result.ReleaseURL,
+		ReleaseNotes:   result.ReleaseNotes,
 	}, nil
 }
 
@@ -55,18 +65,16 @@ func (h *UpdateHandler) GetAppVersion() string {
 	return h.update.CurrentVersion()
 }
 
-// OpenReleaseURL opens the given URL in the user's default browser.
-// Only URLs under the project's GitHub releases path are allowed.
-func (h *UpdateHandler) OpenReleaseURL(url string) {
-	if !strings.HasPrefix(url, allowedReleaseURLPrefix) {
-		runtime.LogWarningf(h.ctx, "blocked non-release URL: %s", url)
-		return
+// SkipVersion persists the given version so it won't trigger the startup notification again.
+func (h *UpdateHandler) SkipVersion(version string) error {
+	if version == "" {
+		return errors.New("version must not be empty")
 	}
-	runtime.BrowserOpenURL(h.ctx, url)
+	return h.settings.SetSetting(h.ctx, settingSkippedVersion, version)
 }
 
-// CheckForUpdateOnStartup checks for updates on app startup and shows a native dialog if available.
-// Skipped in dev builds to avoid noisy dialogs during development.
+// CheckForUpdateOnStartup checks for updates on app startup and emits an event if available.
+// Skipped in dev builds to avoid noisy events during development.
 func (h *UpdateHandler) CheckForUpdateOnStartup() {
 	if h.update.CurrentVersion() == "dev" {
 		return
@@ -86,32 +94,12 @@ func (h *UpdateHandler) CheckForUpdateOnStartup() {
 		return
 	}
 
-	msg := fmt.Sprintf(
-		"A new version of Panen is available.\n\nCurrent: %s\nLatest: %s",
-		result.CurrentVer, result.LatestVer,
-	)
-
-	selection, err := runtime.MessageDialog(h.ctx, runtime.MessageDialogOptions{
-		Type:          runtime.InfoDialog,
-		Title:         "Update Available",
-		Message:       msg,
-		Buttons:       []string{"View Release", "Skip This Version", "Dismiss"},
-		DefaultButton: "View Release",
-		CancelButton:  "Dismiss",
+	h.emitter.Emit(shared.EventUpdateAvailable, updateAvailablePayload{
+		CurrentVersion: result.CurrentVer,
+		LatestVersion:  result.LatestVer,
+		ReleaseNotes:   result.ReleaseNotes,
+		ReleaseURL:     result.ReleaseURL,
 	})
-	if err != nil {
-		runtime.LogWarningf(h.ctx, "update dialog: %v", err)
-		return
-	}
-
-	switch selection {
-	case "View Release":
-		runtime.BrowserOpenURL(h.ctx, result.ReleaseURL)
-	case "Skip This Version":
-		if err := h.settings.SetSetting(h.ctx, settingSkippedVersion, result.LatestVer); err != nil {
-			runtime.LogWarningf(h.ctx, "save skipped version: %v", err)
-		}
-	}
 }
 
 // DownloadAndInstallUpdate starts the async self-update flow.
