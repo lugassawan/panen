@@ -119,3 +119,75 @@ func TestUpdateServiceCurrentVersion(t *testing.T) {
 		t.Errorf("CurrentVersion() = %q, want %q", got, "1.2.3")
 	}
 }
+
+func TestCheckReturnsReleaseNotes(t *testing.T) {
+	checker := &mockReleaseChecker{
+		info: &ReleaseInfo{
+			Version:    "1.1.0",
+			ReleaseURL: "https://github.com/lugassawan/panen/releases/tag/v1.1.0",
+			ReleaseNotes: "## What's Changed\n" +
+				"- feat: add cool feature (#10)\n" +
+				"- fix: broken thing (#11)\n" +
+				"- chore: bump deps (#12)",
+		},
+	}
+	svc := NewUpdateService(checker, "1.0.0")
+	result, err := svc.Check(context.Background())
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	want := "- Add cool feature (#10)\n- Broken thing (#11)"
+	if result.ReleaseNotes != want {
+		t.Errorf("ReleaseNotes = %q, want %q", result.ReleaseNotes, want)
+	}
+}
+
+func TestCleanReleaseNotes(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		{
+			name: "extracts feat and fix lines",
+			input: "## What's Changed\n### Features\n" +
+				"- feat: add version bump script (#135)\n" +
+				"### Bug Fixes\n" +
+				"- fix: capitalize macOS app bundle name (#131)\n" +
+				"### Other Changes\n" +
+				"- chore: bump version to 1.0.1 (#134)\n" +
+				"### Checksums",
+			want: "- Add version bump script (#135)\n- Capitalize macOS app bundle name (#131)",
+		},
+		{
+			name:  "empty body",
+			input: "",
+			want:  "",
+		},
+		{
+			name:  "no feat or fix lines",
+			input: "## What's Changed\n- chore: bump deps\n- docs: update readme",
+			want:  "",
+		},
+		{
+			name:  "asterisk bullets",
+			input: "* feat: something new\n* fix: something broken",
+			want:  "- Something new\n- Something broken",
+		},
+		{
+			name:  "already capitalized",
+			input: "- feat: Add feature X",
+			want:  "- Add feature X",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got := cleanReleaseNotes(tc.input)
+			if got != tc.want {
+				t.Errorf("cleanReleaseNotes() = %q, want %q", got, tc.want)
+			}
+		})
+	}
+}
