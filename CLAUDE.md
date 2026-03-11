@@ -207,9 +207,11 @@ Reusable components in `frontend/src/lib/components/`: Alert, Badge, BrokerPicke
 
 ### Workflow
 
-1. Update `wails.json` `info.productVersion` to the new version (e.g. `0.2.0`)
-2. Commit: `chore: bump version to 0.2.0`
-3. Run: `scripts/release.sh 0.2.0` (validates version, creates tag, pushes)
+1. Update version in these files:
+   - `wails.json` → `info.productVersion` (e.g. `"1.0.1"`)
+   - `build/windows/panen.exe.manifest` → `assemblyIdentity version` (4-part: `"1.0.1.0"`)
+2. Commit: `chore: bump version to 1.0.1`
+3. Run: `scripts/release.sh 1.0.1` (validates version, creates tag, pushes)
 4. CI builds all platforms, creates GitHub Release with archives + checksums
 
 ```sh
