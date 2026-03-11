@@ -20,7 +20,12 @@ import { alerts } from "../lib/stores/alerts.svelte";
 import { mode } from "../lib/stores/mode.svelte";
 import type { Page } from "../lib/types";
 
-let { currentPage, onNavigate }: { currentPage: Page; onNavigate: (page: Page) => void } = $props();
+let {
+  currentPage,
+  onNavigate,
+  onToggleCommandPalette,
+}: { currentPage: Page; onNavigate: (page: Page) => void; onToggleCommandPalette?: () => void } =
+  $props();
 
 type NavGroup = "overview" | "research" | "portfolio" | "account";
 
@@ -94,6 +99,18 @@ $effect(() => {
     <li class="mt-auto border-t border-border-default">
       <SyncIndicator />
     </li>
+    {#if onToggleCommandPalette}
+      <li>
+        <button
+          onclick={onToggleCommandPalette}
+          class="flex w-full items-center gap-3 px-4 py-2 text-xs text-text-tertiary transition-fast hover:text-text-secondary focus-ring rounded-md"
+        >
+          <Search size={16} aria-hidden="true" />
+          <span>{t("nav.search")}</span>
+          <kbd class="ml-auto rounded border border-border-default bg-bg-tertiary px-1.5 py-0.5 font-mono text-[10px]">⌘K</kbd>
+        </button>
+      </li>
+    {/if}
     <li>
       <button
         onclick={() => onNavigate("settings")}
