@@ -228,8 +228,7 @@
     "commandPalette": "Command Palette",
     "showHelp": "Show Shortcuts",
     "closeOverlay": "Close Overlay",
-    "search": "Search",
-    "newHolding": "New Holding"
+    "search": "Search"
   },
   "lookup": {
     "title": "Stock Lookup",

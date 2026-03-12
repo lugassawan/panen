@@ -18,8 +18,6 @@ export interface ShortcutHandlers {
   onNavigate: (page: Page) => void;
   onToggleCommandPalette: () => void;
   onToggleHelp: () => void;
-  onAction?: (action: string) => void;
-  currentPage?: Page;
 }
 
 export function handleGlobalShortcut(e: KeyboardEvent, handlers: ShortcutHandlers): void {
@@ -62,12 +60,5 @@ export function handleGlobalShortcut(e: KeyboardEvent, handlers: ShortcutHandler
   if (e.key === "/") {
     e.preventDefault();
     handlers.onToggleCommandPalette();
-    return;
-  }
-
-  // "n" — new holding (portfolio page only)
-  if (e.key === "n" && handlers.currentPage === "portfolio") {
-    e.preventDefault();
-    handlers.onAction?.("newHolding");
   }
 }

@@ -6,7 +6,6 @@ function makeHandlers(overrides: Partial<ShortcutHandlers> = {}): ShortcutHandle
     onNavigate: vi.fn(),
     onToggleCommandPalette: vi.fn(),
     onToggleHelp: vi.fn(),
-    onAction: vi.fn(),
     ...overrides,
   };
 }
@@ -45,20 +44,6 @@ describe("handleGlobalShortcut", () => {
     const e = fire("/");
     handleGlobalShortcut(e, h);
     expect(h.onToggleCommandPalette).toHaveBeenCalled();
-  });
-
-  it("n triggers newHolding on portfolio page", () => {
-    const h = makeHandlers({ currentPage: "portfolio" });
-    const e = fire("n");
-    handleGlobalShortcut(e, h);
-    expect(h.onAction).toHaveBeenCalledWith("newHolding");
-  });
-
-  it("n does nothing on non-portfolio page", () => {
-    const h = makeHandlers({ currentPage: "dashboard" });
-    const e = fire("n");
-    handleGlobalShortcut(e, h);
-    expect(h.onAction).not.toHaveBeenCalled();
   });
 
   it("blocks shortcuts when input is focused except Cmd+K and Escape", () => {

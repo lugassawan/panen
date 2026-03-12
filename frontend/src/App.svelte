@@ -34,7 +34,6 @@ function navigateTo(page: Page) {
   onNavigate: navigateTo,
   onToggleCommandPalette: () => commandPalette.toggle(),
   onToggleHelp: () => { showHelp = !showHelp; },
-  currentPage,
 })} />
 
 <div class="flex h-screen" data-theme={theme.current}>

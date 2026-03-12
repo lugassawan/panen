@@ -28,5 +28,4 @@ export const SHORTCUT_REGISTRY: ShortcutDef[] = [
 
   // Actions
   { keys: "/", label: "shortcuts.search", category: "action" },
-  { keys: "N", label: "shortcuts.newHolding", category: "action", page: "portfolio" },
 ];
