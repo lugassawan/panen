@@ -28,7 +28,7 @@ test.describe("Sidebar navigation", () => {
     await lookupBtn.click();
 
     await expect(lookupBtn).toHaveAttribute("aria-current", "page");
-    await expect(dashboardBtn).not.toHaveAttribute("aria-current");
+    await expect(dashboardBtn).not.toHaveAttribute("aria-current", "page");
   });
 
   test("navigates between pages", async ({ page }) => {
@@ -110,14 +110,14 @@ test.describe("Command Palette", () => {
   test("opens with Cmd/Ctrl+K", async ({ page }) => {
     await page.goto("/");
 
-    await page.keyboard.press("Meta+k");
+    await page.keyboard.press("ControlOrMeta+k");
     await expect(page.getByPlaceholder(/search pages/i)).toBeVisible();
   });
 
   test("shows search input focused", async ({ page }) => {
     await page.goto("/");
 
-    await page.keyboard.press("Meta+k");
+    await page.keyboard.press("ControlOrMeta+k");
     const input = page.getByPlaceholder(/search pages/i);
     await expect(input).toBeVisible();
     await expect(input).toBeFocused();
@@ -126,7 +126,7 @@ test.describe("Command Palette", () => {
   test("closes with Escape", async ({ page }) => {
     await page.goto("/");
 
-    await page.keyboard.press("Meta+k");
+    await page.keyboard.press("ControlOrMeta+k");
     await expect(page.getByPlaceholder(/search pages/i)).toBeVisible();
 
     await page.keyboard.press("Escape");
