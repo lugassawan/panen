@@ -17,7 +17,6 @@ vi.mock("../i18n", () => ({
       "nav.brokerage": "Brokerage",
       "nav.comparison": "Compare",
       "nav.settings": "Settings",
-      "nav.searchPages": "Search pages...",
       "nav.noResults": "No results found",
       "nav.group.overview": "Overview",
       "nav.group.research": "Research",

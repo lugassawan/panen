@@ -40,7 +40,7 @@ function navigateTo(page: Page) {
   <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-bg-elevated focus:text-text-primary focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-accent">
     {t("a11y.skipToContent")}
   </a>
-  <Sidebar {currentPage} onNavigate={navigateTo} onToggleCommandPalette={() => commandPalette.toggle()} />
+  <Sidebar {currentPage} onNavigate={navigateTo} />
 
   <main id="main-content" tabindex="-1" class="flex-1 overflow-y-auto">
     {#if currentPage === "dashboard"}
