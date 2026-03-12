@@ -68,6 +68,7 @@
     "brokerage": "Sekuritas",
     "comparison": "Bandingkan",
     "settings": "Pengaturan",
+    "search": "Cari",
     "searchPages": "Cari halaman...",
     "noResults": "Tidak ada hasil",
     "group": {
@@ -213,7 +214,21 @@
     "syncing": "Menyinkronkan {ticker}",
     "syncFailed": "Sinkronisasi gagal",
     "retry": "Coba Lagi",
-    "retrying": "Mencoba lagi..."
+    "retrying": "Mencoba lagi...",
+    "retryRefresh": "Coba perbarui data lagi"
+  },
+  "a11y": {
+    "skipToContent": "Langsung ke konten utama"
+  },
+  "shortcuts": {
+    "title": "Pintasan Keyboard",
+    "global": "Global",
+    "navigation": "Navigasi",
+    "actions": "Aksi",
+    "commandPalette": "Palet Perintah",
+    "showHelp": "Tampilkan Pintasan",
+    "closeOverlay": "Tutup Overlay",
+    "search": "Cari"
   },
   "lookup": {
     "title": "Cari Saham",
@@ -639,7 +654,7 @@
     "topLosers": "Penurunan Teratas",
     "recentTransactions": "Transaksi Terakhir",
     "performance": "Performa",
-    "winRate": "Rasio Menang",
+    "winRate": "Tingkat Kemenangan",
     "winningHoldings": "{winning} dari {total} saham untung",
     "holdingCount": "Total Saham",
     "emptyTitle": "Belum ada portofolio",

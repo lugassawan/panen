@@ -93,4 +93,19 @@ describe("DashboardPage", () => {
     const title = await screen.findByText("Dashboard");
     expect(title).toBeTruthy();
   });
+
+  it("shows performance summary cards", async () => {
+    mockGetDashboardOverview.mockResolvedValue(readyOverview);
+
+    render(DashboardPage, { props: { onNavigate: vi.fn() } });
+
+    const winRateLabel = await screen.findByText("Win Rate");
+    expect(winRateLabel).toBeTruthy();
+
+    const holdingCountLabel = await screen.findByText("Total Holdings");
+    expect(holdingCountLabel).toBeTruthy();
+
+    const winningText = await screen.findByText("1 of 1 holdings winning");
+    expect(winningText).toBeTruthy();
+  });
 });

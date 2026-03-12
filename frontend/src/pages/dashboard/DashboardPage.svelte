@@ -181,7 +181,7 @@ function txnTypeLabel(type: string): string {
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div class="rounded-lg border border-border-default bg-bg-elevated p-5">
           <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">{t("dashboard.winRate")}</p>
-          <p class="mt-2 font-mono text-2xl font-bold text-text-primary">{formatPercent(data.winRate)}</p>
+          <p class="mt-2 font-mono text-2xl font-bold {data.winRate >= 50 ? 'text-profit' : 'text-loss'}">{formatPercent(data.winRate)}</p>
           <p class="mt-1 text-xs text-text-muted">
             {t("dashboard.winningHoldings", { winning: String(data.winningCount), total: String(data.holdingCount) })}
           </p>
@@ -221,7 +221,7 @@ function txnTypeLabel(type: string): string {
         {#if data.topGainers.length > 0}
           <div class="rounded-lg border border-border-default bg-bg-elevated p-4">
             <div class="mb-3 flex items-center gap-2">
-              <TrendingUp size={16} class="text-profit" />
+              <TrendingUp size={16} class="text-profit" aria-hidden="true" />
               <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">{t("dashboard.topGainers")}</p>
             </div>
             <table class="w-full text-sm">
@@ -249,7 +249,7 @@ function txnTypeLabel(type: string): string {
         {#if data.topLosers.length > 0}
           <div class="rounded-lg border border-border-default bg-bg-elevated p-4">
             <div class="mb-3 flex items-center gap-2">
-              <TrendingDown size={16} class="text-loss" />
+              <TrendingDown size={16} class="text-loss" aria-hidden="true" />
               <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">{t("dashboard.topLosers")}</p>
             </div>
             <table class="w-full text-sm">
