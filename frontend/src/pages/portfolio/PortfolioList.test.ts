@@ -85,4 +85,15 @@ describe("PortfolioList", () => {
     await user.click(screen.getByRole("button", { name: /Delete/i }));
     expect(onDelete).toHaveBeenCalledWith(portfolios[0]);
   });
+
+  it("displays broker name when brokerNameMap is provided", () => {
+    render(PortfolioList, {
+      props: {
+        portfolios,
+        brokerNameMap: { b1: "BCA Sekuritas" },
+        ...defaultHandlers,
+      },
+    });
+    expect(screen.getByText("BCA Sekuritas")).toBeInTheDocument();
+  });
 });

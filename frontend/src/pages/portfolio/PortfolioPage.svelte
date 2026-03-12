@@ -60,6 +60,7 @@ let sellingHolding = $state<{
   lots: number;
   avgBuyPrice: number;
 } | null>(null);
+let brokerNameMap = $state<Record<string, string>>({});
 let checklistTicker = $state<string | null>(null);
 let checklistAction = $state<ActionType | null>(null);
 
@@ -77,6 +78,11 @@ async function load() {
     }
 
     brokerageAcctId = accounts[0].id;
+    const nameMap: Record<string, string> = {};
+    for (const acct of accounts) {
+      nameMap[acct.id] = acct.brokerName;
+    }
+    brokerNameMap = nameMap;
     const result = await ListPortfolios(brokerageAcctId);
     portfolios = result ?? [];
     if (portfolios.length === 0) {
@@ -182,6 +188,7 @@ load();
   {:else if state === "list"}
     <PortfolioList
       {portfolios}
+      {brokerNameMap}
       onView={viewPortfolio}
       onEdit={(portfolio) => {
         editingPortfolio = portfolio;
