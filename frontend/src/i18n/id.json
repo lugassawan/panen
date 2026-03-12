@@ -68,6 +68,7 @@
     "brokerage": "Sekuritas",
     "comparison": "Bandingkan",
     "settings": "Pengaturan",
+    "search": "Cari",
     "searchPages": "Cari halaman...",
     "noResults": "Tidak ada hasil",
     "group": {
@@ -218,6 +219,16 @@
   },
   "a11y": {
     "skipToContent": "Langsung ke konten utama"
+  },
+  "shortcuts": {
+    "title": "Pintasan Keyboard",
+    "global": "Global",
+    "navigation": "Navigasi",
+    "actions": "Aksi",
+    "commandPalette": "Palet Perintah",
+    "showHelp": "Tampilkan Pintasan",
+    "closeOverlay": "Tutup Overlay",
+    "search": "Cari"
   },
   "lookup": {
     "title": "Cari Saham",

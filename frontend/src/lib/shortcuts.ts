@@ -17,22 +17,47 @@ const PAGE_ORDER: Page[] = [
 export interface ShortcutHandlers {
   onNavigate: (page: Page) => void;
   onToggleCommandPalette: () => void;
+  onToggleHelp: () => void;
 }
 
 export function handleGlobalShortcut(e: KeyboardEvent, handlers: ShortcutHandlers): void {
   const meta = e.metaKey || e.ctrlKey;
-  if (!meta) return;
+
+  // Input-focus guard: allow Cmd+K and Escape in inputs, block everything else
+  const target = e.target as HTMLElement | null;
+  const isInput =
+    target instanceof HTMLInputElement ||
+    target instanceof HTMLTextAreaElement ||
+    target instanceof HTMLSelectElement ||
+    target?.isContentEditable;
+  if (isInput && !(meta && e.key === "k") && e.key !== "Escape") return;
 
   // Cmd+1 through Cmd+9 — page navigation
-  const num = Number.parseInt(e.key, 10);
-  if (num >= 1 && num <= PAGE_ORDER.length) {
+  if (meta) {
+    const num = Number.parseInt(e.key, 10);
+    if (num >= 1 && num <= PAGE_ORDER.length) {
+      e.preventDefault();
+      handlers.onNavigate(PAGE_ORDER[num - 1]);
+      return;
+    }
+
+    // Cmd+K — command palette
+    if (e.key === "k") {
+      e.preventDefault();
+      handlers.onToggleCommandPalette();
+      return;
+    }
+  }
+
+  // Shift+? — toggle help overlay
+  if (e.shiftKey && e.key === "?") {
     e.preventDefault();
-    handlers.onNavigate(PAGE_ORDER[num - 1]);
+    handlers.onToggleHelp();
     return;
   }
 
-  // Cmd+K — command palette
-  if (e.key === "k") {
+  // "/" — open command palette (acts as search)
+  if (e.key === "/") {
     e.preventDefault();
     handlers.onToggleCommandPalette();
   }

@@ -2,6 +2,7 @@
 import Sidebar from "./components/Sidebar.svelte";
 import { t } from "./i18n";
 import CommandPalette from "./lib/components/CommandPalette.svelte";
+import ShortcutHelpOverlay from "./lib/components/ShortcutHelpOverlay.svelte";
 import ToastContainer from "./lib/components/ToastContainer.svelte";
 import UpdateDialog from "./lib/components/UpdateDialog.svelte";
 import { handleGlobalShortcut } from "./lib/shortcuts";
@@ -22,19 +23,24 @@ import TransactionHistoryPage from "./pages/transactions/TransactionHistoryPage.
 import WatchlistPage from "./pages/watchlist/WatchlistPage.svelte";
 
 let currentPage = $state<Page>("dashboard");
+let showHelp = $state(false);
 
 function navigateTo(page: Page) {
   currentPage = page;
 }
 </script>
 
-<svelte:window onkeydown={(e) => handleGlobalShortcut(e, { onNavigate: navigateTo, onToggleCommandPalette: () => commandPalette.toggle() })} />
+<svelte:window onkeydown={(e) => handleGlobalShortcut(e, {
+  onNavigate: navigateTo,
+  onToggleCommandPalette: () => commandPalette.toggle(),
+  onToggleHelp: () => { showHelp = !showHelp; },
+})} />
 
 <div class="flex h-screen" data-theme={theme.current}>
   <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-bg-elevated focus:text-text-primary focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-accent">
     {t("a11y.skipToContent")}
   </a>
-  <Sidebar {currentPage} onNavigate={navigateTo} />
+  <Sidebar {currentPage} onNavigate={navigateTo} onToggleCommandPalette={() => commandPalette.toggle()} />
 
   <main id="main-content" tabindex="-1" class="flex-1 overflow-y-auto">
     {#if currentPage === "dashboard"}
@@ -68,3 +74,4 @@ function navigateTo(page: Page) {
 <ToastContainer />
 <CommandPalette onNavigate={navigateTo} />
 <UpdateDialog />
+<ShortcutHelpOverlay open={showHelp} onClose={() => { showHelp = false; }} />
