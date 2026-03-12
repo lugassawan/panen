@@ -18,7 +18,6 @@ vi.mock("./i18n", () => ({
       "nav.alerts": "Alerts",
       "nav.brokerage": "Brokerage",
       "nav.settings": "Settings",
-      "nav.search": "Search",
       "nav.searchPages": "Search pages...",
       "nav.noResults": "No results found",
       "comparison.title": "Stock Comparison",
@@ -176,11 +175,11 @@ vi.mock("./lib/stores/theme.svelte", () => ({
 }));
 
 describe("App navigation", () => {
-  it("renders sidebar with 13 nav items including search hint", () => {
+  it("renders sidebar with 12 nav items", () => {
     render(App);
     const nav = screen.getByRole("navigation", { name: /main/i });
     const buttons = within(nav).getAllByRole("button");
-    expect(buttons).toHaveLength(13);
+    expect(buttons).toHaveLength(12);
     expect(buttons[0]).toHaveTextContent("Dashboard");
     expect(buttons[1]).toHaveTextContent("Stock Lookup");
     expect(buttons[2]).toHaveTextContent("Watchlist");
@@ -192,8 +191,7 @@ describe("App navigation", () => {
     expect(buttons[8]).toHaveTextContent("Transactions");
     expect(buttons[9]).toHaveTextContent("Alerts");
     expect(buttons[10]).toHaveTextContent("Brokerage");
-    expect(buttons[11]).toHaveTextContent("Search");
-    expect(buttons[12]).toHaveTextContent("Settings");
+    expect(buttons[11]).toHaveTextContent("Settings");
   });
 
   it("starts on Dashboard page by default", async () => {
