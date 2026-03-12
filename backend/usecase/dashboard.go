@@ -70,6 +70,18 @@ func (s *DashboardService) GetOverview(ctx context.Context) (*dashboard.Overview
 
 	gainers, losers := topMovers(agg.allHoldings)
 
+	winCount := 0
+	for _, h := range agg.allHoldings {
+		if h.PLAmount > 0 {
+			winCount++
+		}
+	}
+	holdingCount := len(agg.allHoldings)
+	winRate := 0.0
+	if holdingCount > 0 {
+		winRate = float64(winCount) / float64(holdingCount) * 100
+	}
+
 	return &dashboard.Overview{
 		TotalMarketValue:    agg.totalMV,
 		TotalCostBasis:      agg.totalCB,
@@ -82,6 +94,9 @@ func (s *DashboardService) GetOverview(ctx context.Context) (*dashboard.Overview
 		PortfolioAllocation: portfolioAllocation(agg.summaries),
 		SectorAllocation:    sectorAllocation(agg.sectorValues, agg.totalMV),
 		RecentTransactions:  records,
+		WinRate:             winRate,
+		HoldingCount:        holdingCount,
+		WinningCount:        winCount,
 	}, nil
 }
 

@@ -437,6 +437,9 @@ func newDashboardOverviewResponse(o *dashboard.Overview) *DashboardOverviewRespo
 		PortfolioAllocation: portfolioAlloc,
 		SectorAllocation:    sectorAlloc,
 		RecentTransactions:  txns,
+		WinRate:             o.WinRate,
+		HoldingCount:        o.HoldingCount,
+		WinningCount:        o.WinningCount,
 	}
 }
 

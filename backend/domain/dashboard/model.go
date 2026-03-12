@@ -15,6 +15,9 @@ type Overview struct {
 	PortfolioAllocation []AllocationItem
 	SectorAllocation    []AllocationItem
 	RecentTransactions  []transaction.Record
+	WinRate             float64
+	HoldingCount        int
+	WinningCount        int
 }
 
 // PortfolioSummary holds per-portfolio aggregated values.
