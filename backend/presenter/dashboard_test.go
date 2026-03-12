@@ -15,6 +15,9 @@ func TestNewDashboardOverviewResponse(t *testing.T) {
 		TotalPLAmount:       2000000,
 		TotalPLPercent:      14.28,
 		TotalDividendIncome: 480000,
+		WinRate:             100,
+		HoldingCount:        1,
+		WinningCount:        1,
 		Portfolios: []dashboard.PortfolioSummary{
 			{
 				ID:          "p1",
@@ -78,5 +81,14 @@ func TestNewDashboardOverviewResponse(t *testing.T) {
 	}
 	if got.RecentTransactions[0].Ticker != "BBCA" {
 		t.Errorf("transaction ticker = %q, want %q", got.RecentTransactions[0].Ticker, "BBCA")
+	}
+	if got.WinRate != 100 {
+		t.Errorf("WinRate = %f, want 100", got.WinRate)
+	}
+	if got.HoldingCount != 1 {
+		t.Errorf("HoldingCount = %d, want 1", got.HoldingCount)
+	}
+	if got.WinningCount != 1 {
+		t.Errorf("WinningCount = %d, want 1", got.WinningCount)
 	}
 }
