@@ -6,9 +6,11 @@ import Button from "../../lib/components/Button.svelte";
 import Input from "../../lib/components/Input.svelte";
 import { formatError } from "../../lib/error";
 
-let { portfolioId, onAdded }: { portfolioId: string; onAdded: () => void } = $props();
+let { portfolioId, existingTickers = [], onAdded }: { portfolioId: string; existingTickers?: string[]; onAdded: () => void } = $props();
 
 let ticker = $state("");
+let normalizedTicker = $derived(ticker.trim().toUpperCase());
+let isExisting = $derived(existingTickers.includes(normalizedTicker));
 let buyPrice = $state(0);
 let lots = $state(1);
 let date = $state(new Date().toISOString().split("T")[0]);
@@ -17,7 +19,6 @@ let error = $state<string | null>(null);
 
 async function submit() {
   error = null;
-  const normalizedTicker = ticker.trim().toUpperCase();
   if (!normalizedTicker) {
     error = t("holding.tickerRequired");
     return;
@@ -100,7 +101,7 @@ async function submit() {
 	</div>
 
 	<Button type="submit" disabled={loading}>
-		{loading ? t("holding.adding") : t("holding.addHolding")}
+		{loading ? t("holding.adding") : isExisting ? t("holding.addLots") : t("holding.newHolding")}
 	</Button>
 
 	{#if error}

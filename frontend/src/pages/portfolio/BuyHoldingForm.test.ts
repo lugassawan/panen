@@ -1,14 +1,14 @@
 import { render, screen } from "@testing-library/svelte";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import AddHoldingForm from "./AddHoldingForm.svelte";
+import BuyHoldingForm from "./BuyHoldingForm.svelte";
 
 const mockAddHolding = vi.fn();
 vi.mock("../../../wailsjs/go/backend/App", () => ({
   AddHolding: (...args: unknown[]) => mockAddHolding(...args),
 }));
 
-describe("AddHoldingForm", () => {
+describe("BuyHoldingForm", () => {
   const defaultProps = {
     portfolioId: "p1",
     onAdded: vi.fn(),
@@ -20,17 +20,17 @@ describe("AddHoldingForm", () => {
   });
 
   it("renders all form fields", () => {
-    render(AddHoldingForm, { props: defaultProps });
+    render(BuyHoldingForm, { props: defaultProps });
 
     expect(screen.getByLabelText(/ticker/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/buy price/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/lots/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/date/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /add holding/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /new holding/i })).toBeInTheDocument();
   });
 
   it("defaults date to today", () => {
-    render(AddHoldingForm, { props: defaultProps });
+    render(BuyHoldingForm, { props: defaultProps });
 
     const dateInput = screen.getByLabelText(/date/i) as HTMLInputElement;
     const today = new Date().toISOString().split("T")[0];
@@ -45,7 +45,7 @@ describe("AddHoldingForm", () => {
       lots: 10,
     });
 
-    render(AddHoldingForm, { props: defaultProps });
+    render(BuyHoldingForm, { props: defaultProps });
     const user = userEvent.setup();
 
     await user.type(screen.getByLabelText(/ticker/i), "bbca");
@@ -53,7 +53,7 @@ describe("AddHoldingForm", () => {
     await user.type(screen.getByLabelText(/buy price/i), "8500");
     await user.clear(screen.getByLabelText(/lots/i));
     await user.type(screen.getByLabelText(/lots/i), "10");
-    await user.click(screen.getByRole("button", { name: /add holding/i }));
+    await user.click(screen.getByRole("button", { name: /new holding/i }));
 
     const today = new Date().toISOString().split("T")[0];
     expect(mockAddHolding).toHaveBeenCalledWith("p1", "BBCA", 8500, 10, today);
@@ -61,25 +61,25 @@ describe("AddHoldingForm", () => {
   });
 
   it("shows error when ticker is empty", async () => {
-    render(AddHoldingForm, { props: defaultProps });
+    render(BuyHoldingForm, { props: defaultProps });
     const user = userEvent.setup();
 
     await user.clear(screen.getByLabelText(/buy price/i));
     await user.type(screen.getByLabelText(/buy price/i), "8500");
     await user.clear(screen.getByLabelText(/lots/i));
     await user.type(screen.getByLabelText(/lots/i), "10");
-    await user.click(screen.getByRole("button", { name: /add holding/i }));
+    await user.click(screen.getByRole("button", { name: /new holding/i }));
 
     expect(screen.getByRole("alert")).toHaveTextContent(/ticker is required/i);
     expect(mockAddHolding).not.toHaveBeenCalled();
   });
 
   it("shows error when buy price is zero", async () => {
-    render(AddHoldingForm, { props: defaultProps });
+    render(BuyHoldingForm, { props: defaultProps });
     const user = userEvent.setup();
 
     await user.type(screen.getByLabelText(/ticker/i), "BBCA");
-    await user.click(screen.getByRole("button", { name: /add holding/i }));
+    await user.click(screen.getByRole("button", { name: /new holding/i }));
 
     expect(screen.getByRole("alert")).toHaveTextContent(/buy price must be greater than 0/i);
     expect(mockAddHolding).not.toHaveBeenCalled();
@@ -88,7 +88,7 @@ describe("AddHoldingForm", () => {
   it("shows error on API failure", async () => {
     mockAddHolding.mockRejectedValueOnce(new Error("duplicate ticker"));
 
-    render(AddHoldingForm, { props: defaultProps });
+    render(BuyHoldingForm, { props: defaultProps });
     const user = userEvent.setup();
 
     await user.type(screen.getByLabelText(/ticker/i), "BBCA");
@@ -96,7 +96,7 @@ describe("AddHoldingForm", () => {
     await user.type(screen.getByLabelText(/buy price/i), "8500");
     await user.clear(screen.getByLabelText(/lots/i));
     await user.type(screen.getByLabelText(/lots/i), "10");
-    await user.click(screen.getByRole("button", { name: /add holding/i }));
+    await user.click(screen.getByRole("button", { name: /new holding/i }));
 
     expect(screen.getByRole("alert")).toHaveTextContent(/duplicate ticker/i);
   });
