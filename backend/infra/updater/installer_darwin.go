@@ -21,40 +21,21 @@ func (i *darwinInstaller) ArchiveName() string {
 	return "panen-darwin-universal.zip"
 }
 
-// InstallPath walks up from the current executable to find the .app bundle root.
-// It returns the canonical path with "Panen.app" regardless of the actual folder name,
-// so that upgrades from the old "panen.app" name produce the new name.
+// InstallPath returns the canonical install location for macOS.
 func (i *darwinInstaller) InstallPath() (string, error) {
-	exe, err := os.Executable()
-	if err != nil {
-		return "", fmt.Errorf("resolve executable: %w", err)
-	}
-	exe, err = filepath.EvalSymlinks(exe)
-	if err != nil {
-		return "", fmt.Errorf("eval symlinks: %w", err)
-	}
-
-	// Walk up to find .app bundle (e.g. /Applications/Panen.app/Contents/MacOS/panen)
-	dir := exe
-	for {
-		dir = filepath.Dir(dir)
-		if dir == "/" || dir == "." {
-			break
-		}
-		if strings.HasSuffix(dir, ".app") {
-			return filepath.Join(filepath.Dir(dir), "Panen.app"), nil
-		}
-	}
-	return "", fmt.Errorf("no .app bundle found for %s", exe)
+	return "/Applications/Panen.app", nil
 }
 
 // Install moves the existing .app to .app.backup and places the new one.
+// If the app was running from a different location (e.g. ~/Applications),
+// it cleans up the old location after installing.
 func (i *darwinInstaller) Install(
 	extractedDir, installPath string,
 ) error {
 	backupPath := installPath + ".backup"
 
-	if err := os.Rename(installPath, backupPath); err != nil {
+	// Back up existing install at target — ignore if not present yet
+	if err := os.Rename(installPath, backupPath); err != nil && !os.IsNotExist(err) {
 		legacyPath := filepath.Join(filepath.Dir(installPath), "panen.app")
 		if renameErr := os.Rename(legacyPath, backupPath); renameErr != nil {
 			return fmt.Errorf("backup current app: %w", err)
@@ -80,6 +61,15 @@ func (i *darwinInstaller) Install(
 	if err := os.Rename(appDir, installPath); err != nil {
 		return fmt.Errorf("install new app: %w", err)
 	}
+
+	// Clean up old location if migrating
+	oldPath, err := i.currentAppPath()
+	if err == nil && filepath.Dir(oldPath) != filepath.Dir(installPath) {
+		_ = os.RemoveAll(oldPath)
+		legacyOld := filepath.Join(filepath.Dir(oldPath), "panen.app")
+		_ = os.RemoveAll(legacyOld)
+	}
+
 	return nil
 }
 
@@ -98,4 +88,28 @@ func (i *darwinInstaller) CleanupBackup(installPath string) error {
 		return nil
 	}
 	return os.RemoveAll(backupPath)
+}
+
+// currentAppPath walks up from the current executable to find the .app bundle root.
+func (i *darwinInstaller) currentAppPath() (string, error) {
+	exe, err := os.Executable()
+	if err != nil {
+		return "", fmt.Errorf("resolve executable: %w", err)
+	}
+	exe, err = filepath.EvalSymlinks(exe)
+	if err != nil {
+		return "", fmt.Errorf("eval symlinks: %w", err)
+	}
+
+	dir := exe
+	for {
+		dir = filepath.Dir(dir)
+		if dir == "/" || dir == "." {
+			break
+		}
+		if strings.HasSuffix(dir, ".app") {
+			return dir, nil
+		}
+	}
+	return "", fmt.Errorf("no .app bundle found for %s", exe)
 }

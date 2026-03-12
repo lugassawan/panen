@@ -60,12 +60,12 @@ To install a specific version:
 PANEN_VERSION=v1.0.0 curl -fsSL https://raw.githubusercontent.com/lugassawan/panen/main/scripts/install.sh | sh
 ```
 
-**Install locations** (no sudo required):
+**Install locations:**
 
 | Platform | Location |
 |----------|----------|
-| macOS | `~/Applications/Panen.app` |
-| Linux | `~/.local/bin/panen` + `.desktop` + icon |
+| macOS | `/Applications/Panen.app` (writable by admin users without sudo) |
+| Linux | `~/.local/bin/panen` + `.desktop` + icon (no sudo required) |
 
 ### Windows
 

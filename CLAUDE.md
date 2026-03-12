@@ -241,6 +241,6 @@ curl -fsSL https://raw.githubusercontent.com/lugassawan/panen/main/scripts/insta
 PANEN_VERSION=v0.2.0 curl -fsSL https://raw.githubusercontent.com/lugassawan/panen/main/scripts/install.sh | sh
 ```
 
-Install locations (no sudo required):
-- **macOS**: `~/Applications/Panen.app`
-- **Linux**: `~/.local/bin/panen` + `.desktop` + icon
+Install locations:
+- **macOS**: `/Applications/Panen.app` (writable by admin users without sudo)
+- **Linux**: `~/.local/bin/panen` + `.desktop` + icon (no sudo required)
