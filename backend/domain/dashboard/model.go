@@ -2,7 +2,7 @@ package dashboard
 
 import "github.com/lugassawan/panen/backend/domain/transaction"
 
-// Overview holds aggregated performance data across all portfolios.
+// Overview holds aggregated performance data across all user portfolios.
 type Overview struct {
 	TotalMarketValue    float64
 	TotalCostBasis      float64

@@ -81,6 +81,7 @@ frontend-install:
 
 init:
 	cd frontend && pnpm install
+	mkdir -p frontend/dist
 	git config core.hooksPath .githooks
 
 setup:
