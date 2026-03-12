@@ -213,7 +213,11 @@
     "syncing": "Menyinkronkan {ticker}",
     "syncFailed": "Sinkronisasi gagal",
     "retry": "Coba Lagi",
-    "retrying": "Mencoba lagi..."
+    "retrying": "Mencoba lagi...",
+    "retryRefresh": "Coba perbarui data lagi"
+  },
+  "a11y": {
+    "skipToContent": "Langsung ke konten utama"
   },
   "lookup": {
     "title": "Cari Saham",

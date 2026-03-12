@@ -213,7 +213,11 @@
     "syncing": "Syncing {ticker}",
     "syncFailed": "Sync failed",
     "retry": "Retry",
-    "retrying": "Retrying..."
+    "retrying": "Retrying...",
+    "retryRefresh": "Retry data refresh"
+  },
+  "a11y": {
+    "skipToContent": "Skip to main content"
   },
   "lookup": {
     "title": "Stock Lookup",

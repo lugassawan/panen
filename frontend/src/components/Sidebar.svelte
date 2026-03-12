@@ -78,7 +78,7 @@ $effect(() => {
                   : 'text-text-secondary hover:bg-bg-tertiary hover:text-text-primary'}"
                 aria-current={currentPage === item.page ? "page" : undefined}
               >
-                <item.icon size={20} strokeWidth={1.5} class="shrink-0" />
+                <item.icon size={20} strokeWidth={1.5} class="shrink-0" aria-hidden="true" />
                 {t(item.labelKey)}
                 {#if item.page === "alerts" && alerts.activeCount > 0}
                   <span class="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-negative px-1.5 text-xs font-bold text-white">
@@ -102,7 +102,7 @@ $effect(() => {
           : 'text-text-secondary hover:bg-bg-tertiary hover:text-text-primary'}"
         aria-current={currentPage === "settings" ? "page" : undefined}
       >
-        <Settings size={20} strokeWidth={1.5} class="shrink-0" />
+        <Settings size={20} strokeWidth={1.5} class="shrink-0" aria-hidden="true" />
         {t("nav.settings")}
       </button>
     </li>
