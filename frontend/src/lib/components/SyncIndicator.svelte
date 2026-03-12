@@ -44,7 +44,7 @@ async function retry() {
     <button
       onclick={retry}
       disabled={retrying}
-      aria-label={t("sync.retryRefresh")}
+      aria-label={retrying ? t("sync.retrying") : t("sync.retryRefresh")}
       class="mt-1 text-xs text-green-700 hover:text-green-800 transition-fast focus-ring rounded"
     >
       {retrying ? t("sync.retrying") : t("sync.retry")}

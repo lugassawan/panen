@@ -36,7 +36,7 @@ function navigateTo(page: Page) {
   </a>
   <Sidebar {currentPage} onNavigate={navigateTo} />
 
-  <main id="main-content" class="flex-1 overflow-y-auto">
+  <main id="main-content" tabindex="-1" class="flex-1 overflow-y-auto">
     {#if currentPage === "dashboard"}
       <DashboardPage onNavigate={navigateTo} />
     {:else if currentPage === "lookup"}
