@@ -13,10 +13,11 @@ import { getVerdictDisplay } from "../../lib/verdict";
 interface Props {
   holdings: HoldingDetailResponse[];
   onChecklist: (ticker: string) => void;
+  onSell: (holdingId: string, ticker: string, lots: number, avgBuyPrice: number) => void;
   onRemove: (holdingId: string, ticker: string) => void;
 }
 
-let { holdings, onChecklist, onRemove }: Props = $props();
+let { holdings, onChecklist, onSell, onRemove }: Props = $props();
 </script>
 
 {#if holdings.length === 0}
@@ -88,6 +89,13 @@ let { holdings, onChecklist, onRemove }: Props = $props();
                   onclick={() => onChecklist(holding.ticker)}
                 >
                   {t("holding.checklistButton")}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onclick={() => onSell(holding.id, holding.ticker, holding.lots, holding.avgBuyPrice)}
+                >
+                  {t("holding.sell")}
                 </Button>
                 <Button
                   variant="ghost"

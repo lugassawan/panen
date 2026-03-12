@@ -91,6 +91,9 @@ describe("PortfolioDetail", () => {
     onBack: vi.fn(),
     onChecklist: vi.fn(),
     onHoldingAdded: vi.fn(),
+    onSell: vi.fn(),
+    onRemove: vi.fn(),
+    onClearAll: vi.fn(),
   };
 
   it("renders portfolio name and mode badge", () => {

@@ -27,6 +27,7 @@ import PortfolioDetail from "./PortfolioDetail.svelte";
 import PortfolioForm from "./PortfolioForm.svelte";
 import PortfolioList from "./PortfolioList.svelte";
 import PortfolioOnboarding from "./PortfolioOnboarding.svelte";
+import SellHoldingModal from "./SellHoldingModal.svelte";
 
 type PageState =
   | "loading"
@@ -53,6 +54,12 @@ let removingHolding = $state<{ id: string; ticker: string } | null>(null);
 let removeLoading = $state(false);
 let confirmingClearAll = $state(false);
 let clearAllLoading = $state(false);
+let sellingHolding = $state<{
+  id: string;
+  ticker: string;
+  lots: number;
+  avgBuyPrice: number;
+} | null>(null);
 let checklistTicker = $state<string | null>(null);
 let checklistAction = $state<ActionType | null>(null);
 
@@ -213,6 +220,9 @@ load();
         state = "checklist";
       }}
       onHoldingAdded={() => viewPortfolio(detail!.portfolio)}
+      onSell={(holdingId, ticker, lots, avgBuyPrice) => {
+        sellingHolding = { id: holdingId, ticker, lots, avgBuyPrice };
+      }}
       onRemove={(holdingId, ticker) => {
         removingHolding = { id: holdingId, ticker };
       }}
@@ -256,6 +266,22 @@ load();
     </div>
   {/if}
 </div>
+
+{#if sellingHolding && detail}
+  <SellHoldingModal
+    portfolioId={detail.portfolio.id}
+    holdingId={sellingHolding.id}
+    ticker={sellingHolding.ticker}
+    maxLots={sellingHolding.lots}
+    avgBuyPrice={sellingHolding.avgBuyPrice}
+    onSold={() => {
+      toastStore.add(t("holding.holdingSold", { ticker: sellingHolding!.ticker, lots: String(sellingHolding!.lots) }), "success");
+      sellingHolding = null;
+      viewPortfolio(detail!.portfolio);
+    }}
+    onClose={() => { sellingHolding = null; }}
+  />
+{/if}
 
 {#if removingHolding}
   <ConfirmDialog

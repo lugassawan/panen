@@ -9,6 +9,7 @@
     "ERR_EMPTY_TICKER": "Ticker is required.",
     "ERR_INVALID_PRICE": "Price must be greater than zero.",
     "ERR_INVALID_LOTS": "Lots must be greater than zero.",
+    "ERR_INSUFFICIENT_LOTS": "Not enough lots to sell.",
     "ERR_WATCHLIST_NAME_TAKEN": "A watchlist with this name already exists."
   },
   "common": {
@@ -365,7 +366,15 @@
     "holdingRemoved": "{ticker} removed from portfolio",
     "clearAllHoldings": "Clear All Holdings",
     "confirmClearMessage": "Are you sure you want to remove all holdings from this portfolio?",
-    "holdingsCleared": "All holdings cleared"
+    "holdingsCleared": "All holdings cleared",
+    "sellHolding": "Sell Holding",
+    "sellPrice": "Sell Price",
+    "selling": "Selling...",
+    "sell": "Sell",
+    "sellPriceError": "Sell price must be greater than 0",
+    "lotsError": "Lots must be between 1 and {max}",
+    "holdingSold": "{ticker}: {lots} lot(s) sold",
+    "realizedGain": "Realized Gain"
   },
   "checklist": {
     "evaluating": "Evaluating checklist...",

@@ -24,11 +24,12 @@ interface Props {
   onBack: () => void;
   onChecklist: (ticker: string) => void;
   onHoldingAdded: () => void;
+  onSell: (holdingId: string, ticker: string, lots: number, avgBuyPrice: number) => void;
   onRemove: (holdingId: string, ticker: string) => void;
   onClearAll: () => void;
 }
 
-let { detail, onBack, onChecklist, onHoldingAdded, onRemove, onClearAll }: Props = $props();
+let { detail, onBack, onChecklist, onHoldingAdded, onSell, onRemove, onClearAll }: Props = $props();
 
 type TabId = "holdings" | "charts" | "dividends";
 let activeTab = $state<TabId>("holdings");
@@ -137,7 +138,7 @@ let overallPL = $derived(calcOverallPL(detail.holdings));
 
     <!-- Holdings Table -->
     <div class="mb-6">
-      <HoldingsTable holdings={detail.holdings} {onChecklist} {onRemove} />
+      <HoldingsTable holdings={detail.holdings} {onChecklist} {onSell} {onRemove} />
     </div>
 
     {#if detail.holdings.length > 0}
