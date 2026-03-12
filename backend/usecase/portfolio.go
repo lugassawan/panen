@@ -33,6 +33,7 @@ type PortfolioService struct {
 	portfolios portfolio.Repository
 	holdings   portfolio.HoldingRepository
 	buyTxns    portfolio.BuyTransactionRepository
+	sellTxns   portfolio.SellTransactionRepository
 	brokerages brokerage.Repository
 	stockData  stock.Repository
 	peaks      trailingstop.PeakRepository
@@ -43,6 +44,7 @@ func NewPortfolioService(
 	portfolios portfolio.Repository,
 	holdings portfolio.HoldingRepository,
 	buyTxns portfolio.BuyTransactionRepository,
+	sellTxns portfolio.SellTransactionRepository,
 	brokerages brokerage.Repository,
 	stockData stock.Repository,
 	peaks trailingstop.PeakRepository,
@@ -51,6 +53,7 @@ func NewPortfolioService(
 		portfolios: portfolios,
 		holdings:   holdings,
 		buyTxns:    buyTxns,
+		sellTxns:   sellTxns,
 		brokerages: brokerages,
 		stockData:  stockData,
 		peaks:      peaks,

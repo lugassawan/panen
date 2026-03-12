@@ -387,6 +387,55 @@ func (r *mockBuyTxnRepo) Delete(_ context.Context, id string) error {
 	return nil
 }
 
+// mockSellTxnRepo is an in-memory portfolio.SellTransactionRepository for testing.
+type mockSellTxnRepo struct {
+	mu    sync.Mutex
+	items map[string]*portfolio.SellTransaction
+}
+
+func newMockSellTxnRepo() *mockSellTxnRepo {
+	return &mockSellTxnRepo{items: make(map[string]*portfolio.SellTransaction)}
+}
+
+func (r *mockSellTxnRepo) Create(_ context.Context, tx *portfolio.SellTransaction) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.items[tx.ID] = tx
+	return nil
+}
+
+func (r *mockSellTxnRepo) GetByID(_ context.Context, id string) (*portfolio.SellTransaction, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	tx, ok := r.items[id]
+	if !ok {
+		return nil, shared.ErrNotFound
+	}
+	return tx, nil
+}
+
+func (r *mockSellTxnRepo) ListByHoldingID(_ context.Context, holdingID string) ([]*portfolio.SellTransaction, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	var result []*portfolio.SellTransaction
+	for _, tx := range r.items {
+		if tx.HoldingID == holdingID {
+			result = append(result, tx)
+		}
+	}
+	return result, nil
+}
+
+func (r *mockSellTxnRepo) Delete(_ context.Context, id string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if _, ok := r.items[id]; !ok {
+		return shared.ErrNotFound
+	}
+	delete(r.items, id)
+	return nil
+}
+
 // mockSettingsRepo implements settings.Repository for testing.
 type mockSettingsRepo struct {
 	mu       sync.Mutex

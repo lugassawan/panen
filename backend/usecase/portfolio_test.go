@@ -17,6 +17,7 @@ type portfolioTestFixture struct {
 	portfolioRepo *mockPortfolioRepo
 	holdingRepo   *mockHoldingRepo
 	buyTxnRepo    *mockBuyTxnRepo
+	sellTxnRepo   *mockSellTxnRepo
 	brokerageRepo *mockBrokerageRepo
 	stockRepo     *mockStockRepo
 	peakRepo      *mockPeakRepo
@@ -31,11 +32,12 @@ func setupPortfolioTest(t *testing.T) portfolioTestFixture {
 	portfolioRepo := newMockPortfolioRepo()
 	holdingRepo := newMockHoldingRepo()
 	buyTxnRepo := newMockBuyTxnRepo()
+	sellTxnRepo := newMockSellTxnRepo()
 	brokerageRepo := newMockBrokerageRepo()
 	stockRepo := newMockStockRepo()
 	peakRepo := newMockPeakRepo()
 
-	svc := NewPortfolioService(portfolioRepo, holdingRepo, buyTxnRepo, brokerageRepo, stockRepo, peakRepo)
+	svc := NewPortfolioService(portfolioRepo, holdingRepo, buyTxnRepo, sellTxnRepo, brokerageRepo, stockRepo, peakRepo)
 	ctx := context.Background()
 
 	acct := &brokerage.Account{
@@ -66,6 +68,7 @@ func setupPortfolioTest(t *testing.T) portfolioTestFixture {
 		portfolioRepo: portfolioRepo,
 		holdingRepo:   holdingRepo,
 		buyTxnRepo:    buyTxnRepo,
+		sellTxnRepo:   sellTxnRepo,
 		brokerageRepo: brokerageRepo,
 		stockRepo:     stockRepo,
 		peakRepo:      peakRepo,

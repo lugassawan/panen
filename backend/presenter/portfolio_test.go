@@ -152,6 +152,24 @@ func (m *mockBuyTxnRepo) Delete(_ context.Context, _ string) error {
 	return nil
 }
 
+type mockSellTxnRepo struct{}
+
+func (m *mockSellTxnRepo) Create(_ context.Context, _ *portfolio.SellTransaction) error {
+	return nil
+}
+
+func (m *mockSellTxnRepo) GetByID(_ context.Context, _ string) (*portfolio.SellTransaction, error) {
+	return nil, shared.ErrNotFound
+}
+
+func (m *mockSellTxnRepo) ListByHoldingID(_ context.Context, _ string) ([]*portfolio.SellTransaction, error) {
+	return nil, nil
+}
+
+func (m *mockSellTxnRepo) Delete(_ context.Context, _ string) error {
+	return nil
+}
+
 type mockBrokerageRepo struct {
 	accounts map[string]*brokerage.Account
 }
@@ -284,12 +302,21 @@ func newTestPortfolioHandler() (
 	portfolioRepo := newMockPortfolioRepo()
 	holdingRepo := newMockHoldingRepo()
 	buyTxnRepo := &mockBuyTxnRepo{}
+	sellTxnRepo := &mockSellTxnRepo{}
 	brokerageRepo := newMockBrokerageRepo()
 	stockRepo := newMockStockRepo()
 	peakRepo := newMockPeakRepo()
 	sectorRegistry := newMockSectorRegistry()
 
-	svc := usecase.NewPortfolioService(portfolioRepo, holdingRepo, buyTxnRepo, brokerageRepo, stockRepo, peakRepo)
+	svc := usecase.NewPortfolioService(
+		portfolioRepo,
+		holdingRepo,
+		buyTxnRepo,
+		sellTxnRepo,
+		brokerageRepo,
+		stockRepo,
+		peakRepo,
+	)
 	ctx := context.Background()
 	handler := NewPortfolioHandler(ctx, svc, sectorRegistry)
 
