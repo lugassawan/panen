@@ -114,18 +114,24 @@ download_and_verify() {
 # --- Install ---
 
 install_darwin() {
-  INSTALL_DIR="${HOME}/Applications"
-  mkdir -p "$INSTALL_DIR"
+  INSTALL_DIR="/Applications"
+
+  if [ ! -w "$INSTALL_DIR" ]; then
+    fail "/Applications is not writable. Run with sudo or ensure you are an admin user."
+  fi
 
   log "Extracting to ${INSTALL_DIR}/Panen.app..."
-  # Remove old lowercase version (pre-rename) and current installation
   rm -rf "${INSTALL_DIR}/panen.app"
   rm -rf "${INSTALL_DIR}/Panen.app"
   unzip -q "${WORK_DIR}/${ARCHIVE}" -d "$INSTALL_DIR"
 
+  # Clean up old ~/Applications installs (migration for existing users)
+  rm -rf "${HOME}/Applications/panen.app"
+  rm -rf "${HOME}/Applications/Panen.app"
+
   log ""
   log "Panen has been installed to ${INSTALL_DIR}/Panen.app"
-  log "You can launch it from ~/Applications or Spotlight."
+  log "You can launch it from /Applications or Spotlight."
 }
 
 install_linux() {
