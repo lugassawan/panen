@@ -68,7 +68,6 @@
     "brokerage": "Sekuritas",
     "comparison": "Bandingkan",
     "settings": "Pengaturan",
-    "search": "Cari",
     "searchPages": "Cari halaman...",
     "noResults": "Tidak ada hasil",
     "group": {
@@ -214,21 +213,7 @@
     "syncing": "Menyinkronkan {ticker}",
     "syncFailed": "Sinkronisasi gagal",
     "retry": "Coba Lagi",
-    "retrying": "Mencoba lagi...",
-    "retryRefresh": "Coba perbarui data lagi"
-  },
-  "a11y": {
-    "skipToContent": "Langsung ke konten utama"
-  },
-  "shortcuts": {
-    "title": "Pintasan Keyboard",
-    "global": "Global",
-    "navigation": "Navigasi",
-    "actions": "Aksi",
-    "commandPalette": "Palet Perintah",
-    "showHelp": "Tampilkan Pintasan",
-    "closeOverlay": "Tutup Overlay",
-    "search": "Cari"
+    "retrying": "Mencoba lagi..."
   },
   "lookup": {
     "title": "Cari Saham",
@@ -653,6 +638,10 @@
     "topGainers": "Kenaikan Teratas",
     "topLosers": "Penurunan Teratas",
     "recentTransactions": "Transaksi Terakhir",
+    "performance": "Performa",
+    "winRate": "Rasio Menang",
+    "winningHoldings": "{winning} dari {total} saham untung",
+    "holdingCount": "Total Saham",
     "emptyTitle": "Belum ada portofolio",
     "empty": "Siapkan akun sekuritas dan buat portofolio pertama Anda untuk melihat dasbor.",
     "goToBrokerage": "Atur Sekuritas",

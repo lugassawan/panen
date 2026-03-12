@@ -68,7 +68,6 @@
     "brokerage": "Brokerage",
     "comparison": "Compare",
     "settings": "Settings",
-    "search": "Search",
     "searchPages": "Search pages...",
     "noResults": "No results found",
     "group": {
@@ -214,21 +213,7 @@
     "syncing": "Syncing {ticker}",
     "syncFailed": "Sync failed",
     "retry": "Retry",
-    "retrying": "Retrying...",
-    "retryRefresh": "Retry data refresh"
-  },
-  "a11y": {
-    "skipToContent": "Skip to main content"
-  },
-  "shortcuts": {
-    "title": "Keyboard Shortcuts",
-    "global": "Global",
-    "navigation": "Navigation",
-    "actions": "Actions",
-    "commandPalette": "Command Palette",
-    "showHelp": "Show Shortcuts",
-    "closeOverlay": "Close Overlay",
-    "search": "Search"
+    "retrying": "Retrying..."
   },
   "lookup": {
     "title": "Stock Lookup",
@@ -653,6 +638,10 @@
     "topGainers": "Top Gainers",
     "topLosers": "Top Losers",
     "recentTransactions": "Recent Transactions",
+    "performance": "Performance",
+    "winRate": "Win Rate",
+    "winningHoldings": "{winning} of {total} holdings winning",
+    "holdingCount": "Total Holdings",
     "emptyTitle": "No portfolios yet",
     "empty": "Set up a brokerage account and create your first portfolio to see your dashboard.",
     "goToBrokerage": "Set Up Brokerage",

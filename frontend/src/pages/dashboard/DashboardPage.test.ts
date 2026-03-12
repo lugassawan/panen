@@ -26,6 +26,9 @@ const emptyOverview: DashboardOverviewResponse = {
   portfolioAllocation: [],
   sectorAllocation: [],
   recentTransactions: [],
+  winRate: 0,
+  holdingCount: 0,
+  winningCount: 0,
 };
 
 const readyOverview: DashboardOverviewResponse = {
@@ -61,6 +64,9 @@ const readyOverview: DashboardOverviewResponse = {
   portfolioAllocation: [{ label: "Value", value: 16000000, pct: 100 }],
   sectorAllocation: [{ label: "Banking", value: 16000000, pct: 100 }],
   recentTransactions: [],
+  winRate: 100,
+  holdingCount: 1,
+  winningCount: 1,
 };
 
 const mockGetDashboardOverview = vi.fn();
