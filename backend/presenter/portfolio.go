@@ -116,6 +116,26 @@ func (h *PortfolioHandler) AddHolding(
 	return &resp, nil
 }
 
+// SellHolding sells lots from an existing holding.
+func (h *PortfolioHandler) SellHolding(
+	portfolioID, holdingID string,
+	price float64,
+	lots int,
+	dateStr string,
+) (*SellTransactionResponse, error) {
+	date, err := time.Parse(dateLayout, dateStr)
+	if err != nil {
+		return nil, fmt.Errorf("sell holding: %w", err)
+	}
+
+	tx, err := h.portfolios.SellHolding(h.ctx, portfolioID, holdingID, price, lots, date)
+	if err != nil {
+		return nil, toAppError(fmt.Errorf("sell holding: %w", err))
+	}
+
+	return newSellTransactionResponse(tx), nil
+}
+
 // GetPortfolio returns a portfolio with all holdings and optional valuations.
 // SyncPeaks is called first to update trailing stop peak prices (command),
 // followed by GetDetail to read the portfolio (query).

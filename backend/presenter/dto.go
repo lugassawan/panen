@@ -127,6 +127,18 @@ type HoldingDetailResponse struct {
 	DividendMetrics *DividendMetricsResponse `json:"dividendMetrics,omitempty"`
 }
 
+// SellTransactionResponse is the frontend-facing response for a sell transaction.
+type SellTransactionResponse struct {
+	ID           string  `json:"id"`
+	HoldingID    string  `json:"holdingId"`
+	Date         string  `json:"date"`
+	Price        float64 `json:"price"`
+	Lots         int     `json:"lots"`
+	Fee          float64 `json:"fee"`
+	Tax          float64 `json:"tax"`
+	RealizedGain float64 `json:"realizedGain"`
+}
+
 // DividendMetricsResponse is the frontend-facing response for dividend metrics.
 type DividendMetricsResponse struct {
 	Indicator      string  `json:"indicator"`

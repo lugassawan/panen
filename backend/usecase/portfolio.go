@@ -128,8 +128,14 @@ func (s *PortfolioService) Delete(ctx context.Context, id string) error {
 	if err != nil {
 		return fmt.Errorf("delete portfolio: %w", err)
 	}
-	if len(holdings) > 0 {
-		return fmt.Errorf("%w: %d holding(s) linked", ErrHasHoldings, len(holdings))
+	activeCount := 0
+	for _, h := range holdings {
+		if h.Lots > 0 {
+			activeCount++
+		}
+	}
+	if activeCount > 0 {
+		return fmt.Errorf("%w: %d holding(s) linked", ErrHasHoldings, activeCount)
 	}
 	if err := s.portfolios.Delete(ctx, id); err != nil {
 		return fmt.Errorf("delete portfolio: %w", err)
@@ -251,6 +257,63 @@ func (s *PortfolioService) AddHolding(
 	return holding, nil
 }
 
+// SellHolding sells lots from an existing holding, recording a sell transaction.
+func (s *PortfolioService) SellHolding(
+	ctx context.Context,
+	portfolioID, holdingID string,
+	price float64,
+	lots int,
+	date time.Time,
+) (*portfolio.SellTransaction, error) {
+	if strings.TrimSpace(portfolioID) == "" || strings.TrimSpace(holdingID) == "" {
+		return nil, ErrEmptyID
+	}
+	if price <= 0 {
+		return nil, ErrInvalidPrice
+	}
+	if lots <= 0 {
+		return nil, ErrInvalidLots
+	}
+
+	h, err := s.holdings.GetByID(ctx, holdingID)
+	if err != nil {
+		return nil, fmt.Errorf("sell holding: %w", err)
+	}
+	if h.PortfolioID != portfolioID {
+		return nil, fmt.Errorf("sell holding: %w", shared.ErrNotFound)
+	}
+	if lots > h.Lots {
+		return nil, ErrInsufficientLots
+	}
+
+	p, err := s.portfolios.GetByID(ctx, portfolioID)
+	if err != nil {
+		return nil, fmt.Errorf("sell holding: %w", err)
+	}
+	acct, err := s.brokerages.GetByID(ctx, p.BrokerageAccountID)
+	if err != nil {
+		return nil, fmt.Errorf("sell holding: %w", err)
+	}
+
+	fee := portfolio.ComputeSellFee(price, lots, acct.SellFeePct)
+	tax := portfolio.ComputeSellTax(price, lots, acct.SellTaxPct)
+	grossGain := (price - h.AvgBuyPrice) * float64(lots) * 100
+	realizedGain := grossGain - fee - tax
+
+	tx := portfolio.NewSellTransaction(h.ID, date, price, lots, fee, tax, realizedGain)
+	if err := s.sellTxns.Create(ctx, tx); err != nil {
+		return nil, fmt.Errorf("sell holding: %w", err)
+	}
+
+	h.Lots -= lots
+	h.UpdatedAt = time.Now().UTC()
+	if err := s.holdings.Update(ctx, h); err != nil {
+		return nil, fmt.Errorf("sell holding: %w", err)
+	}
+
+	return tx, nil
+}
+
 // GetDetail retrieves a portfolio with its holdings and optional valuations.
 func (s *PortfolioService) GetDetail(
 	ctx context.Context,
@@ -261,9 +324,17 @@ func (s *PortfolioService) GetDetail(
 		return nil, nil, err
 	}
 
-	holdings, err := s.holdings.ListByPortfolioID(ctx, id)
+	allHoldings, err := s.holdings.ListByPortfolioID(ctx, id)
 	if err != nil {
 		return nil, nil, err
+	}
+
+	// Filter out fully-sold holdings (Lots == 0) so they don't appear in UI.
+	var holdings []*portfolio.Holding
+	for _, h := range allHoldings {
+		if h.Lots > 0 {
+			holdings = append(holdings, h)
+		}
 	}
 
 	isValue := p.Mode == portfolio.ModeValue
@@ -531,8 +602,8 @@ func (s *PortfolioService) checkDuplicateHolding(
 		if sib.ID == portfolioID {
 			continue
 		}
-		_, sibErr := s.holdings.GetByPortfolioAndTicker(ctx, sib.ID, ticker)
-		if sibErr == nil {
+		sibHolding, sibErr := s.holdings.GetByPortfolioAndTicker(ctx, sib.ID, ticker)
+		if sibErr == nil && sibHolding.Lots > 0 {
 			return fmt.Errorf("%w: %s in portfolio %q", ErrDuplicateHolding, ticker, sib.Name)
 		}
 		if !errors.Is(sibErr, shared.ErrNotFound) {

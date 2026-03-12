@@ -153,6 +153,19 @@ func newTrailingStopResponse(ts *trailingstop.TrailingStopResult) *TrailingStopR
 	}
 }
 
+func newSellTransactionResponse(tx *portfolio.SellTransaction) *SellTransactionResponse {
+	return &SellTransactionResponse{
+		ID:           tx.ID,
+		HoldingID:    tx.HoldingID,
+		Date:         formatDTO(tx.Date),
+		Price:        tx.Price,
+		Lots:         tx.Lots,
+		Fee:          tx.Fee,
+		Tax:          tx.Tax,
+		RealizedGain: tx.RealizedGain,
+	}
+}
+
 func newDividendMetricsResponse(m *dividend.DividendMetrics) *DividendMetricsResponse {
 	return &DividendMetricsResponse{
 		Indicator:      string(m.Indicator),
