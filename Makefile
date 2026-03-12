@@ -81,11 +81,17 @@ frontend-install:
 
 init:
 	cd frontend && pnpm install
+	mkdir -p frontend/dist
+	wails generate module
+	$(MAKE) custom-gcl
 	git config core.hooksPath .githooks
 
 setup:
 	go install github.com/wailsapp/wails/v2/cmd/wails@latest
 	cd frontend && pnpm install
+	mkdir -p frontend/dist
+	wails generate module
+	$(MAKE) custom-gcl
 	git config core.hooksPath .githooks
 
 release-check:
