@@ -28,7 +28,10 @@ if [ -n "$STAGED_FE_FILES" ]; then
 fi
 
 # Run linters
+# Unset GIT_INDEX_FILE so Go build tooling (invoked by golangci-lint custom)
+# doesn't corrupt the worktree index via inherited git environment variables.
 if [ -n "$STAGED_GO_FILES" ]; then
+    unset GIT_INDEX_FILE
     make custom-gcl || exit 1
     ./custom-gcl run ./... || exit 1
 fi
