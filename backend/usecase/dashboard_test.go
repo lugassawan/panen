@@ -263,3 +263,70 @@ func TestDashboardOverviewRecentTransactionsLimited(t *testing.T) {
 		t.Errorf("RecentTransactions = %d, want 10", len(got.RecentTransactions))
 	}
 }
+
+func TestDashboardOverviewWinRateEmpty(t *testing.T) {
+	f := setupDashboardTest(t)
+	got, err := f.svc.GetOverview(f.ctx)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if got.WinRate != 0 {
+		t.Errorf("WinRate = %f, want 0", got.WinRate)
+	}
+	if got.HoldingCount != 0 {
+		t.Errorf("HoldingCount = %d, want 0", got.HoldingCount)
+	}
+	if got.WinningCount != 0 {
+		t.Errorf("WinningCount = %d, want 0", got.WinningCount)
+	}
+}
+
+func TestDashboardOverviewWinRateAllWinners(t *testing.T) {
+	f := setupDashboardTest(t)
+	p := newTestPortfolio(t, f, "Test", 5)
+	dashSeedHolding(t, f, p.ID, "BBCA", 8000, 10)
+	dashSeedHolding(t, f, p.ID, "BMRI", 5000, 10)
+	dashSeedStock(t, f, "BBCA", 9000)
+	dashSeedStock(t, f, "BMRI", 6000)
+
+	got, err := f.svc.GetOverview(f.ctx)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if got.WinRate != 100 {
+		t.Errorf("WinRate = %f, want 100", got.WinRate)
+	}
+	if got.HoldingCount != 2 {
+		t.Errorf("HoldingCount = %d, want 2", got.HoldingCount)
+	}
+	if got.WinningCount != 2 {
+		t.Errorf("WinningCount = %d, want 2", got.WinningCount)
+	}
+}
+
+func TestDashboardOverviewWinRateMixed(t *testing.T) {
+	f := setupDashboardTest(t)
+	p := newTestPortfolio(t, f, "Test", 5)
+	dashSeedHolding(t, f, p.ID, "BBCA", 8000, 10) // winner: price > avgBuy
+	dashSeedHolding(t, f, p.ID, "BMRI", 5000, 10) // loser: price < avgBuy
+	dashSeedHolding(t, f, p.ID, "TLKM", 3000, 10) // flat: price == avgBuy
+	dashSeedStock(t, f, "BBCA", 9000)
+	dashSeedStock(t, f, "BMRI", 4000)
+	dashSeedStock(t, f, "TLKM", 3000)
+
+	got, err := f.svc.GetOverview(f.ctx)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	// 1 winner out of 3 holdings = 33.33...%
+	wantRate := float64(1) / float64(3) * 100
+	if got.WinRate != wantRate {
+		t.Errorf("WinRate = %f, want %f", got.WinRate, wantRate)
+	}
+	if got.HoldingCount != 3 {
+		t.Errorf("HoldingCount = %d, want 3", got.HoldingCount)
+	}
+	if got.WinningCount != 1 {
+		t.Errorf("WinningCount = %d, want 1", got.WinningCount)
+	}
+}

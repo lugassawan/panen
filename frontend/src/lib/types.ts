@@ -483,6 +483,9 @@ export interface DashboardOverviewResponse {
   portfolioAllocation: AllocationItemResponse[];
   sectorAllocation: AllocationItemResponse[];
   recentTransactions: TransactionRecordResponse[];
+  winRate: number;
+  holdingCount: number;
+  winningCount: number;
 }
 
 export interface DashboardPortfolioSummary {

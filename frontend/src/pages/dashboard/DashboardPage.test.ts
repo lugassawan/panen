@@ -26,6 +26,9 @@ const emptyOverview: DashboardOverviewResponse = {
   portfolioAllocation: [],
   sectorAllocation: [],
   recentTransactions: [],
+  winRate: 0,
+  holdingCount: 0,
+  winningCount: 0,
 };
 
 const readyOverview: DashboardOverviewResponse = {
@@ -61,6 +64,9 @@ const readyOverview: DashboardOverviewResponse = {
   portfolioAllocation: [{ label: "Value", value: 16000000, pct: 100 }],
   sectorAllocation: [{ label: "Banking", value: 16000000, pct: 100 }],
   recentTransactions: [],
+  winRate: 100,
+  holdingCount: 1,
+  winningCount: 1,
 };
 
 const mockGetDashboardOverview = vi.fn();
@@ -86,5 +92,20 @@ describe("DashboardPage", () => {
 
     const title = await screen.findByText("Dashboard");
     expect(title).toBeTruthy();
+  });
+
+  it("shows performance summary cards", async () => {
+    mockGetDashboardOverview.mockResolvedValue(readyOverview);
+
+    render(DashboardPage, { props: { onNavigate: vi.fn() } });
+
+    const winRateLabel = await screen.findByText("Win Rate");
+    expect(winRateLabel).toBeTruthy();
+
+    const holdingCountLabel = await screen.findByText("Total Holdings");
+    expect(holdingCountLabel).toBeTruthy();
+
+    const winningText = await screen.findByText("1 of 1 holdings winning");
+    expect(winningText).toBeTruthy();
   });
 });

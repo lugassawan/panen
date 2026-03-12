@@ -177,6 +177,22 @@ function txnTypeLabel(type: string): string {
       </div>
     </div>
 
+    {#if data.holdingCount > 0}
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div class="rounded-lg border border-border-default bg-bg-elevated p-5">
+          <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">{t("dashboard.winRate")}</p>
+          <p class="mt-2 font-mono text-2xl font-bold {data.winRate >= 50 ? 'text-profit' : 'text-loss'}">{formatPercent(data.winRate)}</p>
+          <p class="mt-1 text-xs text-text-muted">
+            {t("dashboard.winningHoldings", { winning: String(data.winningCount), total: String(data.holdingCount) })}
+          </p>
+        </div>
+        <div class="rounded-lg border border-border-default bg-bg-elevated p-5">
+          <p class="text-xs font-semibold uppercase tracking-wider text-text-muted">{t("dashboard.holdingCount")}</p>
+          <p class="mt-2 font-mono text-2xl font-bold text-text-primary">{data.holdingCount}</p>
+        </div>
+      </div>
+    {/if}
+
     <!-- Allocation Charts -->
     {#if data.portfolioAllocation.length > 0 || data.sectorAllocation.length > 0}
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2">

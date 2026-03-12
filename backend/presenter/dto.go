@@ -409,6 +409,9 @@ type DashboardOverviewResponse struct {
 	PortfolioAllocation []AllocationItemResponse    `json:"portfolioAllocation"`
 	SectorAllocation    []AllocationItemResponse    `json:"sectorAllocation"`
 	RecentTransactions  []TransactionRecordResponse `json:"recentTransactions"`
+	WinRate             float64                     `json:"winRate"`
+	HoldingCount        int                         `json:"holdingCount"`
+	WinningCount        int                         `json:"winningCount"`
 }
 
 // PortfolioSummaryResponse is the frontend-facing response for a portfolio summary in the dashboard.
