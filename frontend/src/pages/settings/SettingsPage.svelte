@@ -411,7 +411,7 @@ async function confirmImport() {
         {#each providers as provider}
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <span class="inline-block h-2 w-2 rounded-full {providerStatusColor(provider.status)}"></span>
+              <span class="inline-block h-2 w-2 rounded-full {providerStatusColor(provider.status)}" aria-hidden="true"></span>
               <span class="text-sm font-medium text-text-primary capitalize">{provider.name}</span>
               <span class="font-mono text-xs text-text-tertiary">#{provider.priority}</span>
             </div>
