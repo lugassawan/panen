@@ -17,6 +17,7 @@ type portfolioTestFixture struct {
 	portfolioRepo *mockPortfolioRepo
 	holdingRepo   *mockHoldingRepo
 	buyTxnRepo    *mockBuyTxnRepo
+	sellTxnRepo   *mockSellTxnRepo
 	brokerageRepo *mockBrokerageRepo
 	stockRepo     *mockStockRepo
 	peakRepo      *mockPeakRepo
@@ -31,11 +32,12 @@ func setupPortfolioTest(t *testing.T) portfolioTestFixture {
 	portfolioRepo := newMockPortfolioRepo()
 	holdingRepo := newMockHoldingRepo()
 	buyTxnRepo := newMockBuyTxnRepo()
+	sellTxnRepo := newMockSellTxnRepo()
 	brokerageRepo := newMockBrokerageRepo()
 	stockRepo := newMockStockRepo()
 	peakRepo := newMockPeakRepo()
 
-	svc := NewPortfolioService(portfolioRepo, holdingRepo, buyTxnRepo, brokerageRepo, stockRepo, peakRepo)
+	svc := NewPortfolioService(portfolioRepo, holdingRepo, buyTxnRepo, sellTxnRepo, brokerageRepo, stockRepo, peakRepo)
 	ctx := context.Background()
 
 	acct := &brokerage.Account{
@@ -66,6 +68,7 @@ func setupPortfolioTest(t *testing.T) portfolioTestFixture {
 		portfolioRepo: portfolioRepo,
 		holdingRepo:   holdingRepo,
 		buyTxnRepo:    buyTxnRepo,
+		sellTxnRepo:   sellTxnRepo,
 		brokerageRepo: brokerageRepo,
 		stockRepo:     stockRepo,
 		peakRepo:      peakRepo,
@@ -877,5 +880,283 @@ func TestGetDetailDoesNotPersistPeaks(t *testing.T) {
 	}
 	if len(peaks) != 0 {
 		t.Errorf("expected 0 persisted peaks after GetDetail without SyncPeaks, got %d", len(peaks))
+	}
+}
+
+func TestPortfolioServiceSellHoldingPartial(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	holding, err := f.svc.AddHolding(f.ctx, f.port.ID, "BBCA", 8500, 10, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("AddHolding() error = %v", err)
+	}
+
+	tx, err := f.svc.SellHolding(f.ctx, f.port.ID, holding.ID, 9000, 3, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("SellHolding() error = %v", err)
+	}
+
+	if tx.Lots != 3 {
+		t.Errorf("SellTransaction.Lots = %d, want 3", tx.Lots)
+	}
+	if tx.Price != 9000 {
+		t.Errorf("SellTransaction.Price = %f, want 9000", tx.Price)
+	}
+
+	// Fee = 9000 * 3 * 100 * 0.25 / 100 = 6750
+	if tx.Fee != 6750 {
+		t.Errorf("Fee = %f, want 6750", tx.Fee)
+	}
+
+	// Tax — account has SellTaxPct = 0, so tax = 0
+	if tx.Tax != 0 {
+		t.Errorf("Tax = %f, want 0", tx.Tax)
+	}
+
+	// Realized gain = (9000 - 8500) * 3 * 100 - 6750 - 0 = 150000 - 6750 = 143250
+	if tx.RealizedGain != 143250 {
+		t.Errorf("RealizedGain = %f, want 143250", tx.RealizedGain)
+	}
+
+	// Holding should have 7 lots remaining.
+	updated, err := f.holdingRepo.GetByID(f.ctx, holding.ID)
+	if err != nil {
+		t.Fatalf("GetByID() error = %v", err)
+	}
+	if updated.Lots != 7 {
+		t.Errorf("Holding.Lots = %d, want 7", updated.Lots)
+	}
+
+	// Sell transaction persisted.
+	txns, err := f.sellTxnRepo.ListByHoldingID(f.ctx, holding.ID)
+	if err != nil {
+		t.Fatalf("ListByHoldingID() error = %v", err)
+	}
+	if len(txns) != 1 {
+		t.Fatalf("len(sellTxns) = %d, want 1", len(txns))
+	}
+}
+
+func TestPortfolioServiceSellHoldingFull(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	holding, err := f.svc.AddHolding(f.ctx, f.port.ID, "BBCA", 8500, 10, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("AddHolding() error = %v", err)
+	}
+
+	_, err = f.svc.SellHolding(f.ctx, f.port.ID, holding.ID, 9000, 10, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("SellHolding() error = %v", err)
+	}
+
+	// Holding should have 0 lots (not deleted).
+	updated, err := f.holdingRepo.GetByID(f.ctx, holding.ID)
+	if err != nil {
+		t.Fatalf("GetByID() error = %v", err)
+	}
+	if updated.Lots != 0 {
+		t.Errorf("Holding.Lots = %d, want 0", updated.Lots)
+	}
+
+	// GetDetail should not include zero-lot holdings.
+	_, holdings, err := f.svc.GetDetail(f.ctx, f.port.ID)
+	if err != nil {
+		t.Fatalf("GetDetail() error = %v", err)
+	}
+	if len(holdings) != 0 {
+		t.Errorf("GetDetail() should return 0 holdings after full sell, got %d", len(holdings))
+	}
+}
+
+func TestPortfolioServiceSellHoldingInsufficientLots(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	holding, err := f.svc.AddHolding(f.ctx, f.port.ID, "BBCA", 8500, 10, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("AddHolding() error = %v", err)
+	}
+
+	_, err = f.svc.SellHolding(f.ctx, f.port.ID, holding.ID, 9000, 11, time.Now().UTC())
+	if !errors.Is(err, ErrInsufficientLots) {
+		t.Errorf("SellHolding() error = %v, want ErrInsufficientLots", err)
+	}
+}
+
+func TestPortfolioServiceSellHoldingValidation(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	holding, err := f.svc.AddHolding(f.ctx, f.port.ID, "BBCA", 8500, 10, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("AddHolding() error = %v", err)
+	}
+
+	tests := []struct {
+		name        string
+		portfolioID string
+		holdingID   string
+		price       float64
+		lots        int
+		wantErr     error
+	}{
+		{name: "empty portfolio id", portfolioID: "", holdingID: holding.ID, price: 9000, lots: 1, wantErr: ErrEmptyID},
+		{name: "empty holding id", portfolioID: f.port.ID, holdingID: "", price: 9000, lots: 1, wantErr: ErrEmptyID},
+		{
+			name:        "zero price",
+			portfolioID: f.port.ID,
+			holdingID:   holding.ID,
+			price:       0,
+			lots:        1,
+			wantErr:     ErrInvalidPrice,
+		},
+		{
+			name:        "negative lots",
+			portfolioID: f.port.ID,
+			holdingID:   holding.ID,
+			price:       9000,
+			lots:        -1,
+			wantErr:     ErrInvalidLots,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := f.svc.SellHolding(f.ctx, tt.portfolioID, tt.holdingID, tt.price, tt.lots, time.Now().UTC())
+			if !errors.Is(err, tt.wantErr) {
+				t.Errorf("SellHolding() error = %v, want %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestPortfolioServiceSellHoldingWrongPortfolio(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	holding, err := f.svc.AddHolding(f.ctx, f.port.ID, "BBCA", 8500, 10, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("AddHolding() error = %v", err)
+	}
+
+	_, err = f.svc.SellHolding(f.ctx, "wrong-portfolio-id", holding.ID, 9000, 1, time.Now().UTC())
+	if !errors.Is(err, shared.ErrNotFound) {
+		t.Errorf("SellHolding() error = %v, want ErrNotFound", err)
+	}
+}
+
+func TestPortfolioServiceSellHoldingWithTax(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	// Update account to have SellTaxPct.
+	f.acct.SellTaxPct = 0.10
+	if err := f.brokerageRepo.Update(f.ctx, f.acct); err != nil {
+		t.Fatalf("Update brokerage: %v", err)
+	}
+
+	holding, err := f.svc.AddHolding(f.ctx, f.port.ID, "BBCA", 8500, 10, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("AddHolding() error = %v", err)
+	}
+
+	tx, err := f.svc.SellHolding(f.ctx, f.port.ID, holding.ID, 9000, 5, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("SellHolding() error = %v", err)
+	}
+
+	// Fee = 9000 * 5 * 100 * 0.25 / 100 = 11250
+	if tx.Fee != 11250 {
+		t.Errorf("Fee = %f, want 11250", tx.Fee)
+	}
+	// Tax = 9000 * 5 * 100 * 0.10 / 100 = 4500
+	if tx.Tax != 4500 {
+		t.Errorf("Tax = %f, want 4500", tx.Tax)
+	}
+	// RealizedGain = (9000-8500)*5*100 - 11250 - 4500 = 250000 - 15750 = 234250
+	if tx.RealizedGain != 234250 {
+		t.Errorf("RealizedGain = %f, want 234250", tx.RealizedGain)
+	}
+}
+
+func TestPortfolioServiceReBuyAfterFullSell(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	// Buy 10 lots at 8500.
+	holding, err := f.svc.AddHolding(f.ctx, f.port.ID, "BBCA", 8500, 10, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("AddHolding() error = %v", err)
+	}
+
+	// Sell all 10 lots.
+	_, err = f.svc.SellHolding(f.ctx, f.port.ID, holding.ID, 9000, 10, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("SellHolding() error = %v", err)
+	}
+
+	// Re-buy 5 lots at 7000 — should upsert on the existing zero-lot holding.
+	reBuy, err := f.svc.AddHolding(f.ctx, f.port.ID, "BBCA", 7000, 5, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("AddHolding() after sell error = %v", err)
+	}
+
+	// Avg price should reset: weighted average of (8500*0 + 7000*5) / (0+5) = 7000.
+	if reBuy.AvgBuyPrice != 7000 {
+		t.Errorf("AvgBuyPrice = %f, want 7000 (reset after full sell)", reBuy.AvgBuyPrice)
+	}
+	if reBuy.Lots != 5 {
+		t.Errorf("Lots = %d, want 5", reBuy.Lots)
+	}
+}
+
+func TestPortfolioServiceDuplicateCheckIgnoresZeroLotHoldings(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	// Create a sibling portfolio.
+	sib := &portfolio.Portfolio{
+		ID:                 shared.NewID(),
+		BrokerageAccountID: f.acct.ID,
+		Name:               "Dividend Portfolio",
+		Mode:               portfolio.ModeDividend,
+		RiskProfile:        portfolio.RiskProfileModerate,
+		Universe:           []string{},
+		CreatedAt:          time.Now().UTC(),
+		UpdatedAt:          time.Now().UTC(),
+	}
+	if err := f.svc.Create(f.ctx, sib); err != nil {
+		t.Fatalf("Create sibling: %v", err)
+	}
+
+	// Add BBCA to sibling, then sell all.
+	holding, err := f.svc.AddHolding(f.ctx, sib.ID, "BBCA", 8500, 10, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("AddHolding() to sibling: %v", err)
+	}
+	_, err = f.svc.SellHolding(f.ctx, sib.ID, holding.ID, 9000, 10, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("SellHolding() in sibling: %v", err)
+	}
+
+	// Adding BBCA to the first portfolio should succeed (sibling has 0 lots).
+	_, err = f.svc.AddHolding(f.ctx, f.port.ID, "BBCA", 8000, 5, time.Now().UTC())
+	if err != nil {
+		t.Errorf("AddHolding() should succeed when sibling has zero-lot holding, got: %v", err)
+	}
+}
+
+func TestPortfolioServiceDeleteAfterFullSell(t *testing.T) {
+	f := setupPortfolioTest(t)
+
+	holding, err := f.svc.AddHolding(f.ctx, f.port.ID, "BBCA", 8500, 10, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("AddHolding() error = %v", err)
+	}
+
+	// Sell all lots.
+	_, err = f.svc.SellHolding(f.ctx, f.port.ID, holding.ID, 9000, 10, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("SellHolding() error = %v", err)
+	}
+
+	// Delete should succeed since the only holding has 0 lots.
+	if err := f.svc.Delete(f.ctx, f.port.ID); err != nil {
+		t.Errorf("Delete() should succeed after full sell, got: %v", err)
 	}
 }

@@ -65,6 +65,7 @@ type repos struct {
 	portfolio       *database.PortfolioRepo
 	holding         *database.HoldingRepo
 	buyTxn          *database.BuyTransactionRepo
+	sellTxn         *database.SellTransactionRepo
 	stock           *database.StockDataRepo
 	watchlist       *database.WatchlistRepo
 	watchlistItem   *database.WatchlistItemRepo
@@ -275,6 +276,7 @@ func (a *App) initRepos(conn *sql.DB) repos {
 		portfolio:       database.NewPortfolioRepo(conn),
 		holding:         database.NewHoldingRepo(conn),
 		buyTxn:          database.NewBuyTransactionRepo(conn),
+		sellTxn:         database.NewSellTransactionRepo(conn),
 		stock:           database.NewStockDataRepo(conn),
 		watchlist:       database.NewWatchlistRepo(conn),
 		watchlistItem:   database.NewWatchlistItemRepo(conn),
@@ -314,7 +316,7 @@ func (a *App) initServices(
 ) services {
 	stocks := usecase.NewStockService(r.stock, registry)
 	portfolios := usecase.NewPortfolioService(
-		r.portfolio, r.holding, r.buyTxn, r.brokerage, r.stock, r.peak,
+		r.portfolio, r.holding, r.buyTxn, r.sellTxn, r.brokerage, r.stock, r.peak,
 	)
 	brokerages := usecase.NewBrokerageService(r.brokerage, r.portfolio, emitter)
 	watchlists := usecase.NewWatchlistService(

@@ -20,6 +20,7 @@ var errorMapping = []struct {
 	{usecase.ErrEmptyTicker, "ERR_EMPTY_TICKER"},
 	{usecase.ErrInvalidPrice, "ERR_INVALID_PRICE"},
 	{usecase.ErrInvalidLots, "ERR_INVALID_LOTS"},
+	{usecase.ErrInsufficientLots, "ERR_INSUFFICIENT_LOTS"},
 	{usecase.ErrWatchlistNameTaken, "ERR_WATCHLIST_NAME_TAKEN"},
 }
 

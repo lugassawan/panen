@@ -9,6 +9,7 @@
     "ERR_EMPTY_TICKER": "Ticker wajib diisi.",
     "ERR_INVALID_PRICE": "Harga harus lebih dari nol.",
     "ERR_INVALID_LOTS": "Lot harus lebih dari nol.",
+    "ERR_INSUFFICIENT_LOTS": "Lot tidak cukup untuk dijual.",
     "ERR_WATCHLIST_NAME_TAKEN": "Watchlist dengan nama ini sudah ada."
   },
   "common": {
@@ -312,7 +313,7 @@
     "holdingsTab": "kepemilikan",
     "chartsTab": "grafik",
     "dividendsTab": "dividen",
-    "addHolding": "Tambah Kepemilikan",
+    "buyHolding": "Beli Saham",
     "trailingStops": "Trailing Stop",
     "dividendMetrics": "Metrik Dividen",
     "risk": "Risiko:",
@@ -356,7 +357,8 @@
     "buyPrice": "Harga Beli",
     "date": "Tanggal",
     "adding": "Menambahkan...",
-    "addHolding": "Tambah Kepemilikan",
+    "newHolding": "Beli Baru",
+    "addLots": "Tambah Lot",
     "tickerRequired": "Ticker wajib diisi",
     "buyPriceError": "Harga beli harus lebih dari 0",
     "loadingActions": "Memuat aksi...",
@@ -365,7 +367,15 @@
     "holdingRemoved": "{ticker} dihapus dari portofolio",
     "clearAllHoldings": "Hapus Semua Kepemilikan",
     "confirmClearMessage": "Apakah Anda yakin ingin menghapus semua kepemilikan dari portofolio ini?",
-    "holdingsCleared": "Semua kepemilikan dihapus"
+    "holdingsCleared": "Semua kepemilikan dihapus",
+    "sellHolding": "Jual Kepemilikan",
+    "sellPrice": "Harga Jual",
+    "selling": "Menjual...",
+    "sell": "Jual",
+    "sellPriceError": "Harga jual harus lebih dari 0",
+    "lotsError": "Lot harus antara 1 dan {max}",
+    "holdingSold": "{ticker}: {lots} lot terjual",
+    "realizedGain": "Laba Terealisasi"
   },
   "checklist": {
     "evaluating": "Mengevaluasi checklist...",

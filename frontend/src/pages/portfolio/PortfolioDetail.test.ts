@@ -91,6 +91,9 @@ describe("PortfolioDetail", () => {
     onBack: vi.fn(),
     onChecklist: vi.fn(),
     onHoldingAdded: vi.fn(),
+    onSell: vi.fn(),
+    onRemove: vi.fn(),
+    onClearAll: vi.fn(),
   };
 
   it("renders portfolio name and mode badge", () => {
@@ -144,9 +147,9 @@ describe("PortfolioDetail", () => {
     expect(screen.getByTestId("portfolio-yield")).toBeInTheDocument();
   });
 
-  it("renders Add Holding section", () => {
+  it("renders Buy Holding section", () => {
     render(PortfolioDetail, { props: defaultProps });
-    expect(screen.getByRole("heading", { name: "Add Holding" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Buy Holding" })).toBeInTheDocument();
   });
 
   it("renders tab bar with Holdings and Charts tabs", () => {
@@ -172,7 +175,7 @@ describe("PortfolioDetail", () => {
 
     const chartsTab = screen.getByRole("tab", { name: /charts/i });
     expect(chartsTab).toHaveAttribute("aria-selected", "true");
-    expect(screen.queryByRole("heading", { name: "Add Holding" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Buy Holding" })).not.toBeInTheDocument();
   });
 
   it("switches tabs via keyboard ArrowRight/ArrowLeft", async () => {

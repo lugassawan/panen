@@ -8,13 +8,14 @@ import type { PortfolioResponse } from "../../lib/types";
 
 interface Props {
   portfolios: PortfolioResponse[];
+  brokerNameMap?: Record<string, string>;
   onView: (portfolio: PortfolioResponse) => void;
   onEdit: (portfolio: PortfolioResponse) => void;
   onDelete: (portfolio: PortfolioResponse) => void;
   onCreate: () => void;
 }
 
-let { portfolios, onView, onEdit, onDelete, onCreate }: Props = $props();
+let { portfolios, brokerNameMap = {}, onView, onEdit, onDelete, onCreate }: Props = $props();
 </script>
 
 <div class="mb-6 flex items-center justify-between">
@@ -47,6 +48,9 @@ let { portfolios, onView, onEdit, onDelete, onCreate }: Props = $props();
         <div class="mt-1 flex gap-4 text-sm text-text-secondary">
           <span>{t("portfolio.risk")} {portfolio.riskProfile.charAt(0) + portfolio.riskProfile.slice(1).toLowerCase()}</span>
           <span>{t("portfolio.capital")} <span class="font-mono">{formatRupiah(portfolio.capital)}</span></span>
+          {#if brokerNameMap[portfolio.brokerageAcctId]}
+            <span>{brokerNameMap[portfolio.brokerageAcctId]}</span>
+          {/if}
         </div>
       </button>
       <div class="flex gap-2">

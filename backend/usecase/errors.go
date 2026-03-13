@@ -15,6 +15,7 @@ var (
 	ErrHasHoldings        = errors.New("portfolio has holdings")
 	ErrDuplicateHolding   = errors.New("stock already exists in another portfolio under this brokerage account")
 	ErrModeImmutable      = errors.New("portfolio mode cannot be changed after creation")
+	ErrInsufficientLots   = errors.New("insufficient lots to sell")
 	ErrWatchlistNameTaken = errors.New("watchlist name already taken")
 	ErrUnknownIndex       = errors.New("unknown index")
 	ErrEmptyUniverse      = errors.New("universe has no tickers")

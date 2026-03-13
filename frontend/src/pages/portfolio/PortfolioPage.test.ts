@@ -478,7 +478,7 @@ describe("PortfolioPage", () => {
       expect(screen.getByTestId("overall-pl")).toBeInTheDocument();
     });
 
-    it("shows add holding form", async () => {
+    it("shows buy holding form", async () => {
       mockGetPortfolio.mockResolvedValue(makePortfolioDetail());
       render(PortfolioPage);
       const user = userEvent.setup();
@@ -488,7 +488,7 @@ describe("PortfolioPage", () => {
 
       await screen.findByText("BBCA");
       expect(screen.getByLabelText(/ticker/i)).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /add holding/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /new holding/i })).toBeInTheDocument();
     });
   });
 

@@ -11,7 +11,7 @@ import {
   totalInvested as calcTotalInvested,
 } from "../../lib/portfolio";
 import type { PortfolioDetailResponse } from "../../lib/types";
-import AddHoldingForm from "./AddHoldingForm.svelte";
+import BuyHoldingForm from "./BuyHoldingForm.svelte";
 import ChartsTab from "./ChartsTab.svelte";
 import DividendChartsTab from "./DividendChartsTab.svelte";
 import DividendMetricsPanel from "./DividendMetricsPanel.svelte";
@@ -24,11 +24,12 @@ interface Props {
   onBack: () => void;
   onChecklist: (ticker: string) => void;
   onHoldingAdded: () => void;
+  onSell: (holdingId: string, ticker: string, lots: number, avgBuyPrice: number) => void;
   onRemove: (holdingId: string, ticker: string) => void;
   onClearAll: () => void;
 }
 
-let { detail, onBack, onChecklist, onHoldingAdded, onRemove, onClearAll }: Props = $props();
+let { detail, onBack, onChecklist, onHoldingAdded, onSell, onRemove, onClearAll }: Props = $props();
 
 type TabId = "holdings" | "charts" | "dividends";
 let activeTab = $state<TabId>("holdings");
@@ -129,15 +130,15 @@ let overallPL = $derived(calcOverallPL(detail.holdings));
 
 {#if activeTab === "holdings"}
   <div id="panel-holdings" role="tabpanel">
-    <!-- Add Holding -->
+    <!-- Buy Holding -->
     <div class="mb-6 rounded border border-border-default bg-bg-elevated p-4">
-      <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">{t("portfolio.addHolding")}</h3>
-      <AddHoldingForm portfolioId={detail.portfolio.id} onAdded={onHoldingAdded} />
+      <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">{t("portfolio.buyHolding")}</h3>
+      <BuyHoldingForm portfolioId={detail.portfolio.id} existingTickers={detail.holdings.map(h => h.ticker)} onAdded={onHoldingAdded} />
     </div>
 
     <!-- Holdings Table -->
     <div class="mb-6">
-      <HoldingsTable holdings={detail.holdings} {onChecklist} {onRemove} />
+      <HoldingsTable holdings={detail.holdings} {onChecklist} {onSell} {onRemove} />
     </div>
 
     {#if detail.holdings.length > 0}
