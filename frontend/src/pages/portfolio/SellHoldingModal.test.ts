@@ -57,7 +57,7 @@ describe("SellHoldingModal", () => {
 
     const today = new Date().toISOString().split("T")[0];
     expect(mockSellHolding).toHaveBeenCalledWith("p1", "h1", 9000, 5, today);
-    expect(defaultProps.onSold).toHaveBeenCalled();
+    expect(defaultProps.onSold).toHaveBeenCalledWith(5);
   });
 
   it("shows error when sell price is zero", async () => {

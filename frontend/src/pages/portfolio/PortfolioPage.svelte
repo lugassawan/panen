@@ -281,8 +281,8 @@ load();
     ticker={sellingHolding.ticker}
     maxLots={sellingHolding.lots}
     avgBuyPrice={sellingHolding.avgBuyPrice}
-    onSold={() => {
-      toastStore.add(t("holding.holdingSold", { ticker: sellingHolding!.ticker, lots: String(sellingHolding!.lots) }), "success");
+    onSold={(lotsSold) => {
+      toastStore.add(t("holding.holdingSold", { ticker: sellingHolding!.ticker, lots: String(lotsSold) }), "success");
       sellingHolding = null;
       viewPortfolio(detail!.portfolio);
     }}

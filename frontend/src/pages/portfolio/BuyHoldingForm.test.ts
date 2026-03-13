@@ -85,6 +85,16 @@ describe("BuyHoldingForm", () => {
     expect(mockAddHolding).not.toHaveBeenCalled();
   });
 
+  it("shows Add Lots button when ticker matches existing holding", async () => {
+    render(BuyHoldingForm, {
+      props: { ...defaultProps, existingTickers: ["BBCA"] },
+    });
+    const user = userEvent.setup();
+
+    await user.type(screen.getByLabelText(/ticker/i), "bbca");
+    expect(screen.getByRole("button", { name: /add lots/i })).toBeInTheDocument();
+  });
+
   it("shows error on API failure", async () => {
     mockAddHolding.mockRejectedValueOnce(new Error("duplicate ticker"));
 

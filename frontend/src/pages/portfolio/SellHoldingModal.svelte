@@ -14,7 +14,7 @@ interface Props {
   ticker: string;
   maxLots: number;
   avgBuyPrice: number;
-  onSold: () => void;
+  onSold: (lotsSold: number) => void;
   onClose: () => void;
 }
 
@@ -39,11 +39,8 @@ async function submit() {
 
   loading = true;
   try {
-    const tx = await SellHolding(portfolioId, holdingId, sellPrice, lots, date);
-    onSold();
-    if (tx) {
-      // Toast is handled by the parent after onSold refreshes.
-    }
+    await SellHolding(portfolioId, holdingId, sellPrice, lots, date);
+    onSold(lots);
   } catch (e: unknown) {
     error = formatError(e instanceof Error ? e.message : String(e));
   } finally {
