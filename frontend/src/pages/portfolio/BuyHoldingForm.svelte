@@ -6,7 +6,11 @@ import Button from "../../lib/components/Button.svelte";
 import Input from "../../lib/components/Input.svelte";
 import { formatError } from "../../lib/error";
 
-let { portfolioId, existingTickers = [], onAdded }: { portfolioId: string; existingTickers?: string[]; onAdded: () => void } = $props();
+let {
+  portfolioId,
+  existingTickers = [],
+  onAdded,
+}: { portfolioId: string; existingTickers?: string[]; onAdded: () => void } = $props();
 
 let ticker = $state("");
 let normalizedTicker = $derived(ticker.trim().toUpperCase());
