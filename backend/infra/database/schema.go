@@ -14,6 +14,7 @@ var migrations = []string{
 	migrationV10,
 	migrationV11,
 	migrationV12,
+	migrationV13,
 }
 
 const migrationV1 = `
@@ -261,4 +262,74 @@ CREATE TABLE sell_transactions (
 	created_at    TEXT NOT NULL
 );
 CREATE INDEX idx_sell_transactions_holding ON sell_transactions(holding_id);
+`
+
+const migrationV13 = `
+CREATE TABLE income_statements (
+	id                 TEXT PRIMARY KEY,
+	ticker             TEXT NOT NULL,
+	fiscal_year        INTEGER NOT NULL,
+	quarter            INTEGER NOT NULL DEFAULT 0,
+	period             TEXT NOT NULL CHECK(period IN ('annual','quarterly')),
+	revenue            REAL NOT NULL DEFAULT 0,
+	cost_of_revenue    REAL NOT NULL DEFAULT 0,
+	gross_profit       REAL NOT NULL DEFAULT 0,
+	operating_expenses REAL NOT NULL DEFAULT 0,
+	operating_income   REAL NOT NULL DEFAULT 0,
+	net_income         REAL NOT NULL DEFAULT 0,
+	eps                REAL NOT NULL DEFAULT 0,
+	eps_diluted        REAL NOT NULL DEFAULT 0,
+	ebitda             REAL NOT NULL DEFAULT 0,
+	interest_expense   REAL NOT NULL DEFAULT 0,
+	income_tax_expense REAL NOT NULL DEFAULT 0,
+	fetched_at         TEXT NOT NULL,
+	source             TEXT NOT NULL,
+	UNIQUE(ticker, fiscal_year, quarter, source)
+);
+CREATE INDEX idx_income_stmts_ticker ON income_statements(ticker, fiscal_year);
+
+CREATE TABLE balance_sheets (
+	id                      TEXT PRIMARY KEY,
+	ticker                  TEXT NOT NULL,
+	fiscal_year             INTEGER NOT NULL,
+	quarter                 INTEGER NOT NULL DEFAULT 0,
+	period                  TEXT NOT NULL CHECK(period IN ('annual','quarterly')),
+	total_assets            REAL NOT NULL DEFAULT 0,
+	total_current_assets    REAL NOT NULL DEFAULT 0,
+	cash_and_equivalents    REAL NOT NULL DEFAULT 0,
+	receivables             REAL NOT NULL DEFAULT 0,
+	inventory               REAL NOT NULL DEFAULT 0,
+	intangible_assets       REAL NOT NULL DEFAULT 0,
+	total_liabilities       REAL NOT NULL DEFAULT 0,
+	total_current_liab      REAL NOT NULL DEFAULT 0,
+	long_term_debt          REAL NOT NULL DEFAULT 0,
+	total_debt              REAL NOT NULL DEFAULT 0,
+	total_equity            REAL NOT NULL DEFAULT 0,
+	retained_earnings       REAL NOT NULL DEFAULT 0,
+	shares_outstanding      REAL NOT NULL DEFAULT 0,
+	fetched_at              TEXT NOT NULL,
+	source                  TEXT NOT NULL,
+	UNIQUE(ticker, fiscal_year, quarter, source)
+);
+CREATE INDEX idx_balance_sheets_ticker ON balance_sheets(ticker, fiscal_year);
+
+CREATE TABLE cash_flow_statements (
+	id                    TEXT PRIMARY KEY,
+	ticker                TEXT NOT NULL,
+	fiscal_year           INTEGER NOT NULL,
+	quarter               INTEGER NOT NULL DEFAULT 0,
+	period                TEXT NOT NULL CHECK(period IN ('annual','quarterly')),
+	operating_cash_flow   REAL NOT NULL DEFAULT 0,
+	capital_expenditure   REAL NOT NULL DEFAULT 0,
+	free_cash_flow        REAL NOT NULL DEFAULT 0,
+	dividends_paid        REAL NOT NULL DEFAULT 0,
+	net_borrowings        REAL NOT NULL DEFAULT 0,
+	investing_cash_flow   REAL NOT NULL DEFAULT 0,
+	financing_cash_flow   REAL NOT NULL DEFAULT 0,
+	net_change_in_cash    REAL NOT NULL DEFAULT 0,
+	fetched_at            TEXT NOT NULL,
+	source                TEXT NOT NULL,
+	UNIQUE(ticker, fiscal_year, quarter, source)
+);
+CREATE INDEX idx_cash_flow_stmts_ticker ON cash_flow_statements(ticker, fiscal_year);
 `

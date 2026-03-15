@@ -514,3 +514,8 @@ export interface AllocationItemResponse {
   value: number;
   pct: number;
 }
+
+export interface APIKeyStatusResponse {
+  fmpConfigured: boolean;
+  sectorsConfigured: boolean;
+}

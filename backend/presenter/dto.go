@@ -487,6 +487,12 @@ type TransactionListResponse struct {
 	Summary TransactionSummaryResponse  `json:"summary"`
 }
 
+// APIKeyStatusResponse is the frontend-facing response for API key configuration status.
+type APIKeyStatusResponse struct {
+	FMPConfigured     bool `json:"fmpConfigured"`
+	SectorsConfigured bool `json:"sectorsConfigured"`
+}
+
 // ProviderStatusResponse is the frontend-facing response for a data provider's status.
 type ProviderStatusResponse struct {
 	Name      string `json:"name"`

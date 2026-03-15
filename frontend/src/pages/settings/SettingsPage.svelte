@@ -2,10 +2,13 @@
 import { onMount } from "svelte";
 import {
   CheckForUpdate,
+  ClearFMPAPIKey,
+  ClearSectorsAPIKey,
   CreateManualBackup,
   DownloadAndInstallUpdate,
   ExportData,
   ExportLogs,
+  GetAPIKeyStatus,
   GetAppVersion,
   GetBackupStatus,
   GetLogStats,
@@ -16,7 +19,9 @@ import {
   IsDebugMode,
   RunProviderHealthCheck,
   SetDebugMode,
+  SetFMPAPIKey,
   SetProviderEnabled,
+  SetSectorsAPIKey,
   TriggerRefresh,
   UpdateRefreshSettings,
 } from "../../../wailsjs/go/backend/App";
@@ -70,6 +75,13 @@ type ProviderStatus = {
 
 let providers = $state<ProviderStatus[]>([]);
 let healthChecking = $state(false);
+
+let fmpConfigured = $state(false);
+let sectorsConfigured = $state(false);
+let fmpKeyInput = $state("");
+let sectorsKeyInput = $state("");
+let savingFmpKey = $state(false);
+let savingSectorsKey = $state(false);
 
 let debugMode = $state(false);
 let logStats = $state<{
@@ -131,6 +143,14 @@ onMount(async () => {
 
   try {
     providers = await GetProviderStatus();
+  } catch {
+    // non-critical
+  }
+
+  try {
+    const keyStatus = await GetAPIKeyStatus();
+    fmpConfigured = keyStatus.fmpConfigured;
+    sectorsConfigured = keyStatus.sectorsConfigured;
   } catch {
     // non-critical
   }
@@ -230,6 +250,60 @@ async function checkProviderHealth() {
     // non-critical
   } finally {
     healthChecking = false;
+  }
+}
+
+async function saveFmpKey() {
+  if (!fmpKeyInput.trim()) return;
+  savingFmpKey = true;
+  try {
+    await SetFMPAPIKey(fmpKeyInput.trim());
+    fmpConfigured = true;
+    fmpKeyInput = "";
+    toastStore.add(t("settings.apiKeySaved"), "success");
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    toastStore.add(t("settings.apiKeySaveError", { error: msg }), "error");
+  } finally {
+    savingFmpKey = false;
+  }
+}
+
+async function clearFmpKey() {
+  try {
+    await ClearFMPAPIKey();
+    fmpConfigured = false;
+    toastStore.add(t("settings.apiKeyCleared"), "success");
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    toastStore.add(msg, "error");
+  }
+}
+
+async function saveSectorsKey() {
+  if (!sectorsKeyInput.trim()) return;
+  savingSectorsKey = true;
+  try {
+    await SetSectorsAPIKey(sectorsKeyInput.trim());
+    sectorsConfigured = true;
+    sectorsKeyInput = "";
+    toastStore.add(t("settings.apiKeySaved"), "success");
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    toastStore.add(t("settings.apiKeySaveError", { error: msg }), "error");
+  } finally {
+    savingSectorsKey = false;
+  }
+}
+
+async function clearSectorsKey() {
+  try {
+    await ClearSectorsAPIKey();
+    sectorsConfigured = false;
+    toastStore.add(t("settings.apiKeyCleared"), "success");
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    toastStore.add(msg, "error");
   }
 }
 
@@ -442,6 +516,81 @@ async function confirmImport() {
         >
           {healthChecking ? t("settings.providerCheckingHealth") : t("settings.providerCheckHealth")}
         </button>
+      </div>
+    </div>
+
+    <div>
+      <p class="mb-3 text-sm text-text-secondary">
+        <Tooltip text={t("settings.apiKeysTooltip")}>
+          <span class="underline decoration-dotted cursor-help">{t("settings.apiKeys")}</span>
+        </Tooltip>
+      </p>
+      <div class="space-y-4 rounded-lg border border-border-default bg-bg-elevated p-4">
+        <div>
+          <div class="mb-2 flex items-center justify-between">
+            <span class="text-sm font-medium text-text-primary">{t("settings.fmpApiKey")}</span>
+            <span class="text-xs {fmpConfigured ? 'text-profit' : 'text-text-tertiary'}">
+              {fmpConfigured ? t("settings.apiKeyConfigured") : t("settings.apiKeyNotConfigured")}
+            </span>
+          </div>
+          <div class="flex gap-2">
+            <input
+              type="password"
+              bind:value={fmpKeyInput}
+              placeholder={t("settings.apiKeyPlaceholder")}
+              class="flex-1 rounded border border-border-default bg-bg-primary px-3 py-1.5 text-sm text-text-primary placeholder:text-text-tertiary focus-ring"
+            />
+            <button
+              onclick={saveFmpKey}
+              disabled={savingFmpKey || !fmpKeyInput.trim()}
+              class="rounded border border-green-700 px-3 py-1.5 text-sm font-medium text-green-700 transition-fast hover:bg-green-100 disabled:opacity-60 focus-ring dark:hover:bg-green-900/30"
+            >
+              {t("settings.apiKeySave")}
+            </button>
+            {#if fmpConfigured}
+              <button
+                onclick={clearFmpKey}
+                class="rounded border border-loss px-3 py-1.5 text-sm font-medium text-loss transition-fast hover:bg-red-100 focus-ring dark:hover:bg-red-900/30"
+              >
+                {t("settings.apiKeyClear")}
+              </button>
+            {/if}
+          </div>
+        </div>
+
+        <div>
+          <div class="mb-2 flex items-center justify-between">
+            <span class="text-sm font-medium text-text-primary">{t("settings.sectorsApiKey")}</span>
+            <span class="text-xs {sectorsConfigured ? 'text-profit' : 'text-text-tertiary'}">
+              {sectorsConfigured ? t("settings.apiKeyConfigured") : t("settings.apiKeyNotConfigured")}
+            </span>
+          </div>
+          <div class="flex gap-2">
+            <input
+              type="password"
+              bind:value={sectorsKeyInput}
+              placeholder={t("settings.apiKeyPlaceholder")}
+              class="flex-1 rounded border border-border-default bg-bg-primary px-3 py-1.5 text-sm text-text-primary placeholder:text-text-tertiary focus-ring"
+            />
+            <button
+              onclick={saveSectorsKey}
+              disabled={savingSectorsKey || !sectorsKeyInput.trim()}
+              class="rounded border border-green-700 px-3 py-1.5 text-sm font-medium text-green-700 transition-fast hover:bg-green-100 disabled:opacity-60 focus-ring dark:hover:bg-green-900/30"
+            >
+              {t("settings.apiKeySave")}
+            </button>
+            {#if sectorsConfigured}
+              <button
+                onclick={clearSectorsKey}
+                class="rounded border border-loss px-3 py-1.5 text-sm font-medium text-loss transition-fast hover:bg-red-100 focus-ring dark:hover:bg-red-900/30"
+              >
+                {t("settings.apiKeyClear")}
+              </button>
+            {/if}
+          </div>
+        </div>
+
+        <p class="text-xs text-text-tertiary">{t("settings.apiKeyRestartHint")}</p>
       </div>
     </div>
     {/if}

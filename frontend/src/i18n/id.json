@@ -179,7 +179,20 @@
     "providerUnknown": "Tidak Diketahui",
     "providerCheckHealth": "Periksa Kesehatan",
     "providerCheckingHealth": "Memeriksa...",
-    "providerCannotDisableLast": "Tidak dapat menonaktifkan penyedia terakhir"
+    "providerCannotDisableLast": "Tidak dapat menonaktifkan penyedia terakhir",
+    "apiKeys": "Kunci API",
+    "apiKeysTooltip": "Konfigurasikan kunci API untuk penyedia laporan keuangan (FMP, Sectors.app). Kunci disimpan secara lokal dan tidak pernah dikirim ke pihak ketiga.",
+    "fmpApiKey": "Financial Modeling Prep (FMP)",
+    "sectorsApiKey": "Sectors.app",
+    "apiKeyConfigured": "Terkonfigurasi",
+    "apiKeyNotConfigured": "Belum dikonfigurasi",
+    "apiKeyPlaceholder": "Masukkan kunci API...",
+    "apiKeySave": "Simpan",
+    "apiKeyClear": "Hapus",
+    "apiKeySaved": "Kunci API tersimpan. Mulai ulang aplikasi untuk menerapkan.",
+    "apiKeyCleared": "Kunci API dihapus. Mulai ulang aplikasi untuk menerapkan.",
+    "apiKeySaveError": "Gagal menyimpan kunci API: {error}",
+    "apiKeyRestartHint": "Perubahan berlaku setelah aplikasi dimulai ulang."
   },
   "format": {
     "justNow": "baru saja",
