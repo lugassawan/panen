@@ -179,7 +179,20 @@
     "providerUnknown": "Unknown",
     "providerCheckHealth": "Check Health",
     "providerCheckingHealth": "Checking...",
-    "providerCannotDisableLast": "Cannot disable the last provider"
+    "providerCannotDisableLast": "Cannot disable the last provider",
+    "apiKeys": "API Keys",
+    "apiKeysTooltip": "Configure API keys for financial statement providers (FMP, Sectors.app). Keys are stored locally and never sent to third parties.",
+    "fmpApiKey": "Financial Modeling Prep (FMP)",
+    "sectorsApiKey": "Sectors.app",
+    "apiKeyConfigured": "Configured",
+    "apiKeyNotConfigured": "Not configured",
+    "apiKeyPlaceholder": "Enter API key...",
+    "apiKeySave": "Save",
+    "apiKeyClear": "Clear",
+    "apiKeySaved": "API key saved. Restart app to apply.",
+    "apiKeyCleared": "API key cleared. Restart app to apply.",
+    "apiKeySaveError": "Failed to save API key: {error}",
+    "apiKeyRestartHint": "Changes take effect after restarting the app."
   },
   "format": {
     "justNow": "just now",
