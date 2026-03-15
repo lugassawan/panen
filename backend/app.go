@@ -13,11 +13,14 @@ import (
 	"github.com/lugassawan/panen/backend/infra/backup"
 	brokerConfigLoader "github.com/lugassawan/panen/backend/infra/brokerconfig"
 	"github.com/lugassawan/panen/backend/infra/database"
+	"github.com/lugassawan/panen/backend/infra/fmp"
+	"github.com/lugassawan/panen/backend/infra/fsprovider"
 	"github.com/lugassawan/panen/backend/infra/github"
 	"github.com/lugassawan/panen/backend/infra/liveconfig"
 	"github.com/lugassawan/panen/backend/infra/platform"
 	infraProvider "github.com/lugassawan/panen/backend/infra/provider"
 	"github.com/lugassawan/panen/backend/infra/scraper"
+	"github.com/lugassawan/panen/backend/infra/sectorsapp"
 	"github.com/lugassawan/panen/backend/infra/updater"
 	"github.com/lugassawan/panen/backend/infra/watchlistconfig"
 	"github.com/lugassawan/panen/backend/presenter"
@@ -50,6 +53,7 @@ type App struct {
 	*presenter.TransactionHandler
 	*presenter.DashboardHandler
 	*presenter.ProviderHandler
+	*presenter.SettingsHandler
 	db        *database.DB
 	backup    *backup.BackupService
 	dbPath    string
@@ -81,6 +85,9 @@ type repos struct {
 	cashFlow        *database.CashFlowRepo
 	txnHistory      *database.TransactionHistoryRepo
 	crashCapital    *database.CrashCapitalRepo
+	incomeStmt      *database.IncomeStatementRepo
+	balanceSheet    *database.BalanceSheetRepo
+	cashFlowStmt    *database.CashFlowStatementRepo
 }
 
 // services groups all application service instances.
@@ -102,6 +109,7 @@ type services struct {
 	crashPlaybook *usecase.CrashPlaybookService
 	update        *usecase.UpdateService
 	selfUpdate    *usecase.SelfUpdateService
+	financials    *usecase.FinancialStatementsService
 }
 
 // NewApp creates all handlers upfront so embedded pointers are never nil.
@@ -130,6 +138,7 @@ func NewApp() *App {
 		TransactionHandler:      &presenter.TransactionHandler{},
 		DashboardHandler:        &presenter.DashboardHandler{},
 		ProviderHandler:         &presenter.ProviderHandler{},
+		SettingsHandler:         &presenter.SettingsHandler{},
 		backup:                  backup.NewBackupService(),
 	}
 }
@@ -172,6 +181,8 @@ func (a *App) Startup(ctx context.Context) {
 	registry.Register(scraper.NewYahoo(), 1)
 	registry.Register(infraProvider.NewIDXProvider(), 2)
 
+	fsRegistry := a.initFSProviders(ctx, r.settings)
+
 	sectorRegistry := watchlistconfig.NewSectorRegistry()
 	liveDeps := liveconfig.Deps{
 		Settings: r.settings,
@@ -185,7 +196,7 @@ func (a *App) Startup(ctx context.Context) {
 	indexResult := indexLoader.Load(ctx)
 	swappableIndexReg := watchlistconfig.NewSwappableIndexRegistry(indexResult.Data)
 
-	svc := a.initServices(r, registry, wailsEmitter, sectorRegistry, swappableIndexReg)
+	svc := a.initServices(r, registry, fsRegistry, wailsEmitter, sectorRegistry, swappableIndexReg)
 
 	a.bindHandlers(ctx, svc, r, profileID, sectorRegistry, registry, wailsEmitter)
 
@@ -292,6 +303,9 @@ func (a *App) initRepos(conn *sql.DB) repos {
 		cashFlow:        database.NewCashFlowRepo(conn),
 		txnHistory:      database.NewTransactionHistoryRepo(conn),
 		crashCapital:    database.NewCrashCapitalRepo(conn),
+		incomeStmt:      database.NewIncomeStatementRepo(conn),
+		balanceSheet:    database.NewBalanceSheetRepo(conn),
+		cashFlowStmt:    database.NewCashFlowStatementRepo(conn),
 	}
 }
 
@@ -310,6 +324,7 @@ func (a *App) initDebugLogging(ctx context.Context, settingsRepo *database.Setti
 func (a *App) initServices(
 	r repos,
 	registry *infraProvider.Registry,
+	fsRegistry *fsprovider.Registry,
 	emitter *presenter.WailsEmitter,
 	sectorRegistry *watchlistconfig.SectorRegistry,
 	indexReg *watchlistconfig.SwappableIndexRegistry,
@@ -359,6 +374,10 @@ func (a *App) initServices(
 		installer, emitter, Version(),
 	)
 
+	financialsSvc := usecase.NewFinancialStatementsService(
+		r.incomeStmt, r.balanceSheet, r.cashFlowStmt, fsRegistry,
+	)
+
 	return services{
 		stocks:        stocks,
 		portfolios:    portfolios,
@@ -377,6 +396,7 @@ func (a *App) initServices(
 		crashPlaybook: crashPlaybook,
 		update:        updateSvc,
 		selfUpdate:    selfUpdateSvc,
+		financials:    financialsSvc,
 	}
 }
 
@@ -408,6 +428,30 @@ func (a *App) bindHandlers(
 	a.UpdateHandler.Bind(ctx, svc.update, svc.selfUpdate, r.settings, emitter)
 	a.LogHandler.Bind(ctx, r.settings, a.logDir)
 	a.ProviderHandler.Bind(ctx, registry)
+	a.SettingsHandler.Bind(ctx, r.settings)
+}
+
+// initFSProviders reads API keys from settings and creates financial statement providers.
+func (a *App) initFSProviders(ctx context.Context, settings *database.SettingsRepo) *fsprovider.Registry {
+	fsReg := fsprovider.NewRegistry()
+
+	fmpKey, err := settings.GetSetting(ctx, "fmp_api_key")
+	if err != nil {
+		applog.Warn("read FMP API key", err, nil)
+	}
+	if fmpKey != "" {
+		fsReg.Register(fmp.NewFMP(fmpKey), 1)
+	}
+
+	sectorsKey, err := settings.GetSetting(ctx, "sectors_api_key")
+	if err != nil {
+		applog.Warn("read Sectors API key", err, nil)
+	}
+	if sectorsKey != "" {
+		fsReg.Register(sectorsapp.NewSectorsApp(sectorsKey), 2)
+	}
+
+	return fsReg
 }
 
 // releaseCheckerAdapter bridges github.Client to usecase.ReleaseChecker.
