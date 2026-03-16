@@ -1,8 +1,5 @@
 package dataset
 
-// FinancialDataset maps ticker codes to their financial data.
-type FinancialDataset map[string]*TickerFinancials
-
 // TickerFinancials holds financial time series for a single stock.
 type TickerFinancials struct {
 	Revenue         []TimeSeriesEntry
@@ -19,9 +16,6 @@ type TimeSeriesEntry struct {
 	Quarter int
 	Value   float64
 }
-
-// SectorMetricDataset maps ticker to metric name to entries.
-type SectorMetricDataset map[string]map[string][]SectorMetricEntry
 
 // SectorMetricEntry is a single sector-specific metric value.
 type SectorMetricEntry struct {

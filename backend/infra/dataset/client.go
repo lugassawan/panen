@@ -55,22 +55,6 @@ func (c *Client) FetchFinancials(ctx context.Context, ticker string) (*dataset.T
 	return convertTickerFinancials(resp.Data), nil
 }
 
-// FetchAllFinancials returns financials for all tickers.
-func (c *Client) FetchAllFinancials(ctx context.Context) (dataset.FinancialDataset, error) {
-	if c.baseURL == "" {
-		return nil, nil //nolint:nilnil // nil signals "not configured" to the frontend
-	}
-
-	params := url.Values{"action": {"financials"}}
-	cacheKey := "financials_all.json"
-
-	var resp allFinancialsResponse
-	if err := c.fetchJSON(ctx, params, cacheKey, &resp); err != nil {
-		return nil, err
-	}
-	return convertAllFinancials(resp.Data), nil
-}
-
 // FetchSectorMetrics returns sector-specific metrics for a ticker.
 func (c *Client) FetchSectorMetrics(
 	ctx context.Context,
@@ -158,7 +142,7 @@ func (c *Client) readCache(path string) ([]byte, error) {
 	return os.ReadFile(path)
 }
 
-// writeCache writes data to the cache file, creating directories as needed.
+// writeCache atomically writes data to the cache file, creating directories as needed.
 func (c *Client) writeCache(path string, data []byte) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -167,7 +151,13 @@ func (c *Client) writeCache(path string, data []byte) {
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return
 	}
-	_ = os.WriteFile(path, data, 0o600)
+
+	// Write to temp file then rename for atomicity — prevents partial reads.
+	tmp := path + ".tmp"
+	if err := os.WriteFile(tmp, data, 0o600); err != nil {
+		return
+	}
+	_ = os.Rename(tmp, path)
 }
 
 // Wire protocol types for JSON decoding.
@@ -176,12 +166,6 @@ type financialsResponse struct {
 	Version   int                   `json:"version"`
 	UpdatedAt string                `json:"updatedAt"`
 	Data      []financialsEntryWire `json:"data"`
-}
-
-type allFinancialsResponse struct {
-	Version   int                              `json:"version"`
-	UpdatedAt string                           `json:"updatedAt"`
-	Data      map[string][]financialsEntryWire `json:"data"`
 }
 
 type sectorMetricsResponse struct {
@@ -235,17 +219,6 @@ func convertTickerFinancials(entries []financialsEntryWire) *dataset.TickerFinan
 		}
 	}
 	return tf
-}
-
-func convertAllFinancials(data map[string][]financialsEntryWire) dataset.FinancialDataset {
-	if len(data) == 0 {
-		return nil
-	}
-	result := make(dataset.FinancialDataset, len(data))
-	for ticker, entries := range data {
-		result[ticker] = convertTickerFinancials(entries)
-	}
-	return result
 }
 
 func convertSectorMetrics(data map[string][]sectorMetricEntryWire) map[string][]dataset.SectorMetricEntry {

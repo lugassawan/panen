@@ -156,16 +156,6 @@ func TestEmptyURLGracefulDegradation(t *testing.T) {
 			},
 		},
 		{
-			name: "FetchAllFinancials",
-			fn: func() error {
-				result, err := client.FetchAllFinancials(context.Background())
-				if result != nil {
-					t.Errorf("expected nil result for FetchAllFinancials")
-				}
-				return err
-			},
-		},
-		{
 			name: "FetchSectorMetrics",
 			fn: func() error {
 				result, err := client.FetchSectorMetrics(context.Background(), "BBCA")

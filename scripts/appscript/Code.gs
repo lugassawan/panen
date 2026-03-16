@@ -25,7 +25,10 @@ function doGet(e) {
     const action = (e.parameter.action || "").toLowerCase();
     const ticker = e.parameter.ticker || null;
 
-    switch (action) {
+    // Normalize action: strip underscores so both "sectormetrics" and "sector_metrics" work.
+    var normalizedAction = action.replace(/_/g, "");
+
+    switch (normalizedAction) {
       case "financials":
         return jsonResponse(getSheetData("financials", ticker));
       case "sectormetrics":

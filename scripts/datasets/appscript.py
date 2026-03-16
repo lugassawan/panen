@@ -61,7 +61,6 @@ def post_data(sheet: str, rows: list[dict[str, Any]]) -> bool:
     """
     url, token = _get_config()
     headers = {
-        "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
     }
     payload = {
@@ -70,7 +69,9 @@ def post_data(sheet: str, rows: list[dict[str, Any]]) -> bool:
         "rows": rows,
     }
 
-    result = _request_with_retries("POST", url, headers=headers, json=payload)
+    # Apps Script doPost cannot read HTTP headers, so pass token as query param.
+    post_url = f"{url}?token={token}"
+    result = _request_with_retries("POST", post_url, headers=headers, json=payload)
     if result is None:
         return False
 
@@ -88,10 +89,8 @@ def get_data(action: str, ticker: str | None = None) -> list[dict[str, Any]]:
     Returns a list of row dicts, or an empty list on failure.
     """
     url, token = _get_config()
-    headers = {
-        "Authorization": f"Bearer {token}",
-    }
-    params: dict[str, str] = {"action": action}
+    headers: dict[str, str] = {}
+    params: dict[str, str] = {"action": action, "token": token}
     if ticker:
         params["ticker"] = ticker
 

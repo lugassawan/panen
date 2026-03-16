@@ -87,7 +87,6 @@ def main() -> None:
     # 2. Fetch financials from Yahoo Finance.
     success = 0
     failed = 0
-    skipped = 0
     all_financials: dict[str, dict[str, Any]] = {}
 
     for ticker in sorted(tickers):
