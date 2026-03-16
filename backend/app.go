@@ -13,6 +13,7 @@ import (
 	"github.com/lugassawan/panen/backend/infra/backup"
 	brokerConfigLoader "github.com/lugassawan/panen/backend/infra/brokerconfig"
 	"github.com/lugassawan/panen/backend/infra/database"
+	infraDataset "github.com/lugassawan/panen/backend/infra/dataset"
 	"github.com/lugassawan/panen/backend/infra/github"
 	"github.com/lugassawan/panen/backend/infra/liveconfig"
 	"github.com/lugassawan/panen/backend/infra/platform"
@@ -24,6 +25,9 @@ import (
 	"github.com/lugassawan/panen/backend/usecase"
 	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
+
+// appscriptURL is set at build time via -ldflags "-X github.com/lugassawan/panen/backend.appscriptURL=...".
+var appscriptURL string
 
 // App is the Wails-bound application controller.
 // Handler methods are promoted via embedding so Wails can bind them.
@@ -50,6 +54,7 @@ type App struct {
 	*presenter.TransactionHandler
 	*presenter.DashboardHandler
 	*presenter.ProviderHandler
+	*presenter.DatasetHandler
 	db        *database.DB
 	backup    *backup.BackupService
 	dbPath    string
@@ -130,6 +135,7 @@ func NewApp() *App {
 		TransactionHandler:      &presenter.TransactionHandler{},
 		DashboardHandler:        &presenter.DashboardHandler{},
 		ProviderHandler:         &presenter.ProviderHandler{},
+		DatasetHandler:          &presenter.DatasetHandler{},
 		backup:                  backup.NewBackupService(),
 	}
 }
@@ -185,9 +191,12 @@ func (a *App) Startup(ctx context.Context) {
 	indexResult := indexLoader.Load(ctx)
 	swappableIndexReg := watchlistconfig.NewSwappableIndexRegistry(indexResult.Data)
 
+	datasetClient := infraDataset.NewClient(appscriptURL, dataDir)
+
 	svc := a.initServices(r, registry, wailsEmitter, sectorRegistry, swappableIndexReg)
 
 	a.bindHandlers(ctx, svc, r, profileID, sectorRegistry, registry, wailsEmitter)
+	a.DatasetHandler.Bind(ctx, datasetClient)
 
 	a.Init(ctx)
 	a.RegisterLoader("brokers", brokerLoader, func(_ context.Context) {
