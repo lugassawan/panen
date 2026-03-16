@@ -2,10 +2,12 @@
 	lint fmt frontend-install setup init custom-gcl \
 	test test-unit test-go test-frontend test-integration test-e2e \
 	coverage coverage-go coverage-frontend playwright-install \
-	release-check
+	release-check dataset-setup dataset-fetch
 
 VERSION := $(shell jq -r '.info.productVersion' wails.json)
-LDFLAGS := -X github.com/lugassawan/panen/backend.version=$(VERSION)
+APPSCRIPT_URL ?= $(shell echo $$APPSCRIPT_URL)
+LDFLAGS := -X github.com/lugassawan/panen/backend.version=$(VERSION) \
+           -X github.com/lugassawan/panen/backend.appscriptURL=$(APPSCRIPT_URL)
 
 dev:
 	wails dev -tags dev
@@ -93,6 +95,12 @@ setup:
 	wails generate module
 	$(MAKE) custom-gcl
 	git config core.hooksPath .githooks
+
+dataset-setup:
+	pip install -r scripts/datasets/requirements.txt
+
+dataset-fetch:
+	python scripts/datasets/fetch.py
 
 release-check:
 	@TAG_VERSION="$(VERSION)"; \
