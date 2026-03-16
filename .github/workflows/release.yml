@@ -63,9 +63,10 @@ jobs:
         shell: bash
         env:
           REF_NAME: ${{ github.ref_name }}
+          APPSCRIPT_URL: ${{ vars.APPSCRIPT_URL }}
         run: |
           TAG_VERSION="${REF_NAME#v}"
-          LDFLAGS="-X github.com/lugassawan/panen/backend.version=${TAG_VERSION}"
+          LDFLAGS="-X github.com/lugassawan/panen/backend.version=${TAG_VERSION} -X github.com/lugassawan/panen/backend.appscriptURL=${APPSCRIPT_URL}"
           wails build -clean -platform ${{ matrix.platform }} -ldflags "${LDFLAGS}"
 
       - name: Package (macOS)
