@@ -1,0 +1,25 @@
+name: Update Datasets
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Weekly Monday 6am UTC (1pm WIB)
+  workflow_dispatch: # Manual trigger
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    name: Fetch financial datasets
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: jdx/mise-action@v3
+
+      - name: Install Python dependencies
+        run: pip install -r scripts/datasets/requirements.txt
+
+      - name: Fetch and push data
+        env:
+          APPSCRIPT_URL: ${{ vars.APPSCRIPT_URL }}
+          APPSCRIPT_TOKEN: ${{ secrets.APPSCRIPT_TOKEN }}
+        run: python scripts/datasets/fetch.py
